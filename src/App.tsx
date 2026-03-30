@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabase'
 import Login from './pages/Login'
 import Registo from './pages/Registo'
+import Mapa from './pages/Mapa'
+import RegistarAnimal from './pages/RegistarAnimal'
 
 export default function App() {
   const [sessao, setSessao] = useState<any>(null)
@@ -29,6 +31,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={!sessao ? <Login /> : <Navigate to="/" />} />
+        <Route path="/registar-animal" element={sessao ? <RegistarAnimal /> : <Navigate to="/login" />} />
         <Route path="/registo" element={!sessao ? <Registo /> : <Navigate to="/" />} />
         <Route path="/" element={sessao ? (
           <div className="p-8">
@@ -41,6 +44,7 @@ export default function App() {
             </button>
           </div>
         ) : <Navigate to="/login" />} />
+        <Route path="/mapa" element={sessao ? <Mapa /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   )
