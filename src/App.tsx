@@ -5,6 +5,9 @@ import Login from './pages/Login'
 import Registo from './pages/Registo'
 import Mapa from './pages/Mapa'
 import RegistarAnimal from './pages/RegistarAnimal'
+import Home from './pages/Home'
+import Animais from './pages/Animais'
+import IdentificarAnimal from './pages/IdentificarAnimal'
 
 export default function App() {
   const [sessao, setSessao] = useState<any>(null)
@@ -30,21 +33,13 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={!sessao ? <Login /> : <Navigate to="/" />} />
-        <Route path="/registar-animal" element={sessao ? <RegistarAnimal /> : <Navigate to="/login" />} />
-        <Route path="/registo" element={!sessao ? <Registo /> : <Navigate to="/" />} />
-        <Route path="/" element={sessao ? (
-          <div className="p-8">
-            <p className="text-xl mb-4">Bem-vinda, {sessao.user.email}!</p>
-            <button
-              onClick={() => supabase.auth.signOut()}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
-            >
-              Sair
-            </button>
-          </div>
-        ) : <Navigate to="/login" />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={!sessao ? <Login /> : <Navigate to="/mapa" />} />
+        <Route path="/registo" element={!sessao ? <Registo /> : <Navigate to="/mapa" />} />
         <Route path="/mapa" element={sessao ? <Mapa /> : <Navigate to="/login" />} />
+        <Route path="/registar-animal" element={sessao ? <RegistarAnimal /> : <Navigate to="/login" />} />
+        <Route path="/animais" element={<Animais />} />
+        <Route path="/identificar" element={<IdentificarAnimal />} />
       </Routes>
     </BrowserRouter>
   )
