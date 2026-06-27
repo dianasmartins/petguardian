@@ -1,46 +1,62 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
+import type { Session } from '@supabase/supabase-js'
+import Navbar from './components/Navbar'
+import CookieBanner from './components/CookieBanner'
+import { ToastProvider } from './components/Toast'
+import Home from './pages/Home'
 import Login from './pages/Login'
 import Registo from './pages/Registo'
 import Mapa from './pages/Mapa'
-import RegistarAnimal from './pages/RegistarAnimal'
-import Home from './pages/Home'
 import Animais from './pages/Animais'
+import RegistarAnimal from './pages/RegistarAnimal'
+import Ocorrencias from './pages/Ocorrencias'
 import IdentificarAnimal from './pages/IdentificarAnimal'
+import Perfil from './pages/Perfil'
+import Definicoes from './pages/Definicoes'
 
 export default function App() {
-  const [sessao, setSessao] = useState<any>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSessao(session)
+      setSession(session)
       setLoading(false)
     })
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSessao(session)
-    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
+    return () => subscription.unsubscribe()
   }, [])
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      A carregar...
+    <div className="flex items-center justify-center h-screen bg-orange-50">
+      <div className="text-center">
+        <div className="text-4xl mb-4">🐾</div>
+        <div className="text-orange-600 font-semibold">A carregar...</div>
+      </div>
     </div>
   )
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={!sessao ? <Login /> : <Navigate to="/mapa" />} />
-        <Route path="/registo" element={!sessao ? <Registo /> : <Navigate to="/mapa" />} />
-        <Route path="/mapa" element={sessao ? <Mapa /> : <Navigate to="/login" />} />
-        <Route path="/registar-animal" element={sessao ? <RegistarAnimal /> : <Navigate to="/login" />} />
-        <Route path="/animais" element={<Animais />} />
-        <Route path="/identificar" element={<IdentificarAnimal />} />
-      </Routes>
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <Navbar session={session} />
+        <CookieBanner />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/animais" element={<Animais />} />
+          <Route path="/mapa" element={<Mapa />} />
+          <Route path="/identificar" element={<IdentificarAnimal />} />
+          <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
+          <Route path="/registo" element={!session ? <Registo /> : <Navigate to="/" />} />
+          <Route path="/registar-animal" element={session ? <RegistarAnimal /> : <Navigate to="/login" />} />
+          <Route path="/ocorrencias" element={session ? <Ocorrencias /> : <Navigate to="/login" />} />
+          <Route path="/perfil" element={session ? <Perfil /> : <Navigate to="/login" />} />
+          <Route path="/definicoes" element={session ? <Definicoes /> : <Navigate to="/login" />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   )
 }

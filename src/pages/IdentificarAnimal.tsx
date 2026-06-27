@@ -1,252 +1,260 @@
-import { useState, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import type { Animal } from '../types'
 
-interface Animal {
-    id: string
-    nome: string
+interface ResultadoIA {
     especie: string
-    raca: string
-    cor: string
-    descricao: string
-    foto_url: string
-    created_at: string
+    raca_estimada: string
+    cor_principal: string
+    cores_secundarias: string[]
+    tamanho: string
+    caracteristicas_distintivas: string[]
+    confianca: number
 }
 
 export default function IdentificarAnimal() {
     const [foto, setFoto] = useState<File | null>(null)
     const [fotoPreview, setFotoPreview] = useState<string | null>(null)
-    const [loading, setLoading] = useState(false)
-    const [resultado, setResultado] = useState<any>(null)
-    const [matches, setMatches] = useState<Animal[]>([])
-    const [animaisDB, setAnimaisDB] = useState<Animal[]>([])
-
-    useEffect(() => {
-        supabase
-            .from('animais')
-            .select('*')
-            .eq('estado', 'desaparecido')
-            .then(({ data }) => { if (data) setAnimaisDB(data) })
-    }, [])
+    const [analisando, setAnalisando] = useState(false)
+    const [resultado, setResultado] = useState<ResultadoIA | null>(null)
+    const [sugestoes, setSugestoes] = useState<Array<{ animal: Animal; score: number }>>([])
+    const [erro, setErro] = useState('')
+    const fileRef = useRef<HTMLInputElement>(null)
+    const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
     const handleFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
-        if (file) {
-            setFoto(file)
-            setFotoPreview(URL.createObjectURL(file))
-            setResultado(null)
-            setMatches([])
-        }
+        if (!file) return
+        setFoto(file)
+        setFotoPreview(URL.createObjectURL(file))
+        setResultado(null)
+        setSugestoes([])
+        setErro('')
     }
 
-    const toBase64 = (file: File): Promise<string> => {
-        return new Promise((resolve) => {
+    const fileToBase64 = (file: File): Promise<string> =>
+        new Promise((resolve, reject) => {
             const reader = new FileReader()
-            reader.onload = () => {
-                const base64 = (reader.result as string).split(',')[1]
-                resolve(base64)
-            }
+            reader.onload = () => resolve((reader.result as string).split(',')[1])
+            reader.onerror = reject
             reader.readAsDataURL(file)
         })
+
+    const calcularScore = (res: ResultadoIA, animal: Animal): number => {
+        let score = 0
+        const esp = res.especie?.toLowerCase() || ''
+        if ((esp.includes('cão') || esp.includes('cao') || esp.includes('dog')) && animal.especie === 'cao') score += 40
+        else if ((esp.includes('gato') || esp.includes('cat')) && animal.especie === 'gato') score += 40
+        const corAnimal = animal.cor.toLowerCase()
+        if (res.cor_principal?.toLowerCase().includes(corAnimal) || corAnimal.includes(res.cor_principal?.toLowerCase() || '')) score += 25
+        if (res.raca_estimada && animal.raca && animal.raca.toLowerCase().includes(res.raca_estimada.toLowerCase().split(' ')[0])) score += 20
+        if (res.tamanho && animal.descricao?.toLowerCase().includes(res.tamanho.toLowerCase())) score += 15
+        return Math.min(score, 100)
     }
 
     const analisar = async () => {
         if (!foto) return
-        setLoading(true)
+        setAnalisando(true)
+        setErro('')
         setResultado(null)
-        setMatches([])
+        setSugestoes([])
 
         try {
-            const base64 = await toBase64(foto)
-            const apiKey = 'AIzaSyAEE_HnpmlF5UD1W0EbuIIHwO1nxmRtRQs'
+            let resultadoIA: ResultadoIA
 
-            const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                {
-                                    text: `Analisa esta foto de um animal e responde APENAS com um objeto JSON sem markdown, sem backticks, sem explicações. O JSON deve ter exatamente esta estrutura:
-{
-  "especie": "cão" ou "gato" ou "outro",
-  "cor_principal": "cor predominante em portugues",
-  "cores": ["lista", "de", "cores"],
-  "raca_estimada": "raca ou desconhecida",
-  "tamanho": "pequeno" ou "medio" ou "grande",
-  "caracteristicas": ["lista de marcas ou caracteristicas distintivas"]
-}`
-                                },
-                                {
-                                    inline_data: {
-                                        mime_type: foto.type,
-                                        data: base64
-                                    }
-                                }
-                            ]
-                        }]
-                    })
+            if (GEMINI_KEY) {
+                const base64 = await fileToBase64(foto)
+                const prompt = `Analisa esta imagem de um animal. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. O JSON deve ter exatamente esta estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}. Se não conseguires identificar, retorna {"erro": "nao_identificado"}.`
+
+                const response = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+                    {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: prompt },
+                                    { inline_data: { mime_type: foto.type, data: base64 } }
+                                ]
+                            }]
+                        })
+                    }
+                )
+                const data = await response.json()
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
+                const clean = text.replace(/```json|```/g, '').trim()
+                resultadoIA = JSON.parse(clean)
+            } else {
+                // Versão demonstração
+                await new Promise(r => setTimeout(r, 1500))
+                resultadoIA = {
+                    especie: 'Cão',
+                    raca_estimada: 'Labrador Retriever',
+                    cor_principal: 'Castanho dourado',
+                    cores_secundarias: ['creme'],
+                    tamanho: 'grande',
+                    caracteristicas_distintivas: ['pelo curto', 'orelhas caídas', 'focinho largo'],
+                    confianca: 0.87
                 }
-            )
+            }
 
-            const data = await response.json()
-            const texto = data.candidates?.[0]?.content?.parts?.[0]?.text
+            if ((resultadoIA as any).erro) {
+                setErro('Não foi possível identificar um animal nesta fotografia. Tenta com uma imagem mais clara.')
+                setAnalisando(false)
+                return
+            }
 
-            console.log('resposta da API:', JSON.stringify(data))
-            if (!texto) throw new Error('Sem resposta da IA')
+            setResultado(resultadoIA)
 
-            const analise = JSON.parse(texto.trim())
-            setResultado(analise)
+            // Buscar animais e calcular scores
+            const { data: animais } = await supabase
+                .from('animais')
+                .select('*')
+                .neq('estado', 'encontrado')
+                .order('created_at', { ascending: false })
 
-            // Compara com animais da base de dados
-            const candidatos = animaisDB.filter(animal => {
-                let score = 0
-                if (animal.especie?.toLowerCase() === analise.especie?.toLowerCase()) score += 3
-                if (analise.cores?.some((c: string) => animal.cor?.toLowerCase().includes(c.toLowerCase()))) score += 2
-                if (analise.cor_principal && animal.cor?.toLowerCase().includes(analise.cor_principal.toLowerCase())) score += 2
-                if (analise.raca_estimada && analise.raca_estimada !== 'desconhecida' && animal.raca?.toLowerCase().includes(analise.raca_estimada.toLowerCase())) score += 3
-                return score >= 2
-            })
-
-            setMatches(candidatos)
-        } catch (err) {
-            console.error(err)
-            setResultado({ erro: 'Não foi possível analisar a imagem. Tenta novamente.' })
+            if (animais) {
+                const scored = animais
+                    .map(animal => ({ animal, score: calcularScore(resultadoIA, animal) }))
+                    .filter(s => s.score >= 20)
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 5)
+                setSugestoes(scored)
+            }
+        } catch (e) {
+            setErro('Erro ao analisar a fotografia. Tenta novamente.')
         }
-
-        setLoading(false)
+        setAnalisando(false)
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-
-            <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-                <a href="/" className="text-xl font-bold text-orange-500">PetGuardian</a>
-                <div className="flex gap-4 items-center">
-                    <a href="/animais" className="text-gray-500 text-sm hover:text-orange-500">Animais</a>
-                    <a href="/mapa" className="text-gray-500 text-sm hover:text-orange-500">Mapa</a>
-                    <a href="/login" className="text-gray-500 text-sm hover:text-orange-500">Entrar</a>
-                </div>
-            </nav>
-
-            <div className="bg-orange-500 px-6 py-10 text-white text-center">
-                <h1 className="text-3xl font-bold mb-2">Encontraste um animal?</h1>
-                <p className="text-orange-100">Carrega uma foto e a IA verifica se corresponde a algum animal desaparecido</p>
-            </div>
-
-            <div className="max-w-2xl mx-auto px-6 py-10">
-
-                <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
-                    <h2 className="font-bold text-gray-800 mb-4">1. Carrega uma foto do animal encontrado</h2>
-
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFoto}
-                        className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400 mb-4"
-                    />
-
-                    {fotoPreview && (
-                        <img
-                            src={fotoPreview}
-                            alt="Animal encontrado"
-                            className="w-full h-64 object-cover rounded-xl mb-4"
-                        />
-                    )}
-
-                    <button
-                        onClick={analisar}
-                        disabled={!foto || loading}
-                        className="w-full bg-orange-500 text-white py-3 rounded-xl font-medium hover:bg-orange-600 transition disabled:opacity-50"
-                    >
-                        {loading ? 'A analisar com IA...' : 'Analisar foto'}
-                    </button>
+        <div className="min-h-screen bg-stone-50">
+            <div className="max-w-5xl mx-auto px-4 py-10">
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Identificação visual por IA</h1>
+                    <p className="text-stone-500 mt-1">Carrega a foto de um animal encontrado — a IA compara com os animais desaparecidos</p>
                 </div>
 
-                {resultado && !resultado.erro && (
-                    <div className="bg-white rounded-2xl shadow-sm border p-6 mb-6">
-                        <h2 className="font-bold text-gray-800 mb-4">2. Resultado da análise</h2>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-400 mb-1">Espécie</p>
-                                <p className="font-medium text-gray-800 capitalize">{resultado.especie}</p>
+                {!GEMINI_KEY && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-3 text-amber-700 text-sm mb-6">
+                        ℹ️ <strong>Modo demonstração</strong> — adiciona VITE_GEMINI_API_KEY ao .env para análise real com Google Gemini
+                    </div>
+                )}
+
+                <div className="grid lg:grid-cols-2 gap-6">
+                    {/* Upload e análise */}
+                    <div className="flex flex-col gap-5">
+                        <div className="bg-white rounded-2xl border border-stone-200 p-6">
+                            <h2 className="font-bold text-stone-900 mb-4">📷 1. Foto do animal encontrado</h2>
+                            <div
+                                onClick={() => fileRef.current?.click()}
+                                className="border-2 border-dashed border-stone-300 rounded-2xl p-8 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors mb-4"
+                            >
+                                {fotoPreview ? (
+                                    <img src={fotoPreview} alt="Preview" className="max-h-48 mx-auto rounded-xl object-cover" />
+                                ) : (
+                                    <>
+                                        <div className="text-4xl mb-3">📷</div>
+                                        <p className="text-stone-500 text-sm font-medium">Clica para adicionar uma foto</p>
+                                        <p className="text-stone-400 text-xs mt-1">JPG, PNG · foto clara de frente</p>
+                                    </>
+                                )}
                             </div>
-                            <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-400 mb-1">Raça estimada</p>
-                                <p className="font-medium text-gray-800 capitalize">{resultado.raca_estimada}</p>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-400 mb-1">Cor principal</p>
-                                <p className="font-medium text-gray-800 capitalize">{resultado.cor_principal}</p>
-                            </div>
-                            <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-400 mb-1">Tamanho</p>
-                                <p className="font-medium text-gray-800 capitalize">{resultado.tamanho}</p>
-                            </div>
+                            <input ref={fileRef} type="file" accept="image/*" onChange={handleFoto} className="hidden" />
+                            <button
+                                onClick={analisar}
+                                disabled={!foto || analisando}
+                                className="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors disabled:opacity-60"
+                            >
+                                {analisando ? '🤖 A analisar...' : '🤖 Analisar com IA'}
+                            </button>
                         </div>
-                        {resultado.caracteristicas?.length > 0 && (
-                            <div className="mt-3 bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-400 mb-2">Características identificadas</p>
+
+                        {resultado && (
+                            <div className="bg-white rounded-2xl border border-stone-200 p-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <h2 className="font-bold text-stone-900">🤖 2. Resultado da análise</h2>
+                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">
+                                        {GEMINI_KEY ? 'Gemini Flash' : 'Modo demo'}
+                                    </span>
+                                </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {resultado.caracteristicas.map((c: string, i: number) => (
-                                        <span key={i} className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full">{c}</span>
+                                    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold">{resultado.especie}</span>
+                                    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold">{resultado.raca_estimada}</span>
+                                    <span className="bg-stone-100 text-stone-700 px-3 py-1 rounded-full text-sm">{resultado.cor_principal}</span>
+                                    {resultado.cores_secundarias?.map(c => (
+                                        <span key={c} className="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm">{c}</span>
+                                    ))}
+                                    <span className="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm">Porte {resultado.tamanho}</span>
+                                    {resultado.caracteristicas_distintivas?.map(c => (
+                                        <span key={c} className="bg-stone-50 text-stone-500 px-3 py-1 rounded-full text-sm border border-stone-200">{c}</span>
                                     ))}
                                 </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {resultado?.erro && (
-                    <div className="bg-red-50 border border-red-200 rounded-2xl p-6 mb-6">
-                        <p className="text-red-600">{resultado.erro}</p>
-                    </div>
-                )}
-
-                {resultado && !resultado.erro && (
-                    <div className="bg-white rounded-2xl shadow-sm border p-6">
-                        <h2 className="font-bold text-gray-800 mb-2">3. Possíveis correspondências</h2>
-                        <p className="text-gray-400 text-sm mb-4">
-                            {matches.length > 0
-                                ? `Encontrámos ${matches.length} animal${matches.length !== 1 ? 'is' : ''} com características semelhantes`
-                                : 'Não encontrámos correspondências na base de dados. O animal pode não ter sido registado ainda.'}
-                        </p>
-
-                        {matches.length > 0 && (
-                            <div className="flex flex-col gap-4">
-                                {matches.map(animal => (
-                                    <div key={animal.id} className="flex gap-4 border rounded-xl p-4 hover:bg-orange-50 transition">
-                                        {animal.foto_url ? (
-                                            <img src={animal.foto_url} alt={animal.nome} className="w-20 h-20 object-cover rounded-lg flex-shrink-0" />
-                                        ) : (
-                                            <div className="w-20 h-20 bg-orange-50 rounded-lg flex items-center justify-center text-3xl flex-shrink-0">🐾</div>
-                                        )}
-                                        <div className="flex-1">
-                                            <h3 className="font-bold text-gray-800">{animal.nome}</h3>
-                                            <p className="text-gray-500 text-sm">{animal.especie}{animal.raca ? ` · ${animal.raca}` : ''}</p>
-                                            <p className="text-gray-400 text-sm">Cor: {animal.cor}</p>
-                                            {animal.descricao && <p className="text-gray-400 text-xs mt-1 line-clamp-2">{animal.descricao}</p>}
-                                        </div>
+                                {resultado.confianca && (
+                                    <div className="mt-3 text-xs text-stone-400">
+                                        Confiança da análise: {Math.round(resultado.confianca * 100)}%
                                     </div>
-                                ))}
-                                <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mt-2">
-                                    <p className="text-orange-700 text-sm font-medium">Reconheces este animal?</p>
-                                    <p className="text-orange-600 text-xs mt-1">Cria uma conta para submeter um avistamento e notificar o dono.</p>
-                                    <a href="/registo" className="inline-block mt-3 bg-orange-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-orange-600 transition">
-                                        Criar conta e reportar
-                                    </a>
+                                )}
+                                <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-700 text-xs">
+                                    ⚠️ <strong>Sugestão de apoio — não é confirmação.</strong> Confirma sempre presencialmente antes de contactar o dono.
                                 </div>
                             </div>
                         )}
-                    </div>
-                )}
-            </div>
 
-            <footer className="bg-gray-800 text-gray-400 px-6 py-8 text-center text-sm mt-10">
-                <p className="text-white font-bold mb-1">PetGuardian</p>
-                <p>Desenvolvido por Diana Soares Martins - Licenciatura em GSC - 2026</p>
-            </footer>
+                        {erro && (
+                            <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 text-red-700 text-sm">{erro}</div>
+                        )}
+                    </div>
+
+                    {/* Sugestões */}
+                    <div className="bg-white rounded-2xl border border-stone-200 p-6">
+                        <h2 className="font-bold text-stone-900 mb-1">🔎 3. Possíveis correspondências</h2>
+                        {resultado ? (
+                            sugestoes.length > 0 ? (
+                                <>
+                                    <p className="text-xs text-stone-400 mb-4">Ordenadas por grau de semelhança · {sugestoes.length} resultado{sugestoes.length > 1 ? 's' : ''}</p>
+                                    <div className="flex flex-col gap-3">
+                                        {sugestoes.map(({ animal, score }, i) => (
+                                            <div key={animal.id} className={`border-2 rounded-2xl p-4 flex gap-3 transition-all ${i === 0 ? 'border-orange-500 bg-orange-50' : 'border-stone-200'}`}>
+                                                <div className="w-16 h-16 rounded-xl bg-orange-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
+                                                    {animal.foto_url
+                                                        ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover rounded-xl" />
+                                                        : (animal.especie === 'gato' ? '🐈' : '🐕')}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2 mb-1">
+                                                        <span className="font-bold text-stone-900 text-sm">{animal.nome}</span>
+                                                        <span className={`text-xs font-bold ${score >= 70 ? 'text-orange-600' : 'text-stone-500'}`}>{score}%</span>
+                                                    </div>
+                                                    <div className="text-xs text-stone-400 mb-2">
+                                                        {animal.especie === 'cao' ? 'Cão' : 'Gato'}{animal.raca && ` · ${animal.raca}`} · {animal.cor}
+                                                    </div>
+                                                    {/* Score bar */}
+                                                    <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${score}%` }} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="text-center py-12 text-stone-400">
+                                    <div className="text-4xl mb-3">🔍</div>
+                                    <p className="text-sm">Nenhuma correspondência encontrada na base de dados.</p>
+                                    <p className="text-xs mt-1">O animal pode não estar registado ainda.</p>
+                                </div>
+                            )
+                        ) : (
+                            <div className="text-center py-16 text-stone-300">
+                                <div className="text-5xl mb-4">🤖</div>
+                                <p className="text-sm text-stone-400">Carrega uma foto e clica em "Analisar com IA"<br />para ver as possíveis correspondências</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
