@@ -38,7 +38,6 @@ export default function AnimalPerfil() {
     const [mensagens, setMensagens] = useState<Mensagem[]>([])
     const [novaMensagem, setNovaMensagem] = useState('')
     const [session, setSession] = useState<any>(null)
-    const [nomeUtilizador, setNomeUtilizador] = useState('')
     const [loading, setLoading] = useState(true)
     const [enviando, setEnviando] = useState(false)
     const [tab, setTab] = useState<Tab>('perfil')
@@ -48,10 +47,6 @@ export default function AnimalPerfil() {
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session)
-            if (session?.user) {
-                supabase.from('profiles').select('nome').eq('id', session.user.id).single()
-                    .then(({ data }) => { if (data) setNomeUtilizador(data.nome) })
-            }
         })
         fetchAnimal()
     }, [id])
@@ -149,7 +144,6 @@ export default function AnimalPerfil() {
 
                 {/* Header do animal */}
                 <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden mb-6">
-                    {/* Foto banner */}
                     <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center overflow-hidden">
                         {animal.foto_url
                             ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
@@ -203,9 +197,7 @@ export default function AnimalPerfil() {
                         { id: 'chat', label: '💬 Chat com o dono' },
                     ].map(t => (
                         <button key={t.id} onClick={() => setTab(t.id as Tab)}
-                            className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tab === t.id
-                                    ? 'border-orange-600 text-orange-600'
-                                    : 'border-transparent text-stone-500 hover:text-stone-800'
+                            className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tab === t.id ? 'border-orange-600 text-orange-600' : 'border-transparent text-stone-500 hover:text-stone-800'
                                 }`}>
                             {t.label}
                         </button>
@@ -215,7 +207,6 @@ export default function AnimalPerfil() {
                 {/* TAB: PERFIL */}
                 {tab === 'perfil' && (
                     <div className="grid md:grid-cols-2 gap-6">
-                        {/* Info do animal */}
                         <div className="bg-white rounded-2xl border border-stone-200 p-5">
                             <h2 className="font-bold text-stone-900 mb-4">🐾 Informações do animal</h2>
                             <div className="flex flex-col gap-3">
@@ -236,14 +227,13 @@ export default function AnimalPerfil() {
                             </div>
                         </div>
 
-                        {/* Info do dono */}
                         <div className="flex flex-col gap-4">
                             <div className="bg-white rounded-2xl border border-stone-200 p-5">
                                 <h2 className="font-bold text-stone-900 mb-4">👤 Dono do animal</h2>
                                 {dono ? (
                                     <div className="flex items-center gap-4">
                                         <div className="w-14 h-14 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                                            {dono.nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()}
+                                            {dono.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()}
                                         </div>
                                         <div className="flex-1">
                                             <div className="font-bold text-stone-900">{dono.nome}</div>
@@ -266,7 +256,6 @@ export default function AnimalPerfil() {
                                 )}
                             </div>
 
-                            {/* Localização */}
                             {animal.latitude && animal.longitude && (
                                 <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                                     <div className="px-4 py-3 border-b border-stone-100">
@@ -300,12 +289,10 @@ export default function AnimalPerfil() {
                             </div>
                         ) : (
                             <>
-                                {/* Mapa de trajeto */}
                                 {avistamentos.some(a => a.latitude && a.longitude) && (
                                     <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                                         <div className="px-5 py-4 border-b border-stone-100">
                                             <h2 className="font-bold text-stone-900">🗺 Trajeto dos avistamentos</h2>
-                                            <p className="text-xs text-stone-400 mt-0.5">Percurso aparente do animal ao longo do tempo</p>
                                         </div>
                                         <div className="h-64">
                                             <MapContainer
@@ -319,7 +306,7 @@ export default function AnimalPerfil() {
                                                 {animal.latitude && animal.longitude && (
                                                     <Marker position={[animal.latitude, animal.longitude]} />
                                                 )}
-                                                {avistamentos.filter(a => a.latitude && a.longitude).map((av, i) => (
+                                                {avistamentos.filter(a => a.latitude && a.longitude).map(av => (
                                                     <Marker key={av.id} position={[av.latitude, av.longitude]} />
                                                 ))}
                                                 {polylinePoints.length > 1 && (
@@ -333,7 +320,6 @@ export default function AnimalPerfil() {
                                     </div>
                                 )}
 
-                                {/* Lista de avistamentos */}
                                 <div className="flex flex-col gap-4">
                                     {avistamentos.map((av, i) => (
                                         <div key={av.id} className="bg-white rounded-2xl border border-stone-200 p-5">
@@ -346,17 +332,10 @@ export default function AnimalPerfil() {
                                                         <div className="font-semibold text-stone-900 text-sm">Avistamento #{i + 1}</div>
                                                         <div className="text-xs text-stone-400">{new Date(av.created_at).toLocaleString('pt-PT')}</div>
                                                     </div>
-                                                    {av.descricao && (
-                                                        <p className="text-sm text-stone-600 mb-3 leading-relaxed">{av.descricao}</p>
-                                                    )}
-                                                    {av.foto_url && (
-                                                        <img src={av.foto_url} alt={`Avistamento ${i + 1}`}
-                                                            className="h-40 rounded-xl object-cover mb-3" />
-                                                    )}
+                                                    {av.descricao && <p className="text-sm text-stone-600 mb-3 leading-relaxed">{av.descricao}</p>}
+                                                    {av.foto_url && <img src={av.foto_url} alt={`Avistamento ${i + 1}`} className="h-40 rounded-xl object-cover mb-3" />}
                                                     {av.latitude && av.longitude && (
-                                                        <div className="text-xs text-stone-400">
-                                                            📍 {av.latitude.toFixed(4)}°N, {av.longitude.toFixed(4)}°W
-                                                        </div>
+                                                        <div className="text-xs text-stone-400">📍 {av.latitude.toFixed(4)}°N, {av.longitude.toFixed(4)}°W</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -382,12 +361,9 @@ export default function AnimalPerfil() {
                     <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                         <div className="px-5 py-4 border-b border-stone-100">
                             <h2 className="font-bold text-stone-900">💬 Chat sobre {animal.nome}</h2>
-                            <p className="text-xs text-stone-400 mt-0.5">
-                                Fala directamente com o dono ou com outros voluntários
-                            </p>
+                            <p className="text-xs text-stone-400 mt-0.5">Fala directamente com o dono ou com outros voluntários</p>
                         </div>
 
-                        {/* Mensagens */}
                         <div className="h-96 overflow-y-auto p-5 flex flex-col gap-3 bg-stone-50">
                             {mensagens.length === 0 ? (
                                 <div className="flex-1 flex items-center justify-center text-stone-400 text-sm">
@@ -405,16 +381,10 @@ export default function AnimalPerfil() {
                                             </div>
                                             <div className={`max-w-xs ${isMinha ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                                                 <div className={`flex items-center gap-2 ${isMinha ? 'flex-row-reverse' : ''}`}>
-                                                    <span className="text-xs font-semibold text-stone-600">
-                                                        {msg.profiles?.nome || 'Utilizador'}
-                                                    </span>
-                                                    {isDonoAnimal && (
-                                                        <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-medium">Dono</span>
-                                                    )}
+                                                    <span className="text-xs font-semibold text-stone-600">{msg.profiles?.nome || 'Utilizador'}</span>
+                                                    {isDonoAnimal && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-medium">Dono</span>}
                                                 </div>
-                                                <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMinha
-                                                        ? 'bg-orange-600 text-white rounded-tr-sm'
-                                                        : 'bg-white text-stone-800 border border-stone-200 rounded-tl-sm'
+                                                <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMinha ? 'bg-orange-600 text-white rounded-tr-sm' : 'bg-white text-stone-800 border border-stone-200 rounded-tl-sm'
                                                     }`}>
                                                     {msg.conteudo}
                                                 </div>
@@ -429,7 +399,6 @@ export default function AnimalPerfil() {
                             <div ref={chatEndRef} />
                         </div>
 
-                        {/* Input de mensagem */}
                         <div className="p-4 border-t border-stone-200">
                             {session ? (
                                 <form onSubmit={enviarMensagem} className="flex gap-3">
@@ -440,11 +409,8 @@ export default function AnimalPerfil() {
                                         placeholder="Escreve uma mensagem..."
                                         className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-2xl focus:border-orange-500 focus:outline-none text-sm"
                                     />
-                                    <button
-                                        type="submit"
-                                        disabled={enviando || !novaMensagem.trim()}
-                                        className="bg-orange-600 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-orange-700 disabled:opacity-60 transition-colors"
-                                    >
+                                    <button type="submit" disabled={enviando || !novaMensagem.trim()}
+                                        className="bg-orange-600 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-orange-700 disabled:opacity-60 transition-colors">
                                         {enviando ? '...' : '→'}
                                     </button>
                                 </form>
