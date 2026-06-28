@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useToast } from '../components/Toast'
 import type { Animal } from '../types'
 
 interface ResultadoIA {
@@ -20,6 +22,8 @@ export default function IdentificarAnimal() {
     const [sugestoes, setSugestoes] = useState<Array<{ animal: Animal; score: number }>>([])
     const [erro, setErro] = useState('')
     const fileRef = useRef<HTMLInputElement>(null)
+    const navigate = useNavigate()
+    const { mostrarToast } = useToast()
     const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
     const handleFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,7 +69,6 @@ export default function IdentificarAnimal() {
             if (GEMINI_KEY) {
                 const base64 = await fileToBase64(foto)
                 const prompt = `Analisa esta imagem de um animal. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. O JSON deve ter exatamente esta estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}. Se não conseguires identificar, retorna {"erro": "nao_identificado"}.`
-
                 const response = await fetch(
                     `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
                     {
@@ -86,15 +89,14 @@ export default function IdentificarAnimal() {
                 const clean = text.replace(/```json|```/g, '').trim()
                 resultadoIA = JSON.parse(clean)
             } else {
-                // Versão demonstração
                 await new Promise(r => setTimeout(r, 1500))
                 resultadoIA = {
                     especie: 'Cão',
-                    raca_estimada: 'Labrador Retriever',
-                    cor_principal: 'Castanho dourado',
-                    cores_secundarias: ['creme'],
-                    tamanho: 'grande',
-                    caracteristicas_distintivas: ['pelo curto', 'orelhas caídas', 'focinho largo'],
+                    raca_estimada: 'Corgi',
+                    cor_principal: 'Castanho',
+                    cores_secundarias: ['branco'],
+                    tamanho: 'medio',
+                    caracteristicas_distintivas: ['pelo curto', 'orelhas pontiagudas', 'focinho comprido'],
                     confianca: 0.87
                 }
             }
@@ -107,7 +109,6 @@ export default function IdentificarAnimal() {
 
             setResultado(resultadoIA)
 
-            // Buscar animais e calcular scores
             const { data: animais } = await supabase
                 .from('animais')
                 .select('*')
@@ -122,17 +123,42 @@ export default function IdentificarAnimal() {
                     .slice(0, 5)
                 setSugestoes(scored)
             }
-        } catch (e) {
+
+            mostrarToast('Análise concluída!', 'sucesso')
+        } catch {
             setErro('Erro ao analisar a fotografia. Tenta novamente.')
         }
         setAnalisando(false)
+    }
+
+    const corScore = (score: number) => {
+        if (score >= 70) return 'text-green-600'
+        if (score >= 40) return 'text-amber-600'
+        return 'text-stone-400'
+    }
+
+    const labelScore = (score: number) => {
+        if (score >= 70) return { label: 'Correspondência provável', cor: 'bg-green-100 text-green-700 border-green-200' }
+        if (score >= 40) return { label: 'Correspondência possível', cor: 'bg-amber-100 text-amber-700 border-amber-200' }
+        return { label: 'Correspondência baixa', cor: 'bg-stone-100 text-stone-500 border-stone-200' }
+    }
+
+    const handleContactarDono = (animalId: string, nome: string) => {
+        mostrarToast(`A abrir chat de ${nome}...`, 'info')
+        navigate(`/animais/${animalId}?tab=chat`)
+    }
+
+    const handleReportarAvistamento = (animalId: string) => {
+        navigate(`/avistamento/${animalId}`)
     }
 
     return (
         <div className="min-h-screen bg-stone-50">
             <div className="max-w-5xl mx-auto px-4 py-10">
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Identificação visual por IA</h1>
+                    <h1 className="text-3xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>
+                        Identificação visual por IA
+                    </h1>
                     <p className="text-stone-500 mt-1">Carrega a foto de um animal encontrado — a IA compara com os animais desaparecidos</p>
                 </div>
 
@@ -143,6 +169,7 @@ export default function IdentificarAnimal() {
                 )}
 
                 <div className="grid lg:grid-cols-2 gap-6">
+
                     {/* Upload e análise */}
                     <div className="flex flex-col gap-5">
                         <div className="bg-white rounded-2xl border border-stone-200 p-6">
@@ -171,6 +198,7 @@ export default function IdentificarAnimal() {
                             </button>
                         </div>
 
+                        {/* Resultado da análise */}
                         {resultado && (
                             <div className="bg-white rounded-2xl border border-stone-200 p-6">
                                 <div className="flex items-center gap-2 mb-4">
@@ -179,7 +207,7 @@ export default function IdentificarAnimal() {
                                         {GEMINI_KEY ? 'Gemini Flash' : 'Modo demo'}
                                     </span>
                                 </div>
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-2 mb-3">
                                     <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold">{resultado.especie}</span>
                                     <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold">{resultado.raca_estimada}</span>
                                     <span className="bg-stone-100 text-stone-700 px-3 py-1 rounded-full text-sm">{resultado.cor_principal}</span>
@@ -192,9 +220,7 @@ export default function IdentificarAnimal() {
                                     ))}
                                 </div>
                                 {resultado.confianca && (
-                                    <div className="mt-3 text-xs text-stone-400">
-                                        Confiança da análise: {Math.round(resultado.confianca * 100)}%
-                                    </div>
+                                    <div className="text-xs text-stone-400">Confiança da análise: {Math.round(resultado.confianca * 100)}%</div>
                                 )}
                                 <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-700 text-xs">
                                     ⚠️ <strong>Sugestão de apoio — não é confirmação.</strong> Confirma sempre presencialmente antes de contactar o dono.
@@ -207,43 +233,106 @@ export default function IdentificarAnimal() {
                         )}
                     </div>
 
-                    {/* Sugestões */}
+                    {/* Sugestões com follow-up */}
                     <div className="bg-white rounded-2xl border border-stone-200 p-6">
                         <h2 className="font-bold text-stone-900 mb-1">🔎 3. Possíveis correspondências</h2>
                         {resultado ? (
                             sugestoes.length > 0 ? (
                                 <>
-                                    <p className="text-xs text-stone-400 mb-4">Ordenadas por grau de semelhança · {sugestoes.length} resultado{sugestoes.length > 1 ? 's' : ''}</p>
-                                    <div className="flex flex-col gap-3">
-                                        {sugestoes.map(({ animal, score }, i) => (
-                                            <div key={animal.id} className={`border-2 rounded-2xl p-4 flex gap-3 transition-all ${i === 0 ? 'border-orange-500 bg-orange-50' : 'border-stone-200'}`}>
-                                                <div className="w-16 h-16 rounded-xl bg-orange-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
-                                                    {animal.foto_url
-                                                        ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover rounded-xl" />
-                                                        : (animal.especie === 'gato' ? '🐈' : '🐕')}
+                                    <p className="text-xs text-stone-400 mb-4">
+                                        {sugestoes.length} resultado{sugestoes.length > 1 ? 's' : ''} · ordenados por grau de semelhança
+                                    </p>
+                                    <div className="flex flex-col gap-4">
+                                        {sugestoes.map(({ animal, score }, i) => {
+                                            const { label, cor } = labelScore(score)
+                                            return (
+                                                <div key={animal.id} className={`border-2 rounded-2xl overflow-hidden transition-all ${i === 0 && score >= 60 ? 'border-orange-400' : 'border-stone-200'
+                                                    }`}>
+                                                    {/* Header do cartão */}
+                                                    <div className="p-4 flex gap-3">
+                                                        <div className="w-16 h-16 rounded-xl bg-orange-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
+                                                            {animal.foto_url
+                                                                ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover rounded-xl" />
+                                                                : (animal.especie === 'gato' ? '🐈' : '🐕')}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center justify-between gap-2 mb-1">
+                                                                <span className="font-bold text-stone-900">{animal.nome}</span>
+                                                                <span className={`text-sm font-black ${corScore(score)}`}>{score}%</span>
+                                                            </div>
+                                                            <div className="text-xs text-stone-400 mb-2">
+                                                                {animal.especie === 'cao' ? 'Cão' : 'Gato'}{animal.raca && ` · ${animal.raca}`} · {animal.cor}
+                                                            </div>
+                                                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cor}`}>
+                                                                {label}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Barra de score */}
+                                                    <div className="px-4 pb-2">
+                                                        <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                                                            <div className={`h-full rounded-full transition-all ${score >= 70 ? 'bg-green-500' : score >= 40 ? 'bg-amber-400' : 'bg-stone-300'
+                                                                }`} style={{ width: `${score}%` }} />
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Ações de follow-up */}
+                                                    <div className={`px-4 py-3 border-t flex flex-wrap gap-2 ${i === 0 && score >= 60 ? 'bg-orange-50 border-orange-200' : 'bg-stone-50 border-stone-200'
+                                                        }`}>
+                                                        {score >= 60 && (
+                                                            <div className="w-full text-xs font-semibold text-orange-700 mb-1">
+                                                                🎯 Correspondência provável — toma uma ação:
+                                                            </div>
+                                                        )}
+                                                        {score >= 30 && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleReportarAvistamento(animal.id)}
+                                                                    className="flex items-center gap-1.5 bg-orange-600 text-white px-3 py-2 rounded-xl text-xs font-semibold hover:bg-orange-700 transition-colors"
+                                                                >
+                                                                    👁 Reportar avistamento
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleContactarDono(animal.id, animal.nome)}
+                                                                    className="flex items-center gap-1.5 bg-white text-stone-700 border border-stone-300 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-stone-50 transition-colors"
+                                                                >
+                                                                    💬 Contactar dono
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        <Link
+                                                            to={`/animais/${animal.id}`}
+                                                            className="flex items-center gap-1.5 bg-white text-stone-500 border border-stone-200 px-3 py-2 rounded-xl text-xs font-semibold hover:bg-stone-50 transition-colors"
+                                                        >
+                                                            🐾 Ver perfil
+                                                        </Link>
+                                                    </div>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between gap-2 mb-1">
-                                                        <span className="font-bold text-stone-900 text-sm">{animal.nome}</span>
-                                                        <span className={`text-xs font-bold ${score >= 70 ? 'text-orange-600' : 'text-stone-500'}`}>{score}%</span>
-                                                    </div>
-                                                    <div className="text-xs text-stone-400 mb-2">
-                                                        {animal.especie === 'cao' ? 'Cão' : 'Gato'}{animal.raca && ` · ${animal.raca}`} · {animal.cor}
-                                                    </div>
-                                                    {/* Score bar */}
-                                                    <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
-                                                        <div className="h-full bg-orange-500 rounded-full transition-all" style={{ width: `${score}%` }} />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
+                                    </div>
+
+                                    {/* Nenhuma correspondência é o animal certo */}
+                                    <div className="mt-5 border-t border-stone-100 pt-4">
+                                        <p className="text-xs text-stone-400 mb-3">Nenhuma das sugestões é o animal correto?</p>
+                                        <Link to="/animais"
+                                            className="block w-full text-center border-2 border-stone-200 text-stone-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-stone-50 transition-colors">
+                                            🔍 Ver todos os animais desaparecidos
+                                        </Link>
                                     </div>
                                 </>
                             ) : (
-                                <div className="text-center py-12 text-stone-400">
+                                <div className="text-center py-10">
                                     <div className="text-4xl mb-3">🔍</div>
-                                    <p className="text-sm">Nenhuma correspondência encontrada na base de dados.</p>
-                                    <p className="text-xs mt-1">O animal pode não estar registado ainda.</p>
+                                    <p className="text-stone-500 text-sm mb-2">Nenhuma correspondência encontrada na base de dados.</p>
+                                    <p className="text-stone-400 text-xs mb-5">O animal pode não estar registado ainda.</p>
+                                    <div className="flex flex-col gap-2">
+                                        <Link to="/animais"
+                                            className="block w-full text-center bg-orange-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors">
+                                            Ver todos os animais desaparecidos
+                                        </Link>
+                                    </div>
                                 </div>
                             )
                         ) : (

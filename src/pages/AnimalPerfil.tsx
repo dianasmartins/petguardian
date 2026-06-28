@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
@@ -58,6 +58,7 @@ type Tab = 'perfil' | 'avistamentos' | 'chat'
 
 export default function AnimalPerfil() {
     const { id } = useParams<{ id: string }>()
+    const [searchParams] = useSearchParams()
     const [animal, setAnimal] = useState<Animal | null>(null)
     const [dono, setDono] = useState<Dono | null>(null)
     const [avistamentos, setAvistamentos] = useState<Avistamento[]>([])
@@ -73,6 +74,8 @@ export default function AnimalPerfil() {
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
         fetchAnimal()
+        const tabParam = searchParams.get('tab')
+        if (tabParam === 'chat') setTab('chat')
     }, [id])
 
     useEffect(() => {
