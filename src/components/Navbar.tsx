@@ -5,6 +5,8 @@ import { supabase } from '../lib/supabase'
 
 interface Props { session: Session | null }
 
+const ADMIN_EMAIL = 'dmartins94@gmail.com'
+
 export default function Navbar({ session }: Props) {
     const [menuOpen, setMenuOpen] = useState(false)
     const [profileOpen, setProfileOpen] = useState(false)
@@ -13,7 +15,6 @@ export default function Navbar({ session }: Props) {
     const location = useLocation()
     const profileRef = useRef<HTMLDivElement>(null)
 
-    // Busca o nome do utilizador
     useEffect(() => {
         if (!session?.user) return
         const fetchNome = async () => {
@@ -27,7 +28,6 @@ export default function Navbar({ session }: Props) {
         fetchNome()
     }, [session])
 
-    // Fecha o dropdown ao clicar fora
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
@@ -53,6 +53,8 @@ export default function Navbar({ session }: Props) {
     const initials = nomeUtilizador
         ? nomeUtilizador.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
         : session?.user?.email?.[0]?.toUpperCase() || '?'
+
+    const isAdmin = session?.user?.email === ADMIN_EMAIL
 
     return (
         <nav className="sticky top-0 z-50 bg-white border-b border-stone-200 shadow-sm">
@@ -120,6 +122,14 @@ export default function Navbar({ session }: Props) {
                                                 className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
                                                 <span>⚙️</span> Definições
                                             </Link>
+
+                                            {/* Admin link */}
+                                            {isAdmin && (
+                                                <Link to="/admin" onClick={() => setProfileOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-semibold">
+                                                    <span>⚡</span> Painel Admin
+                                                </Link>
+                                            )}
                                         </div>
 
                                         <div className="border-t border-stone-100 py-1">
@@ -193,6 +203,12 @@ export default function Navbar({ session }: Props) {
                                 className={`px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${isActive('/definicoes')}`}>
                                 ⚙️ Definições
                             </Link>
+                            {isAdmin && (
+                                <Link to="/admin" onClick={() => setMenuOpen(false)}
+                                    className="px-3 py-2.5 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                                    ⚡ Painel Admin
+                                </Link>
+                            )}
                             <div className="border-t border-stone-100 my-1" />
                             <Link to="/registar-animal" onClick={() => setMenuOpen(false)}
                                 className="bg-orange-600 text-white px-3 py-3 rounded-xl text-sm font-semibold text-center">
