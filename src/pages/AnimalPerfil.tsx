@@ -158,39 +158,66 @@ export default function AnimalPerfil() {
                 </div>
 
                 {/* Header */}
-                <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden mb-6">
-                    <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center overflow-hidden">
-                        {animal.foto_url
-                            ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
-                            : <span className="text-8xl">{animal.especie === 'gato' ? '🐈' : '🐕'}</span>
-                        }
-                    </div>
-                    <div className="p-6">
-                        <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="bg-white rounded-3xl border border-stone-200 p-6 mb-6">
+                    <div className="flex flex-col md:flex-row gap-6">
+
+                        {/* Foto quadrada */}
+                        <div className="flex-shrink-0 mx-auto md:mx-0">
+                            <div className="w-52 h-52 rounded-2xl overflow-hidden bg-orange-50 flex items-center justify-center border border-stone-200 shadow-sm">
+                                {animal.foto_url
+                                    ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
+                                    : <span className="text-8xl">{animal.especie === 'gato' ? '🐈' : '🐕'}</span>
+                                }
+                            </div>
+                        </div>
+
+                        {/* Informações */}
+                        <div className="flex-1 flex flex-col justify-between">
                             <div>
-                                <h1 className="text-3xl font-black text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>{animal.nome}</h1>
-                                <div className="flex flex-wrap gap-2 mt-2">
+                                <div className="flex items-start justify-between gap-3 mb-3">
+                                    <h1 className="text-3xl font-black text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>{animal.nome}</h1>
+                                    {animal.estado === 'desaparecido' && (
+                                        <div className="flex-shrink-0 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full animate-pulse">
+                                            ⚠ DESAPARECIDO
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-wrap gap-2 mb-4">
                                     {estadoBadge()}
                                     <span className="bg-stone-100 text-stone-600 text-xs font-medium px-2 py-1 rounded-full">
                                         {animal.especie === 'cao' ? 'Cão' : animal.especie === 'gato' ? 'Gato' : 'Animal'}
                                         {animal.raca && ` · ${animal.raca}`}
                                     </span>
                                     <span className="bg-stone-100 text-stone-600 text-xs font-medium px-2 py-1 rounded-full">{animal.cor}</span>
-                                    <span className="bg-stone-100 text-stone-600 text-xs font-medium px-2 py-1 rounded-full">👁 {avistamentos.length} avistamentos</span>
+                                    <span className="bg-blue-50 text-blue-600 text-xs font-medium px-2 py-1 rounded-full">👁 {avistamentos.length} avistamentos</span>
+                                </div>
+
+                                {animal.descricao && (
+                                    <p className="text-stone-600 text-sm leading-relaxed mb-4 bg-stone-50 rounded-xl p-3 border border-stone-100">
+                                        {animal.descricao}
+                                    </p>
+                                )}
+
+                                <div className="flex items-center gap-1.5 text-xs text-stone-400 mb-5">
+                                    <span>📅</span>
+                                    <span>Desaparecido desde {new Date(animal.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                 </div>
                             </div>
-                            {animal.estado !== 'encontrado' && (
-                                <Link to={`/avistamento/${animal.id}`}
-                                    className="flex-shrink-0 bg-orange-600 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-orange-700 transition-colors text-sm">
-                                    👁 Reportar avistamento
-                                </Link>
-                            )}
-                        </div>
-                        {animal.descricao && (
-                            <p className="text-stone-600 text-sm leading-relaxed mb-4 bg-stone-50 rounded-2xl p-4">{animal.descricao}</p>
-                        )}
-                        <div className="text-xs text-stone-400">
-                            Desaparecido desde {new Date(animal.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}
+
+                            {/* Botões de ação */}
+                            <div className="flex flex-wrap gap-2">
+                                {animal.estado !== 'encontrado' && (
+                                    <Link to={`/avistamento/${animal.id}`}
+                                        className="bg-orange-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-700 transition-colors text-sm flex items-center gap-2">
+                                        👁 Reportar avistamento
+                                    </Link>
+                                )}
+                                <button onClick={() => setTab('chat')}
+                                    className="bg-stone-100 text-stone-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-stone-200 transition-colors text-sm flex items-center gap-2">
+                                    💬 Contactar dono
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
