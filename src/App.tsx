@@ -15,6 +15,8 @@ import Ocorrencias from './pages/Ocorrencias'
 import IdentificarAnimal from './pages/IdentificarAnimal'
 import Perfil from './pages/Perfil'
 import Definicoes from './pages/Definicoes'
+import SubmeterAvistamento from './pages/SubmeterAvistamento'
+import Admin from './pages/Admin'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -48,12 +50,14 @@ export default function App() {
           <Route path="/animais" element={<Animais />} />
           <Route path="/mapa" element={<Mapa />} />
           <Route path="/identificar" element={<IdentificarAnimal />} />
+          <Route path="/avistamento/:animalId" element={<SubmeterAvistamento />} />
           <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
           <Route path="/registo" element={!session ? <Registo /> : <Navigate to="/" />} />
           <Route path="/registar-animal" element={session ? <RegistarAnimal /> : <Navigate to="/login" />} />
           <Route path="/ocorrencias" element={session ? <Ocorrencias /> : <Navigate to="/login" />} />
           <Route path="/perfil" element={session ? <Perfil /> : <Navigate to="/login" />} />
           <Route path="/definicoes" element={session ? <Definicoes /> : <Navigate to="/login" />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>

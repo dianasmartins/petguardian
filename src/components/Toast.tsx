@@ -41,13 +41,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     return (
         <ToastContext.Provider value={{ mostrarToast }}>
             {children}
-
-            {/* Toast container */}
             <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
                 {toasts.map(toast => (
                     <div
                         key={toast.id}
-                        className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-lg text-sm font-semibold pointer-events-auto animate-fade-in-up ${cores(toast.tipo)}`}
+                        className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-lg text-sm font-semibold pointer-events-auto ${cores(toast.tipo)}`}
                         style={{ animation: 'slideUp 0.25s ease-out' }}
                     >
                         <span className="text-base">{icone(toast.tipo)}</span>
@@ -55,7 +53,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                     </div>
                 ))}
             </div>
-
             <style>{`
         @keyframes slideUp {
           from { opacity: 0; transform: translateY(16px); }

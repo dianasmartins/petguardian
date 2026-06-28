@@ -4,6 +4,7 @@ import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import type { Animal } from '../types'
+import { Link } from 'react-router-dom'
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -216,6 +217,12 @@ export default function Mapa() {
                                         <div className="text-xs text-stone-400 mt-2">
                                             {new Date(animal.created_at).toLocaleDateString('pt-PT')}
                                         </div>
+                                        <Link
+                                            to={`/avistamento/${animal.id}`}
+                                            className="block mt-3 w-full text-center bg-orange-600 text-white py-2 px-3 rounded-lg text-xs font-semibold hover:bg-orange-700 transition-colors"
+                                        >
+                                            👁 Reportar avistamento
+                                        </Link>
                                     </div>
                                 </Popup>
                             </Marker>
