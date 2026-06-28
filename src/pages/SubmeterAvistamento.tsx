@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
@@ -27,7 +27,6 @@ export default function SubmeterAvistamento() {
     const [fotosPreviews, setFotosPreviews] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
     const [sucesso, setSucesso] = useState(false)
-    const navigate = useNavigate()
     const { mostrarToast } = useToast()
 
     const handleGPS = () => {
@@ -151,7 +150,7 @@ export default function SubmeterAvistamento() {
                         <MultiplasFotos
                             fotos={fotos}
                             previews={fotosPreviews}
-                            onChange={(f, p) => { setFotos(f); setFotosPreviews(p) }}
+                            onChange={(f: File[], p: string[]) => { setFotos(f); setFotosPreviews(p) }}
                             max={3}
                             label="Fotos do avistamento (até 3)"
                         />

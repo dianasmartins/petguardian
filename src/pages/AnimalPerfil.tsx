@@ -63,7 +63,6 @@ export default function AnimalPerfil() {
     const [animal, setAnimal] = useState<Animal | null>(null)
     const [dono, setDono] = useState<Dono | null>(null)
     const [avistamentos, setAvistamentos] = useState<Avistamento[]>([])
-    const [fotosAdicionais, setFotosAdicionais] = useState<string[]>([])
     const [mensagens, setMensagens] = useState<Mensagem[]>([])
     const [novaMensagem, setNovaMensagem] = useState('')
     const [session, setSession] = useState<any>(null)
@@ -107,8 +106,6 @@ export default function AnimalPerfil() {
         const { data: avsData } = await supabase.from('avistamentos').select('*').eq('animal_id', id).order('created_at', { ascending: true })
         setAvistamentos(avsData || [])
 
-        const { data: fotosData } = await supabase.from('animal_fotos').select('foto_url, ordem').eq('animal_id', id).order('ordem', { ascending: true })
-        setFotosAdicionais((fotosData || []).map((f: any) => f.foto_url))
         setLoading(false)
     }
 

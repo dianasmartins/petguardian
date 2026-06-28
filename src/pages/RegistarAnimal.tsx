@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
@@ -294,7 +294,7 @@ export default function RegistarAnimal() {
                                     <MultiplasFotos
                                         fotos={fotos}
                                         previews={fotosPreviews}
-                                        onChange={(f, p) => { setFotos(f); setFotosPreviews(p) }}
+                                        onChange={(f: File[], p: string[]) => { setFotos(f); setFotosPreviews(p) }}
                                         max={5}
                                         label="Fotos do animal (até 5)"
                                     />
