@@ -40,10 +40,8 @@ export default function Registo() {
     const validarIdade = (data: string) => {
         if (!data) { setErroIdade(''); return }
         const idade = calcularIdade(data)
-        if (idade < 13) {
-            setErroIdade('Tens de ter pelo menos 13 anos para criar uma conta.')
-        } else if (idade < 16) {
-            setErroIdade('Entre 13 e 15 anos é necessário consentimento parental.')
+        if (idade < 18) {
+            setErroIdade('Tens de ter pelo menos 18 anos para criar uma conta.')
         } else {
             setErroIdade('')
         }
@@ -85,8 +83,8 @@ export default function Registo() {
         const erroPass = validarPassword(password)
         if (erroPass) { setErro(erroPass); return }
 
-        if (telemovel && !/^\d{9}$/.test(telemovel)) {
-            setErro('O telemóvel deve ter exatamente 9 dígitos numéricos.')
+        if (telemovel && !/^[+]?[\d\s\-()]{7,20}$/.test(telemovel)) {
+            setErro('Número de telemóvel inválido.')
             return
         }
 
@@ -205,15 +203,15 @@ export default function Registo() {
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-semibold text-stone-500">Telemóvel (opcional)</label>
                         <input type="tel" value={telemovel}
-                            onChange={e => setTelemovel(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                            placeholder="912345678"
+                            onChange={e => setTelemovel(e.target.value.replace(/[^\d+\s\-()]/g, '').slice(0, 20))}
+                            placeholder="+351 912 345 678"
                             className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                     </div>
 
                     {tipoConta === 'singular' && (
                         <div className="flex flex-col gap-1">
                             <label className="text-sm font-semibold text-stone-500">
-                                Data de nascimento * <span className="text-stone-400 font-normal">(mínimo 13 anos)</span>
+                                Data de nascimento * <span className="text-stone-400 font-normal">(mínimo 18 anos)</span>
                             </label>
                             <input type="date" value={dataNascimento}
                                 onChange={e => { setDataNascimento(e.target.value); validarIdade(e.target.value) }}
@@ -221,9 +219,9 @@ export default function Registo() {
                                 required
                                 className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                             {erroIdade && (
-                                <div className={`text-xs px-3 py-2 rounded-lg mt-1 ${erroIdade.includes('13 anos') ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
+                                <div className={`text-xs px-3 py-2 rounded-lg mt-1 ${erroIdade.includes('18 anos') ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
                                     }`}>
-                                    {erroIdade.includes('13 anos') ? '✗' : 'ℹ'} {erroIdade}
+                                    {erroIdade.includes('18 anos') ? '✗' : 'ℹ'} {erroIdade}
                                 </div>
                             )}
                         </div>
@@ -269,7 +267,7 @@ export default function Registo() {
                     </div>
 
                     <button type="submit"
-                        disabled={loading || (tipoConta === 'singular' && erroIdade.includes('13 anos'))}
+                        disabled={loading || (tipoConta === 'singular' && erroIdade.includes('18 anos'))}
                         className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60 mt-2">
                         {loading ? 'A criar conta...' : tipoConta === 'organizacao' ? 'Submeter pedido de registo' : 'Criar conta gratuita'}
                     </button>

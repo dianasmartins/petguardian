@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
-import imageCompression from 'browser-image-compression'
+import MultiplasFotos from '../components/MultiplasFotos'
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -28,14 +28,13 @@ export default function RegistarAnimal() {
     const [descricao, setDescricao] = useState('')
     const [lat, setLat] = useState<number | null>(null)
     const [lng, setLng] = useState<number | null>(null)
-    const [foto, setFoto] = useState<File | null>(null)
-    const [fotoPreview, setFotoPreview] = useState<string | null>(null)
+    const [fotos, setFotos] = useState<File[]>([])
+    const [fotosPreviews, setFotosPreviews] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
     const [erro, setErro] = useState('')
     const [step, setStep] = useState(1)
     const [temRascunho, setTemRascunho] = useState(false)
     const navigate = useNavigate()
-    const fileRef = useRef<HTMLInputElement>(null)
     const { mostrarToast } = useToast()
 
     useEffect(() => {
@@ -71,38 +70,13 @@ export default function RegistarAnimal() {
 
     useEffect(() => {
         if (!nome && !cor) return
-        const dados = { nome, especie, raca, cor, descricao, lat, lng }
-        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(dados))
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ nome, especie, raca, cor, descricao, lat, lng }))
     }, [nome, especie, raca, cor, descricao, lat, lng])
 
-    const handleFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        if (file.size > 5 * 1024 * 1024) {
-            mostrarToast('A fotografia excede o limite de 5MB', 'erro')
-            return
-        }
-        try {
-            const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1200, useWebWorker: true })
-            setFoto(compressed)
-            setFotoPreview(URL.createObjectURL(compressed))
-        } catch {
-            setFoto(file)
-            setFotoPreview(URL.createObjectURL(file))
-        }
-    }
-
     const handleGPS = () => {
-        if (!navigator.geolocation) {
-            mostrarToast('GPS não disponível neste dispositivo', 'erro')
-            return
-        }
+        if (!navigator.geolocation) { mostrarToast('GPS não disponível', 'erro'); return }
         navigator.geolocation.getCurrentPosition(
-            pos => {
-                setLat(pos.coords.latitude)
-                setLng(pos.coords.longitude)
-                mostrarToast('Localização GPS obtida!', 'sucesso')
-            },
+            pos => { setLat(pos.coords.latitude); setLng(pos.coords.longitude); mostrarToast('Localização GPS obtida!', 'sucesso') },
             () => mostrarToast('Não foi possível obter GPS. Clica no mapa.', 'info')
         )
     }
@@ -110,17 +84,7 @@ export default function RegistarAnimal() {
     const analisarFotoComIA = async (file: File): Promise<object | null> => {
         const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
         if (!GEMINI_KEY) {
-            // Modo demo — características baseadas nos dados introduzidos
-            return {
-                especie: especie,
-                raca_estimada: raca || 'desconhecida',
-                cor_principal: cor,
-                cores_secundarias: [],
-                tamanho: 'medio',
-                caracteristicas_distintivas: descricao ? descricao.split(' ').slice(0, 5) : [],
-                confianca: 0.5,
-                modo: 'demo'
-            }
+            return { especie, raca_estimada: raca || 'desconhecida', cor_principal: cor, cores_secundarias: [], tamanho: 'medio', caracteristicas_distintivas: [], confianca: 0.5, modo: 'demo' }
         }
         try {
             const base64 = await new Promise<string>((resolve, reject) => {
@@ -129,27 +93,25 @@ export default function RegistarAnimal() {
                 reader.onerror = reject
                 reader.readAsDataURL(file)
             })
-            const prompt = 'Analisa esta imagem de um animal de estimação. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. Estrutura obrigatória: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string com máximo 5 itens], "confianca": number entre 0 e 1}.'
+            const prompt = 'Analisa esta imagem de um animal de estimação. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. Estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}.'
             const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_KEY
             const response = await fetch(geminiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: prompt },
-                            { inline_data: { mime_type: file.type, data: base64 } }
-                        ]
-                    }]
-                })
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: file.type, data: base64 } }] }] })
             })
             const data = await response.json()
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
-            const clean = text.replace(/```json|```/g, '').trim()
-            return JSON.parse(clean)
-        } catch {
-            return null
-        }
+            return JSON.parse(text.replace(/```json|```/g, '').trim())
+        } catch { return null }
+    }
+
+    const uploadFoto = async (file: File, userId: string, prefix: string): Promise<string | null> => {
+        const ext = file.name.split('.').pop()
+        const path = userId + '/' + prefix + '-' + Date.now() + '.' + ext
+        const { error } = await supabase.storage.from('fotos').upload(path, file)
+        if (error) return null
+        return supabase.storage.from('fotos').getPublicUrl(path).data.publicUrl
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -159,54 +121,61 @@ export default function RegistarAnimal() {
         setErro('')
 
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) { mostrarToast('Sessão expirada. Faz login novamente.', 'erro'); setLoading(false); return }
+        if (!user) { mostrarToast('Sessão expirada.', 'erro'); setLoading(false); return }
 
+        // Upload da foto principal
         let foto_url = null
-        if (foto) {
-            const ext = foto.name.split('.').pop()
-            const path = user.id + '/' + Date.now() + '.' + ext
-            const { error: uploadError } = await supabase.storage.from('fotos').upload(path, foto)
-            if (!uploadError) {
-                const { data: urlData } = supabase.storage.from('fotos').getPublicUrl(path)
-                foto_url = urlData.publicUrl
+        if (fotos.length > 0) {
+            foto_url = await uploadFoto(fotos[0], user.id, 'principal')
+        }
+
+        // Análise IA da foto principal
+        let caracteristicas_ia = null
+        if (fotos.length > 0) {
+            mostrarToast('A extrair características com IA...', 'info')
+            caracteristicas_ia = await analisarFotoComIA(fotos[0])
+        }
+
+        // Inserir animal
+        const { data: animal, error } = await supabase.from('animais').insert({
+            dono_id: user.id, nome, especie, raca: raca || null, cor, descricao,
+            latitude: lat, longitude: lng, foto_url, estado: 'desaparecido', caracteristicas_ia
+        }).select().single()
+
+        if (error || !animal) {
+            mostrarToast('Erro ao registar o animal. Tenta novamente.', 'erro')
+            setLoading(false)
+            return
+        }
+
+        // Upload das fotos adicionais
+        if (fotos.length > 1) {
+            mostrarToast('A guardar fotos adicionais...', 'info')
+            for (let i = 1; i < fotos.length; i++) {
+                const url = await uploadFoto(fotos[i], user.id, 'foto' + i)
+                if (url) {
+                    await supabase.from('animal_fotos').insert({
+                        animal_id: animal.id, foto_url: url, ordem: i
+                    })
+                }
             }
         }
 
-        // Analisa foto com IA
-        let caracteristicas_ia = null
-        if (foto) {
-            mostrarToast('A extrair características com IA...', 'info')
-            caracteristicas_ia = await analisarFotoComIA(foto)
-        }
-
-        const { error } = await supabase.from('animais').insert({
-            dono_id: user.id,
-            nome, especie, raca: raca || null, cor, descricao,
-            latitude: lat, longitude: lng, foto_url, estado: 'desaparecido',
-            caracteristicas_ia
-        })
-
-        if (error) {
-            mostrarToast('Erro ao registar o animal. Tenta novamente.', 'erro')
-        } else {
-            localStorage.removeItem(AUTOSAVE_KEY)
-            mostrarToast('Animal registado com sucesso! 🐾', 'sucesso')
-            setTimeout(() => navigate('/ocorrencias'), 500)
-        }
+        localStorage.removeItem(AUTOSAVE_KEY)
+        mostrarToast('Animal registado com sucesso! 🐾', 'sucesso')
+        setTimeout(() => navigate('/ocorrencias'), 500)
         setLoading(false)
     }
 
     const avancarStep1 = () => {
         if (!nome.trim()) { setErro('O nome é obrigatório.'); return }
         if (!cor.trim()) { setErro('A cor é obrigatória.'); return }
-        setErro('')
-        setStep(2)
+        setErro(''); setStep(2)
     }
 
     const avancarStep2 = () => {
         if (!lat || !lng) { setErro('Seleciona a localização no mapa ou usa o GPS.'); return }
-        setErro('')
-        setStep(3)
+        setErro(''); setStep(3)
     }
 
     return (
@@ -234,9 +203,9 @@ export default function RegistarAnimal() {
 
                 {/* Steps */}
                 <div className="flex gap-0 mb-8">
-                    {['Dados', 'Localização', 'Foto'].map((label, i) => (
+                    {['Dados', 'Localização', 'Fotos'].map((label, i) => (
                         <div key={i} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${step === i + 1 ? 'border-green-600 text-green-700'
-                                : step > i + 1 ? 'border-green-500 text-green-600'
+                                : step > i + 1 ? 'border-emerald-500 text-emerald-600'
                                     : 'border-stone-200 text-stone-400'
                             }`}>
                             {step > i + 1 ? '✓ ' : ''}{label}
@@ -261,10 +230,8 @@ export default function RegistarAnimal() {
                                         <div className="grid grid-cols-3 gap-2">
                                             {[['cao', '🐕 Cão'], ['gato', '🐈 Gato'], ['outro', '🐾 Outro']].map(([val, label]) => (
                                                 <button key={val} type="button" onClick={() => setEspecie(val)}
-                                                    className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${especie === val ? 'border-green-600 bg-green-50 text-green-800' : 'border-stone-200 text-stone-600'
-                                                        }`}>
-                                                    {label}
-                                                </button>
+                                                    className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${especie === val ? 'border-green-600 bg-green-50 text-green-700' : 'border-stone-200 text-stone-600'
+                                                        }`}>{label}</button>
                                             ))}
                                         </div>
                                     </div>
@@ -281,9 +248,9 @@ export default function RegistarAnimal() {
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <label className="text-sm font-semibold text-stone-500">Descrição (coleira, marcas, comportamento)</label>
+                                        <label className="text-sm font-semibold text-stone-500">Descrição</label>
                                         <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows={3}
-                                            placeholder="Descreve características que ajudem a identificar o animal..."
+                                            placeholder="Coleira, marcas, comportamento..."
                                             className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm resize-none" />
                                     </div>
                                     {erro && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">{erro}</div>}
@@ -305,20 +272,16 @@ export default function RegistarAnimal() {
                                     </button>
                                     {lat && lng && (
                                         <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm">
-                                            ✓ Localização selecionada: {lat.toFixed(5)}°N, {lng.toFixed(5)}°W
+                                            ✓ {lat.toFixed(5)}°N, {lng.toFixed(5)}°W
                                         </div>
                                     )}
-                                    <p className="text-xs text-stone-400 text-center">Ou clica directamente no mapa →</p>
+                                    <p className="text-xs text-stone-400 text-center">Ou clica no mapa →</p>
                                     {erro && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">{erro}</div>}
                                     <div className="flex gap-3">
                                         <button type="button" onClick={() => { setErro(''); setStep(1) }}
-                                            className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 transition-colors">
-                                            ← Voltar
-                                        </button>
+                                            className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 transition-colors">← Voltar</button>
                                         <button type="button" onClick={avancarStep2}
-                                            className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
-                                            Seguinte: Foto →
-                                        </button>
+                                            className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">Seguinte: Fotos →</button>
                                     </div>
                                 </div>
                             </>
@@ -326,36 +289,26 @@ export default function RegistarAnimal() {
 
                         {step === 3 && (
                             <form onSubmit={handleSubmit}>
-                                <h2 className="font-bold text-stone-900 mb-5">Foto do animal</h2>
+                                <h2 className="font-bold text-stone-900 mb-5">Fotos do animal</h2>
                                 <div className="flex flex-col gap-4">
-                                    <div
-                                        onClick={() => fileRef.current?.click()}
-                                        className="border-2 border-dashed border-stone-300 rounded-2xl p-8 text-center cursor-pointer hover:border-orange-400 hover:bg-green-50 transition-colors"
-                                    >
-                                        {fotoPreview ? (
-                                            <img src={fotoPreview} alt="Preview" className="max-h-40 mx-auto rounded-xl object-cover" />
-                                        ) : (
-                                            <>
-                                                <div className="text-4xl mb-3">📷</div>
-                                                <p className="text-stone-500 text-sm font-medium">Clica para adicionar uma foto</p>
-                                                <p className="text-stone-400 text-xs mt-1">JPG, PNG · máx. 5MB</p>
-                                            </>
-                                        )}
-                                    </div>
-                                    <input ref={fileRef} type="file" accept="image/*" onChange={handleFotoChange} className="hidden" />
+                                    <MultiplasFotos
+                                        fotos={fotos}
+                                        previews={fotosPreviews}
+                                        onChange={(f, p) => { setFotos(f); setFotosPreviews(p) }}
+                                        max={5}
+                                        label="Fotos do animal (até 5)"
+                                    />
 
-                                    {foto && (
+                                    {fotos.length > 0 && (
                                         <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-blue-700 text-xs">
-                                            🤖 A IA vai analisar esta foto automaticamente para facilitar correspondências futuras.
+                                            🤖 A IA vai analisar a primeira foto automaticamente para facilitar correspondências futuras.
                                         </div>
                                     )}
 
                                     {erro && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">{erro}</div>}
                                     <div className="flex gap-3">
                                         <button type="button" onClick={() => { setErro(''); setStep(2) }}
-                                            className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 transition-colors">
-                                            ← Voltar
-                                        </button>
+                                            className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 transition-colors">← Voltar</button>
                                         <button type="submit" disabled={loading}
                                             className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60">
                                             {loading ? 'A registar...' : '✓ Registar animal'}

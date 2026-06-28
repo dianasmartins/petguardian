@@ -43,8 +43,8 @@ export default function Perfil() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        if (telemovel && !/^\d{9}$/.test(telemovel)) {
-            setErro('O telemóvel deve ter exatamente 9 dígitos.')
+        if (telemovel && !/^[+]?[\d\s\-()]{7,20}$/.test(telemovel)) {
+            setErro('Número de telemóvel inválido.')
             setGuardando(false)
             return
         }
@@ -126,8 +126,8 @@ export default function Perfil() {
                             <input
                                 type="tel"
                                 value={telemovel}
-                                onChange={e => setTelemovel(e.target.value.replace(/\D/g, '').slice(0, 9))}
-                                placeholder="912345678"
+                                onChange={e => setTelemovel(e.target.value.replace(/[^\d+\s\-()]/g, '').slice(0, 20))}
+                                placeholder="+351 912 345 678"
                                 className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
                             />
                         </div>

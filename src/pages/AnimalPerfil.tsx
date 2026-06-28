@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
@@ -59,9 +59,11 @@ type Tab = 'perfil' | 'avistamentos' | 'chat'
 export default function AnimalPerfil() {
     const { id } = useParams<{ id: string }>()
     const [searchParams] = useSearchParams()
+    const navigate = useNavigate()
     const [animal, setAnimal] = useState<Animal | null>(null)
     const [dono, setDono] = useState<Dono | null>(null)
     const [avistamentos, setAvistamentos] = useState<Avistamento[]>([])
+    const [fotosAdicionais, setFotosAdicionais] = useState<string[]>([])
     const [mensagens, setMensagens] = useState<Mensagem[]>([])
     const [novaMensagem, setNovaMensagem] = useState('')
     const [session, setSession] = useState<any>(null)
@@ -104,6 +106,9 @@ export default function AnimalPerfil() {
         setDono(donoData)
         const { data: avsData } = await supabase.from('avistamentos').select('*').eq('animal_id', id).order('created_at', { ascending: true })
         setAvistamentos(avsData || [])
+
+        const { data: fotosData } = await supabase.from('animal_fotos').select('foto_url, ordem').eq('animal_id', id).order('ordem', { ascending: true })
+        setFotosAdicionais((fotosData || []).map((f: any) => f.foto_url))
         setLoading(false)
     }
 
@@ -216,7 +221,10 @@ export default function AnimalPerfil() {
                                         👁 Reportar avistamento
                                     </Link>
                                 )}
-                                <button onClick={() => setTab('chat')}
+                                <button onClick={() => {
+                                    if (!session) { navigate('/login'); return }
+                                    if (dono) navigate('/mensagens?iniciar=' + dono.id + '&animal=' + animal.id)
+                                }}
                                     className="bg-stone-100 text-stone-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-stone-200 transition-colors text-sm flex items-center gap-2">
                                     💬 Contactar dono
                                 </button>

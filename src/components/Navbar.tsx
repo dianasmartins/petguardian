@@ -13,6 +13,7 @@ export default function Navbar({ session }: Props) {
     const [profileOpen, setProfileOpen] = useState(false)
     const [nomeUtilizador, setNomeUtilizador] = useState('')
     const [novosAvistamentos, setNovosAvistamentos] = useState(0)
+    const [mensagensNaoLidas, setMensagensNaoLidas] = useState(0)
     const navigate = useNavigate()
     const location = useLocation()
     const profileRef = useRef<HTMLDivElement>(null)
@@ -25,6 +26,7 @@ export default function Navbar({ session }: Props) {
         }
         fetchNome()
         verificarNovosAvistamentos()
+        verificarMensagensNaoLidas(session.user.id)
     }, [session])
 
     useEffect(() => {
@@ -32,7 +34,26 @@ export default function Navbar({ session }: Props) {
             localStorage.setItem(LAST_VISIT_KEY, new Date().toISOString())
             setNovosAvistamentos(0)
         }
+        if (location.pathname === '/mensagens' && session?.user) {
+            setMensagensNaoLidas(0)
+        }
     }, [location.pathname])
+
+    const verificarMensagensNaoLidas = async (userId: string) => {
+        const { data: convs } = await supabase
+            .from('conversas')
+            .select('id')
+            .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+        if (!convs || convs.length === 0) return
+        const ids = convs.map((c: any) => c.id)
+        const { count } = await supabase
+            .from('mensagens_privadas')
+            .select('id', { count: 'exact' })
+            .in('conversa_id', ids)
+            .eq('lida', false)
+            .neq('sender_id', userId)
+        setMensagensNaoLidas(count || 0)
+    }
 
     const verificarNovosAvistamentos = async () => {
         if (!session?.user) return
@@ -89,6 +110,14 @@ export default function Navbar({ session }: Props) {
                     <Link to="/identificar" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/identificar')}`}>Identificar por IA</Link>
                     <Link to="/estatisticas" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/estatisticas')}`}>Estatísticas</Link>
                     {session && (
+                        <Link to="/mensagens" className={`relative px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/mensagens')}`}>
+                            💬 Mensagens
+                            {mensagensNaoLidas > 0 && (
+                                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>
+                            )}
+                        </Link>
+                    )}
+                    {session && (
                         <Link to="/ocorrencias" className={`relative px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/ocorrencias')}`}>
                             As minhas ocorrências
                             {novosAvistamentos > 0 && (
@@ -123,6 +152,13 @@ export default function Navbar({ session }: Props) {
                                             <div className="text-xs text-stone-400 truncate">{session.user.email}</div>
                                         </div>
                                         <div className="py-1">
+                                            <Link to="/mensagens" onClick={() => setProfileOpen(false)}
+                                                className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                                <span className="flex items-center gap-3"><span>💬</span> Mensagens</span>
+                                                {mensagensNaoLidas > 0 && (
+                                                    <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>
+                                                )}
+                                            </Link>
                                             <Link to="/ocorrencias" onClick={() => setProfileOpen(false)}
                                                 className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-700 hover:bg-green-50 hover:text-green-700 transition-colors">
                                                 <span className="flex items-center gap-3"><span>📋</span> As minhas ocorrências</span>

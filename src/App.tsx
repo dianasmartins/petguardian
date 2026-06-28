@@ -19,6 +19,7 @@ import SubmeterAvistamento from './pages/SubmeterAvistamento'
 import Admin from './pages/Admin'
 import AnimalPerfil from './pages/AnimalPerfil'
 import Estatisticas from './pages/Estatisticas'
+import Mensagens from './pages/Mensagens'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/perfil" element={session ? <Perfil /> : <Navigate to="/login" />} />
           <Route path="/definicoes" element={session ? <Definicoes /> : <Navigate to="/login" />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/mensagens" element={session ? <Mensagens /> : <Navigate to="/login" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </BrowserRouter>
