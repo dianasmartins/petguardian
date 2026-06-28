@@ -46,14 +46,76 @@ export default function IdentificarAnimal() {
 
     const calcularScore = (res: ResultadoIA, animal: Animal): number => {
         let score = 0
+
+        // 1. Espécie — 35 pontos (mais tolerante)
         const esp = res.especie?.toLowerCase() || ''
-        if ((esp.includes('cão') || esp.includes('cao') || esp.includes('dog')) && animal.especie === 'cao') score += 40
-        else if ((esp.includes('gato') || esp.includes('cat')) && animal.especie === 'gato') score += 40
+        const isCao = esp.includes('cão') || esp.includes('cao') || esp.includes('dog') || esp.includes('canin')
+        const isGato = esp.includes('gato') || esp.includes('cat') || esp.includes('felin')
+        if (isCao && animal.especie === 'cao') score += 35
+        else if (isGato && animal.especie === 'gato') score += 35
+        else if (!isCao && !isGato) score += 10 // espécie desconhecida — não penaliza muito
+
+        // 2. Cor — 35 pontos (compara palavras individuais)
+        const corIA = (res.cor_principal || '').toLowerCase()
+        const coresIA = [corIA, ...(res.cores_secundarias || []).map(c => c.toLowerCase())]
         const corAnimal = animal.cor.toLowerCase()
-        if (res.cor_principal?.toLowerCase().includes(corAnimal) || corAnimal.includes(res.cor_principal?.toLowerCase() || '')) score += 25
-        if (res.raca_estimada && animal.raca && animal.raca.toLowerCase().includes(res.raca_estimada.toLowerCase().split(' ')[0])) score += 20
-        if (res.tamanho && animal.descricao?.toLowerCase().includes(res.tamanho.toLowerCase())) score += 15
-        return Math.min(score, 100)
+        const palavrasCorAnimal = corAnimal.split(/[\s+,]/).filter(Boolean)
+        const palavrasCorIA = coresIA.join(' ').split(/[\s+,]/).filter(Boolean)
+
+        // Mapeamento de cores similares
+        const similares: Record<string, string[]> = {
+            'castanho': ['marrom', 'dourado', 'bege', 'creme', 'caramelo', 'acobreado'],
+            'preto': ['escuro', 'negro'],
+            'branco': ['creme', 'bege', 'claro'],
+            'cinzento': ['cinza', 'prateado'],
+            'dourado': ['castanho', 'bege', 'amarelo', 'caramelo'],
+            'laranja': ['ruivo', 'avermelhado', 'castanho'],
+        }
+
+        let matchCor = false
+        for (const pAnimal of palavrasCorAnimal) {
+            for (const pIA of palavrasCorIA) {
+                if (pAnimal === pIA || pAnimal.includes(pIA) || pIA.includes(pAnimal)) {
+                    matchCor = true; break
+                }
+                const simsAnimal = similares[pAnimal] || []
+                const simsIA = similares[pIA] || []
+                if (simsAnimal.includes(pIA) || simsIA.includes(pAnimal)) {
+                    matchCor = true; break
+                }
+            }
+            if (matchCor) break
+        }
+        if (matchCor) score += 35
+        else score += 5 // cor diferente mas não penaliza totalmente
+
+        // 3. Raça — 20 pontos (comparação parcial e flexível)
+        if (res.raca_estimada && animal.raca) {
+            const racaIA = res.raca_estimada.toLowerCase()
+            const racaAnimal = animal.raca.toLowerCase()
+            if (racaAnimal.includes(racaIA) || racaIA.includes(racaAnimal)) {
+                score += 20
+            } else {
+                // Primeiras palavras
+                const primeiraIA = racaIA.split(' ')[0]
+                const primeiraAnimal = racaAnimal.split(' ')[0]
+                if (primeiraIA === primeiraAnimal || racaAnimal.includes(primeiraIA)) score += 10
+            }
+        } else if (!animal.raca) {
+            // Animal sem raça definida — não penaliza, dá pontos parciais
+            score += 10
+        }
+
+        // 4. Descrição — 10 pontos (procura palavras-chave da IA na descrição)
+        if (animal.descricao && res.caracteristicas_distintivas?.length > 0) {
+            const descricao = animal.descricao.toLowerCase()
+            const matches = res.caracteristicas_distintivas.filter(c =>
+                descricao.includes(c.toLowerCase().split(' ')[0])
+            ).length
+            if (matches > 0) score += Math.min(matches * 5, 10)
+        }
+
+        return Math.min(Math.round(score), 100)
     }
 
     const analisar = async () => {
