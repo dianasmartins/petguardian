@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
@@ -12,6 +12,32 @@ L.Icon.Default.mergeOptions({
     iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 })
+
+// Ícone vermelho — local de desaparecimento
+const iconeVermelho = L.divIcon({
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="24" height="36">
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="#DC2626" stroke="white" stroke-width="1.5"/>
+    <circle cx="12" cy="12" r="4" fill="white"/>
+  </svg>`,
+    className: '',
+    iconSize: [24, 36],
+    iconAnchor: [12, 36],
+    popupAnchor: [0, -36],
+})
+
+// Ícone laranja numerado — avistamentos
+function iconeAvistamento(num: number) {
+    return L.divIcon({
+        html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+      <circle cx="16" cy="16" r="14" fill="#F97316" stroke="white" stroke-width="2"/>
+      <text x="16" y="21" text-anchor="middle" font-size="13" font-weight="bold" fill="white" font-family="Arial">${num}</text>
+    </svg>`,
+        className: '',
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+        popupAnchor: [0, -16],
+    })
+}
 
 interface Mensagem {
     id: string
@@ -45,9 +71,7 @@ export default function AnimalPerfil() {
     const { mostrarToast } = useToast()
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session)
-        })
+        supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
         fetchAnimal()
     }, [id])
 
@@ -56,8 +80,10 @@ export default function AnimalPerfil() {
             fetchMensagens()
             const channel = supabase
                 .channel('chat-' + id)
-                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens', filter: `animal_id=eq.${id}` },
-                    () => fetchMensagens())
+                .on('postgres_changes', {
+                    event: 'INSERT', schema: 'public', table: 'mensagens',
+                    filter: `animal_id=eq.${id}`
+                }, () => fetchMensagens())
                 .subscribe()
             return () => { supabase.removeChannel(channel) }
         }
@@ -68,19 +94,13 @@ export default function AnimalPerfil() {
     }, [mensagens])
 
     const fetchAnimal = async () => {
-        const { data: animalData } = await supabase
-            .from('animais').select('*').eq('id', id).single()
+        const { data: animalData } = await supabase.from('animais').select('*').eq('id', id).single()
         if (!animalData) { setLoading(false); return }
         setAnimal(animalData)
-
-        const { data: donoData } = await supabase
-            .from('profiles').select('*').eq('id', animalData.dono_id).single()
+        const { data: donoData } = await supabase.from('profiles').select('*').eq('id', animalData.dono_id).single()
         setDono(donoData)
-
-        const { data: avsData } = await supabase
-            .from('avistamentos').select('*').eq('animal_id', id).order('created_at', { ascending: true })
+        const { data: avsData } = await supabase.from('avistamentos').select('*').eq('animal_id', id).order('created_at', { ascending: true })
         setAvistamentos(avsData || [])
-
         setLoading(false)
     }
 
@@ -111,13 +131,8 @@ export default function AnimalPerfil() {
         setEnviando(false)
     }
 
-    if (loading) return (
-        <div className="flex items-center justify-center h-96 text-stone-400">A carregar...</div>
-    )
-
-    if (!animal) return (
-        <div className="flex items-center justify-center h-96 text-stone-400">Animal não encontrado.</div>
-    )
+    if (loading) return <div className="flex items-center justify-center h-96 text-stone-400">A carregar...</div>
+    if (!animal) return <div className="flex items-center justify-center h-96 text-stone-400">Animal não encontrado.</div>
 
     const estadoBadge = () => {
         if (animal.estado === 'desaparecido') return <span className="bg-red-100 text-red-700 text-sm font-bold px-3 py-1.5 rounded-full">⚠ Desaparecido</span>
@@ -142,7 +157,7 @@ export default function AnimalPerfil() {
                     <span className="text-stone-700">{animal.nome}</span>
                 </div>
 
-                {/* Header do animal */}
+                {/* Header */}
                 <div className="bg-white rounded-3xl border border-stone-200 overflow-hidden mb-6">
                     <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-50 flex items-center justify-center overflow-hidden">
                         {animal.foto_url
@@ -150,13 +165,10 @@ export default function AnimalPerfil() {
                             : <span className="text-8xl">{animal.especie === 'gato' ? '🐈' : '🐕'}</span>
                         }
                     </div>
-
                     <div className="p-6">
                         <div className="flex items-start justify-between gap-4 mb-4">
                             <div>
-                                <h1 className="text-3xl font-black text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>
-                                    {animal.nome}
-                                </h1>
+                                <h1 className="text-3xl font-black text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>{animal.nome}</h1>
                                 <div className="flex flex-wrap gap-2 mt-2">
                                     {estadoBadge()}
                                     <span className="bg-stone-100 text-stone-600 text-xs font-medium px-2 py-1 rounded-full">
@@ -164,9 +176,7 @@ export default function AnimalPerfil() {
                                         {animal.raca && ` · ${animal.raca}`}
                                     </span>
                                     <span className="bg-stone-100 text-stone-600 text-xs font-medium px-2 py-1 rounded-full">{animal.cor}</span>
-                                    <span className="bg-stone-100 text-stone-600 text-xs font-medium px-2 py-1 rounded-full">
-                                        👁 {avistamentos.length} avistamentos
-                                    </span>
+                                    <span className="bg-stone-100 text-stone-600 text-xs font-medium px-2 py-1 rounded-full">👁 {avistamentos.length} avistamentos</span>
                                 </div>
                             </div>
                             {animal.estado !== 'encontrado' && (
@@ -176,13 +186,9 @@ export default function AnimalPerfil() {
                                 </Link>
                             )}
                         </div>
-
                         {animal.descricao && (
-                            <p className="text-stone-600 text-sm leading-relaxed mb-4 bg-stone-50 rounded-2xl p-4">
-                                {animal.descricao}
-                            </p>
+                            <p className="text-stone-600 text-sm leading-relaxed mb-4 bg-stone-50 rounded-2xl p-4">{animal.descricao}</p>
                         )}
-
                         <div className="text-xs text-stone-400">
                             Desaparecido desde {new Date(animal.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </div>
@@ -194,7 +200,7 @@ export default function AnimalPerfil() {
                     {[
                         { id: 'perfil', label: '🐾 Perfil' },
                         { id: 'avistamentos', label: `👁 Avistamentos (${avistamentos.length})` },
-                        { id: 'chat', label: '💬 Chat com o dono' },
+                        { id: 'chat', label: `💬 Mensagens (${mensagens.length})` },
                     ].map(t => (
                         <button key={t.id} onClick={() => setTab(t.id as Tab)}
                             className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tab === t.id ? 'border-orange-600 text-orange-600' : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -209,7 +215,7 @@ export default function AnimalPerfil() {
                     <div className="grid md:grid-cols-2 gap-6">
                         <div className="bg-white rounded-2xl border border-stone-200 p-5">
                             <h2 className="font-bold text-stone-900 mb-4">🐾 Informações do animal</h2>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-0">
                                 {[
                                     { label: 'Nome', value: animal.nome },
                                     { label: 'Espécie', value: animal.especie === 'cao' ? 'Cão' : animal.especie === 'gato' ? 'Gato' : 'Outro' },
@@ -219,7 +225,7 @@ export default function AnimalPerfil() {
                                     { label: 'Desaparecido desde', value: new Date(animal.created_at).toLocaleDateString('pt-PT') },
                                     { label: 'Avistamentos', value: `${avistamentos.length} reportado${avistamentos.length !== 1 ? 's' : ''}` },
                                 ].map(item => (
-                                    <div key={item.label} className="flex justify-between items-center py-2 border-b border-stone-100 last:border-0">
+                                    <div key={item.label} className="flex justify-between items-center py-2.5 border-b border-stone-100 last:border-0">
                                         <span className="text-sm text-stone-500">{item.label}</span>
                                         <span className="text-sm font-semibold text-stone-900">{item.value}</span>
                                     </div>
@@ -228,10 +234,11 @@ export default function AnimalPerfil() {
                         </div>
 
                         <div className="flex flex-col gap-4">
+                            {/* Dono */}
                             <div className="bg-white rounded-2xl border border-stone-200 p-5">
                                 <h2 className="font-bold text-stone-900 mb-4">👤 Dono do animal</h2>
                                 {dono ? (
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-4 mb-4">
                                         <div className="w-14 h-14 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                                             {dono.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()}
                                         </div>
@@ -240,22 +247,20 @@ export default function AnimalPerfil() {
                                             {dono.telemovel && !isDono && (
                                                 <div className="text-sm text-stone-500 mt-0.5">📱 {dono.telemovel}</div>
                                             )}
-                                            {isDono && (
-                                                <div className="text-xs text-orange-600 font-medium mt-1">Este é o teu animal</div>
-                                            )}
+                                            {isDono && <div className="text-xs text-orange-600 font-medium mt-1">Este é o teu animal</div>}
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-stone-400 text-sm">Informação do dono não disponível</div>
+                                    <div className="text-stone-400 text-sm mb-4">Informação do dono não disponível</div>
                                 )}
-                                {!isDono && (
-                                    <button onClick={() => setTab('chat')}
-                                        className="w-full mt-4 bg-orange-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors">
-                                        💬 Enviar mensagem ao dono
-                                    </button>
-                                )}
+                                {/* Botão para enviar msg — leva para tab chat */}
+                                <button onClick={() => setTab('chat')}
+                                    className="w-full bg-orange-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors">
+                                    💬 {isDono ? 'Ver mensagens' : 'Enviar mensagem ao dono'}
+                                </button>
                             </div>
 
+                            {/* Mapa localização */}
                             {animal.latitude && animal.longitude && (
                                 <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                                     <div className="px-4 py-3 border-b border-stone-100">
@@ -264,7 +269,9 @@ export default function AnimalPerfil() {
                                     <div className="h-44">
                                         <MapContainer center={[animal.latitude, animal.longitude]} zoom={14} style={{ height: '100%', width: '100%' }}>
                                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                            <Marker position={[animal.latitude, animal.longitude]} />
+                                            <Marker position={[animal.latitude, animal.longitude]} icon={iconeVermelho}>
+                                                <Popup>📍 Local de desaparecimento</Popup>
+                                            </Marker>
                                         </MapContainer>
                                     </div>
                                 </div>
@@ -289,12 +296,14 @@ export default function AnimalPerfil() {
                             </div>
                         ) : (
                             <>
-                                {avistamentos.some(a => a.latitude && a.longitude) && (
+                                {/* Mapa com cores distintas */}
+                                {(animal.latitude || avistamentos.some(a => a.latitude)) && (
                                     <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                                         <div className="px-5 py-4 border-b border-stone-100">
-                                            <h2 className="font-bold text-stone-900">🗺 Trajeto dos avistamentos</h2>
+                                            <h2 className="font-bold text-stone-900">🗺 Percurso do animal</h2>
+                                            <p className="text-xs text-stone-400 mt-0.5">Do local de desaparecimento até ao avistamento mais recente</p>
                                         </div>
-                                        <div className="h-64">
+                                        <div className="h-72">
                                             <MapContainer
                                                 center={animal.latitude && animal.longitude
                                                     ? [animal.latitude, animal.longitude]
@@ -303,28 +312,58 @@ export default function AnimalPerfil() {
                                                 style={{ height: '100%', width: '100%' }}
                                             >
                                                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+                                                {/* Marcador vermelho — local de desaparecimento */}
                                                 {animal.latitude && animal.longitude && (
-                                                    <Marker position={[animal.latitude, animal.longitude]} />
+                                                    <Marker position={[animal.latitude, animal.longitude]} icon={iconeVermelho}>
+                                                        <Popup>
+                                                            <div className="text-sm font-semibold text-red-700">📍 Local de desaparecimento</div>
+                                                            <div className="text-xs text-stone-500 mt-1">{new Date(animal.created_at).toLocaleDateString('pt-PT')}</div>
+                                                        </Popup>
+                                                    </Marker>
                                                 )}
-                                                {avistamentos.filter(a => a.latitude && a.longitude).map(av => (
-                                                    <Marker key={av.id} position={[av.latitude, av.longitude]} />
+
+                                                {/* Marcadores laranja numerados — avistamentos */}
+                                                {avistamentos.filter(a => a.latitude && a.longitude).map((av, i) => (
+                                                    <Marker key={av.id} position={[av.latitude, av.longitude]} icon={iconeAvistamento(i + 1)}>
+                                                        <Popup>
+                                                            <div className="text-sm font-semibold text-orange-700">👁 Avistamento #{i + 1}</div>
+                                                            <div className="text-xs text-stone-500 mt-1">{new Date(av.created_at).toLocaleString('pt-PT')}</div>
+                                                            {av.descricao && <div className="text-xs text-stone-600 mt-1">{av.descricao}</div>}
+                                                        </Popup>
+                                                    </Marker>
                                                 ))}
+
+                                                {/* Polilinha laranja tracejada */}
                                                 {polylinePoints.length > 1 && (
-                                                    <Polyline positions={polylinePoints} color="#f97316" weight={3} dashArray="6,4" />
+                                                    <Polyline positions={polylinePoints} color="#f97316" weight={3} dashArray="8,5" opacity={0.8} />
                                                 )}
                                             </MapContainer>
                                         </div>
-                                        <div className="px-4 py-2 bg-stone-50 text-xs text-stone-400">
-                                            🔵 Local de desaparecimento · 🔵 Avistamentos · <span className="text-orange-500">▬▬</span> Trajeto
+                                        {/* Legenda */}
+                                        <div className="px-5 py-3 bg-stone-50 border-t border-stone-100 flex items-center gap-6 text-xs text-stone-500">
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="w-3 h-3 rounded-full bg-red-600 inline-block"></span>
+                                                Local de desaparecimento
+                                            </span>
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+                                                Avistamentos (numerados)
+                                            </span>
+                                            <span className="flex items-center gap-1.5">
+                                                <span className="text-orange-500 font-bold">▬▬</span>
+                                                Percurso
+                                            </span>
                                         </div>
                                     </div>
                                 )}
 
+                                {/* Lista de avistamentos */}
                                 <div className="flex flex-col gap-4">
                                     {avistamentos.map((av, i) => (
                                         <div key={av.id} className="bg-white rounded-2xl border border-stone-200 p-5">
                                             <div className="flex items-start gap-4">
-                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700 flex-shrink-0 mt-0.5">
+                                                <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5">
                                                     {i + 1}
                                                 </div>
                                                 <div className="flex-1">
@@ -356,18 +395,27 @@ export default function AnimalPerfil() {
                     </div>
                 )}
 
-                {/* TAB: CHAT */}
+                {/* TAB: MENSAGENS */}
                 {tab === 'chat' && (
                     <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                         <div className="px-5 py-4 border-b border-stone-100">
-                            <h2 className="font-bold text-stone-900">💬 Chat sobre {animal.nome}</h2>
-                            <p className="text-xs text-stone-400 mt-0.5">Fala directamente com o dono ou com outros voluntários</p>
+                            <h2 className="font-bold text-stone-900">💬 Mensagens sobre {animal.nome}</h2>
+                            <p className="text-xs text-stone-400 mt-0.5">
+                                {isDono ? 'Responde às mensagens de voluntários e pessoas que viram o teu animal'
+                                    : `Envia uma mensagem directamente ao dono de ${animal.nome}`}
+                            </p>
                         </div>
 
-                        <div className="h-96 overflow-y-auto p-5 flex flex-col gap-3 bg-stone-50">
+                        {/* Mensagens */}
+                        <div className="h-80 overflow-y-auto p-5 flex flex-col gap-3 bg-stone-50">
                             {mensagens.length === 0 ? (
-                                <div className="flex-1 flex items-center justify-center text-stone-400 text-sm">
-                                    Ainda não há mensagens. Sê o primeiro a escrever!
+                                <div className="flex-1 flex flex-col items-center justify-center text-center gap-3">
+                                    <div className="text-4xl">💬</div>
+                                    <p className="text-stone-500 text-sm">
+                                        {isDono
+                                            ? 'Ainda não tens mensagens sobre este animal.'
+                                            : `Ainda não há mensagens. Envia uma mensagem ao dono de ${animal.nome}!`}
+                                    </p>
                                 </div>
                             ) : (
                                 mensagens.map(msg => {
@@ -375,16 +423,20 @@ export default function AnimalPerfil() {
                                     const isDonoAnimal = msg.sender_id === animal.dono_id
                                     return (
                                         <div key={msg.id} className={`flex gap-3 ${isMinha ? 'flex-row-reverse' : ''}`}>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isDonoAnimal ? 'bg-orange-600 text-white' : 'bg-stone-300 text-stone-700'
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isDonoAnimal ? 'bg-orange-600 text-white' : 'bg-stone-200 text-stone-700'
                                                 }`}>
                                                 {(msg.profiles?.nome || 'U')[0].toUpperCase()}
                                             </div>
-                                            <div className={`max-w-xs ${isMinha ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                                            <div className={`max-w-xs flex flex-col gap-1 ${isMinha ? 'items-end' : 'items-start'}`}>
                                                 <div className={`flex items-center gap-2 ${isMinha ? 'flex-row-reverse' : ''}`}>
-                                                    <span className="text-xs font-semibold text-stone-600">{msg.profiles?.nome || 'Utilizador'}</span>
-                                                    {isDonoAnimal && <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-medium">Dono</span>}
+                                                    <span className="text-xs font-semibold text-stone-500">{msg.profiles?.nome || 'Utilizador'}</span>
+                                                    {isDonoAnimal && (
+                                                        <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-medium">Dono</span>
+                                                    )}
                                                 </div>
-                                                <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMinha ? 'bg-orange-600 text-white rounded-tr-sm' : 'bg-white text-stone-800 border border-stone-200 rounded-tl-sm'
+                                                <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMinha
+                                                        ? 'bg-orange-600 text-white rounded-tr-sm'
+                                                        : 'bg-white text-stone-800 border border-stone-200 rounded-tl-sm'
                                                     }`}>
                                                     {msg.conteudo}
                                                 </div>
@@ -399,6 +451,7 @@ export default function AnimalPerfil() {
                             <div ref={chatEndRef} />
                         </div>
 
+                        {/* Input */}
                         <div className="p-4 border-t border-stone-200">
                             {session ? (
                                 <form onSubmit={enviarMensagem} className="flex gap-3">
@@ -406,7 +459,7 @@ export default function AnimalPerfil() {
                                         type="text"
                                         value={novaMensagem}
                                         onChange={e => setNovaMensagem(e.target.value)}
-                                        placeholder="Escreve uma mensagem..."
+                                        placeholder={isDono ? 'Responde a um voluntário...' : `Escreve uma mensagem ao dono de ${animal.nome}...`}
                                         className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-2xl focus:border-orange-500 focus:outline-none text-sm"
                                     />
                                     <button type="submit" disabled={enviando || !novaMensagem.trim()}
@@ -416,7 +469,7 @@ export default function AnimalPerfil() {
                                 </form>
                             ) : (
                                 <div className="text-center py-3">
-                                    <p className="text-stone-500 text-sm mb-3">Faz login para enviar mensagens</p>
+                                    <p className="text-stone-500 text-sm mb-3">Faz login para enviar uma mensagem ao dono</p>
                                     <Link to="/login" className="bg-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors">
                                         Entrar
                                     </Link>
