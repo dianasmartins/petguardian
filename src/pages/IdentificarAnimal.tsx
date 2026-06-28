@@ -45,74 +45,89 @@ export default function IdentificarAnimal() {
         })
 
     const calcularScore = (res: ResultadoIA, animal: Animal): number => {
-        let score = 0
+        const iaAnimal = (animal as any).caracteristicas_ia
 
-        // 1. Espécie — 35 pontos (mais tolerante)
+        // Se o animal tem características IA guardadas — comparação estruturada
+        if (iaAnimal && !iaAnimal.modo) {
+            let score = 0
+
+            // Espécie — 40 pontos
+            const espIA = (res.especie || '').toLowerCase()
+            const espAnimal = (iaAnimal.especie || '').toLowerCase()
+            if (espIA === espAnimal) score += 40
+            else if (espIA.includes(espAnimal) || espAnimal.includes(espIA)) score += 30
+
+            // Cor principal — 25 pontos
+            const corIA = (res.cor_principal || '').toLowerCase()
+            const corAnimal2 = (iaAnimal.cor_principal || '').toLowerCase()
+            if (corIA === corAnimal2) score += 25
+            else if (corIA.includes(corAnimal2) || corAnimal2.includes(corIA)) score += 15
+            else {
+                const todasCoresAnimal = [corAnimal2, ...(iaAnimal.cores_secundarias || []).map((c: string) => c.toLowerCase())]
+                const todasCoresIA = [corIA, ...(res.cores_secundarias || []).map((c: string) => c.toLowerCase())]
+                if (todasCoresAnimal.some(ca => todasCoresIA.some(ci => ca.includes(ci) || ci.includes(ca)))) score += 10
+            }
+
+            // Raça — 20 pontos
+            const racaIA2 = (res.raca_estimada || '').toLowerCase()
+            const racaAnimal2 = (iaAnimal.raca_estimada || '').toLowerCase()
+            if (racaIA2 && racaAnimal2) {
+                if (racaIA2 === racaAnimal2) score += 20
+                else if (racaIA2.includes(racaAnimal2.split(' ')[0]) || racaAnimal2.includes(racaIA2.split(' ')[0])) score += 12
+            } else {
+                score += 8
+            }
+
+            // Tamanho — 10 pontos
+            if (res.tamanho && iaAnimal.tamanho && res.tamanho === iaAnimal.tamanho) score += 10
+
+            // Características distintivas — 5 pontos
+            if (res.caracteristicas_distintivas?.length && iaAnimal.caracteristicas_distintivas?.length) {
+                const matchCaract = res.caracteristicas_distintivas.some((c: string) =>
+                    iaAnimal.caracteristicas_distintivas.some((ca: string) =>
+                        c.toLowerCase().includes(ca.toLowerCase().split(' ')[0]) ||
+                        ca.toLowerCase().includes(c.toLowerCase().split(' ')[0])
+                    )
+                )
+                if (matchCaract) score += 5
+            }
+
+            return Math.min(Math.round(score), 100)
+        }
+
+        // Fallback sem características IA — comparação por texto
+        let score = 0
         const esp = res.especie?.toLowerCase() || ''
-        const isCao = esp.includes('cão') || esp.includes('cao') || esp.includes('dog') || esp.includes('canin')
-        const isGato = esp.includes('gato') || esp.includes('cat') || esp.includes('felin')
+        const isCao = esp.includes('cão') || esp.includes('cao') || esp.includes('dog')
+        const isGato = esp.includes('gato') || esp.includes('cat')
         if (isCao && animal.especie === 'cao') score += 35
         else if (isGato && animal.especie === 'gato') score += 35
-        else if (!isCao && !isGato) score += 10 // espécie desconhecida — não penaliza muito
+        else score += 10
 
-        // 2. Cor — 35 pontos (compara palavras individuais)
-        const corIA = (res.cor_principal || '').toLowerCase()
-        const coresIA = [corIA, ...(res.cores_secundarias || []).map(c => c.toLowerCase())]
-        const corAnimal = animal.cor.toLowerCase()
-        const palavrasCorAnimal = corAnimal.split(/[\s+,]/).filter(Boolean)
-        const palavrasCorIA = coresIA.join(' ').split(/[\s+,]/).filter(Boolean)
-
-        // Mapeamento de cores similares
+        const corIA3 = (res.cor_principal || '').toLowerCase()
+        const corAnimal3 = animal.cor.toLowerCase()
         const similares: Record<string, string[]> = {
-            'castanho': ['marrom', 'dourado', 'bege', 'creme', 'caramelo', 'acobreado'],
+            'castanho': ['marrom', 'dourado', 'bege', 'creme', 'caramelo'],
             'preto': ['escuro', 'negro'],
             'branco': ['creme', 'bege', 'claro'],
-            'cinzento': ['cinza', 'prateado'],
             'dourado': ['castanho', 'bege', 'amarelo', 'caramelo'],
-            'laranja': ['ruivo', 'avermelhado', 'castanho'],
         }
-
-        let matchCor = false
-        for (const pAnimal of palavrasCorAnimal) {
-            for (const pIA of palavrasCorIA) {
-                if (pAnimal === pIA || pAnimal.includes(pIA) || pIA.includes(pAnimal)) {
-                    matchCor = true; break
-                }
-                const simsAnimal = similares[pAnimal] || []
-                const simsIA = similares[pIA] || []
-                if (simsAnimal.includes(pIA) || simsIA.includes(pAnimal)) {
-                    matchCor = true; break
-                }
-            }
-            if (matchCor) break
-        }
+        const palavrasCorIA = [corIA3, ...(res.cores_secundarias || []).map((c: string) => c.toLowerCase())]
+        const palavrasCorAnimal = corAnimal3.split(' ').filter(Boolean)
+        const matchCor = palavrasCorAnimal.some(pa =>
+            palavrasCorIA.some(pi => pa === pi || pa.includes(pi) || pi.includes(pa) ||
+                (similares[pa] || []).includes(pi) || (similares[pi] || []).includes(pa))
+        )
         if (matchCor) score += 35
-        else score += 5 // cor diferente mas não penaliza totalmente
+        else score += 5
 
-        // 3. Raça — 20 pontos (comparação parcial e flexível)
         if (res.raca_estimada && animal.raca) {
-            const racaIA = res.raca_estimada.toLowerCase()
-            const racaAnimal = animal.raca.toLowerCase()
-            if (racaAnimal.includes(racaIA) || racaIA.includes(racaAnimal)) {
-                score += 20
-            } else {
-                // Primeiras palavras
-                const primeiraIA = racaIA.split(' ')[0]
-                const primeiraAnimal = racaAnimal.split(' ')[0]
-                if (primeiraIA === primeiraAnimal || racaAnimal.includes(primeiraIA)) score += 10
-            }
+            const racaIA3 = res.raca_estimada.toLowerCase()
+            const racaAnimal3 = animal.raca.toLowerCase()
+            if (racaAnimal3.includes(racaIA3) || racaIA3.includes(racaAnimal3)) score += 20
+            else if (racaIA3.split(' ')[0] === racaAnimal3.split(' ')[0]) score += 10
         } else if (!animal.raca) {
-            // Animal sem raça definida — não penaliza, dá pontos parciais
             score += 10
-        }
-
-        // 4. Descrição — 10 pontos (procura palavras-chave da IA na descrição)
-        if (animal.descricao && res.caracteristicas_distintivas?.length > 0) {
-            const descricao = animal.descricao.toLowerCase()
-            const matches = res.caracteristicas_distintivas.filter(c =>
-                descricao.includes(c.toLowerCase().split(' ')[0])
-            ).length
-            if (matches > 0) score += Math.min(matches * 5, 10)
         }
 
         return Math.min(Math.round(score), 100)
