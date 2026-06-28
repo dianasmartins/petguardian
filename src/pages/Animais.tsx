@@ -94,7 +94,7 @@ export default function Animais() {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {filtrados.map(animal => (
-                            <div key={animal.id} className="bg-white rounded-2xl overflow-hidden border border-stone-200 hover:shadow-md hover:border-orange-200 transition-all">
+                            <Link key={animal.id} to={`/animais/${animal.id}`} className="bg-white rounded-2xl overflow-hidden border border-stone-200 hover:shadow-md hover:border-orange-200 transition-all block">
                                 <div className="h-44 bg-orange-50 flex items-center justify-center text-6xl overflow-hidden">
                                     {animal.foto_url
                                         ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
@@ -115,7 +115,7 @@ export default function Animais() {
                                         {new Date(animal.created_at).toLocaleDateString('pt-PT')}
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 )}
