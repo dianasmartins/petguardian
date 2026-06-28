@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import type { Animal } from '../types'
-import { Link } from 'react-router-dom'
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -13,33 +13,30 @@ L.Icon.Default.mergeOptions({
     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 })
 
-// Cria ícones SVG com forma E cor diferentes para cada estado
-// Modo normal: vermelho (círculo), laranja (triângulo), verde (estrela)
-// Modo daltónico: azul (círculo), amarelo (triângulo), roxo (estrela) - sem dependência de vermelho/verde
 function criarIcone(estado: string, daltonico: boolean) {
     let cor: string
     let forma: string
 
     if (daltonico) {
         if (estado === 'desaparecido') {
-            cor = '#1D4ED8' // azul
+            cor = '#1D4ED8'
             forma = `<circle cx="12" cy="10" r="7" fill="${cor}" stroke="white" stroke-width="2"/>`
         } else if (estado === 'avistado') {
-            cor = '#D97706' // amarelo escuro
+            cor = '#D97706'
             forma = `<polygon points="12,3 21,17 3,17" fill="${cor}" stroke="white" stroke-width="2"/>`
         } else {
-            cor = '#7C3AED' // roxo
+            cor = '#7C3AED'
             forma = `<polygon points="12,2 14.9,8.5 22,9.3 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.3 9.1,8.5" fill="${cor}" stroke="white" stroke-width="1.5"/>`
         }
     } else {
         if (estado === 'desaparecido') {
-            cor = '#DC2626' // vermelho
+            cor = '#DC2626'
             forma = `<circle cx="12" cy="10" r="7" fill="${cor}" stroke="white" stroke-width="2"/>`
         } else if (estado === 'avistado') {
-            cor = '#D97706' // laranja
+            cor = '#D97706'
             forma = `<polygon points="12,3 21,17 3,17" fill="${cor}" stroke="white" stroke-width="2"/>`
         } else {
-            cor = '#16A34A' // verde
+            cor = '#16A34A'
             forma = `<polygon points="12,2 14.9,8.5 22,9.3 17,14 18.5,21 12,17.5 5.5,21 7,14 2,9.3 9.1,8.5" fill="${cor}" stroke="white" stroke-width="1.5"/>`
         }
     }
@@ -85,7 +82,6 @@ export default function Mapa() {
                 (payload) => setAnimais(prev => prev.map(a => a.id === payload.new.id ? payload.new as Animal : a)))
             .subscribe()
 
-        // Alerta de proximidade
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(async pos => {
                 const { latitude: ula, longitude: ulo } = pos.coords
@@ -145,14 +141,14 @@ export default function Mapa() {
                     <option value="outro">Outro</option>
                 </select>
 
-                {/* Legenda com formas */}
+                {/* Legenda */}
                 <div className="flex items-center gap-3 text-xs text-stone-500 ml-2">
                     <span className="flex items-center gap-1">
                         <svg width="12" height="12" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill={daltonico ? '#1D4ED8' : '#DC2626'} /></svg>
                         Desaparecido
                     </span>
                     <span className="flex items-center gap-1">
-                        <svg width="12" height="12" viewBox="0 0 24 24"><polygon points="12,3 21,21 3,21" fill={daltonico ? '#D97706' : '#D97706'} /></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24"><polygon points="12,3 21,21 3,21" fill="#D97706" /></svg>
                         Avistado
                     </span>
                     <span className="flex items-center gap-1">
@@ -167,16 +163,13 @@ export default function Mapa() {
                         setDaltonico(!daltonico)
                         mostrarToast(daltonico ? 'Modo daltónico desativado' : 'Modo daltónico ativado ♿', 'info')
                     }}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-colors ml-auto ${daltonico
-                            ? 'border-blue-500 bg-blue-50 text-blue-700'
-                            : 'border-stone-200 text-stone-500 hover:border-stone-300'
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-colors ${daltonico ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-stone-200 text-stone-500 hover:border-stone-300'
                         }`}
-                    title="Modo daltónico — usa formas e cores alternativas"
                 >
                     👁 Modo daltónico
                 </button>
 
-                <div className="flex border-2 border-stone-200 rounded-xl overflow-hidden">
+                <div className="ml-auto flex border-2 border-stone-200 rounded-xl overflow-hidden">
                     <button onClick={() => setVista('mapa')}
                         className={`px-4 py-2 text-sm font-semibold transition-colors ${vista === 'mapa' ? 'bg-orange-600 text-white' : 'text-stone-600 hover:bg-stone-50'}`}>
                         🗺 Mapa
@@ -201,7 +194,7 @@ export default function Mapa() {
                                 icon={criarIcone(animal.estado, daltonico)}
                             >
                                 <Popup>
-                                    <div className="min-w-40">
+                                    <div className="min-w-44">
                                         {animal.foto_url && (
                                             <img src={animal.foto_url} alt={animal.nome} className="w-full h-28 object-cover rounded-lg mb-2" />
                                         )}
@@ -214,15 +207,17 @@ export default function Mapa() {
                                         {animal.descricao && (
                                             <p className="text-xs text-stone-500 mt-2 line-clamp-2">{animal.descricao}</p>
                                         )}
-                                        <div className="text-xs text-stone-400 mt-2">
+                                        <div className="text-xs text-stone-400 mt-2 mb-3">
                                             {new Date(animal.created_at).toLocaleDateString('pt-PT')}
                                         </div>
-                                        <Link
-                                            to={`/avistamento/${animal.id}`}
-                                            className="block mt-3 w-full text-center bg-orange-600 text-white py-2 px-3 rounded-lg text-xs font-semibold hover:bg-orange-700 transition-colors"
-                                        >
-                                            👁 Reportar avistamento
-                                        </Link>
+                                        {animal.estado !== 'encontrado' && (
+                                            <Link
+                                                to={`/avistamento/${animal.id}`}
+                                                className="block w-full text-center bg-orange-600 text-white py-2 px-3 rounded-lg text-xs font-semibold hover:bg-orange-700 transition-colors"
+                                            >
+                                                👁 Reportar avistamento
+                                            </Link>
+                                        )}
                                     </div>
                                 </Popup>
                             </Marker>
@@ -244,7 +239,13 @@ export default function Mapa() {
                                         <span className="font-bold text-sm text-stone-900">{animal.nome}</span>
                                         {estadoBadge(animal.estado)}
                                     </div>
-                                    <div className="text-xs text-stone-400">{animal.cor}</div>
+                                    <div className="text-xs text-stone-400 mb-2">{animal.cor}</div>
+                                    {animal.estado !== 'encontrado' && (
+                                        <Link to={`/avistamento/${animal.id}`}
+                                            className="block w-full text-center bg-orange-600 text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-orange-700 transition-colors">
+                                            👁 Reportar avistamento
+                                        </Link>
+                                    )}
                                 </div>
                             </div>
                         ))}
