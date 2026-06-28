@@ -40,7 +40,7 @@ export default function CookieBanner() {
                             <p className="text-stone-400 text-xs leading-relaxed">
                                 Usamos cookies essenciais para o funcionamento da plataforma e, com o teu consentimento,
                                 cookies analíticos e funcionais para melhorar a tua experiência.{' '}
-                                <Link to="/definicoes" className="text-orange-400 hover:underline" onClick={() => setVisivel(false)}>
+                                <Link to="/definicoes" className="text-green-400 hover:underline" onClick={() => setVisivel(false)}>
                                     Saber mais
                                 </Link>
                             </p>
@@ -60,7 +60,7 @@ export default function CookieBanner() {
                             </button>
                             <button
                                 onClick={() => guardar('todos')}
-                                className="px-4 py-2 text-xs font-semibold bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors"
+                                className="px-4 py-2 text-xs font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
                             >
                                 Aceitar todos
                             </button>
@@ -91,7 +91,7 @@ export default function CookieBanner() {
                                             onChange={e => item.setter && item.setter(e.target.checked)}
                                             className="sr-only peer"
                                         />
-                                        <div className="w-9 h-5 bg-stone-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600 peer-disabled:opacity-40"></div>
+                                        <div className="w-9 h-5 bg-stone-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600 peer-disabled:opacity-40"></div>
                                     </label>
                                 </div>
                             ))}
@@ -99,7 +99,7 @@ export default function CookieBanner() {
                         <div className="flex gap-2 justify-end">
                             <button
                                 onClick={() => guardar('personalizado')}
-                                className="px-5 py-2 text-sm font-semibold bg-orange-600 text-white rounded-xl hover:bg-orange-700 transition-colors"
+                                className="px-5 py-2 text-sm font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
                             >
                                 Guardar preferências
                             </button>

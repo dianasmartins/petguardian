@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
+import { gerarCartazPDF } from '../lib/gerarQRCode'
+import { registarNotificacoesPush, enviarNotificacaoLocal } from '../lib/notificacoes'
 import { SkeletonList, SkeletonTimeline } from '../components/Skeleton'
 import type { Ocorrencia, Avistamento } from '../types'
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
@@ -29,6 +31,10 @@ export default function Ocorrencias() {
 
     useEffect(() => {
         fetchTudo()
+        // Pede permissão para notificações push
+        if ('Notification' in window && Notification.permission === 'default') {
+            setTimeout(() => registarNotificacoesPush(), 3000)
+        }
     }, [])
 
     useEffect(() => {
@@ -45,6 +51,7 @@ export default function Ocorrencias() {
                 setAvistamentos(prev => [...prev, payload.new as Avistamento])
                 fetchTudo()
                 mostrarToast('Novo avistamento reportado! 👁', 'info')
+                enviarNotificacaoLocal('🐾 Novo avistamento!', 'Um voluntário reportou um avistamento de um dos teus animais.', '/ocorrencias')
             })
             .subscribe()
 
@@ -134,6 +141,18 @@ export default function Ocorrencias() {
         mostrarToast('Link copiado!', 'sucesso')
     }
 
+    const gerarCartaz = async (oc: Ocorrencia) => {
+        const animal = oc.animais as any
+        if (!animal) return
+        mostrarToast('A gerar cartaz para imprimir...', 'info')
+        try {
+            await gerarCartazPDF(animal, window.location.origin)
+            mostrarToast('Cartaz aberto — usa Ctrl+P para imprimir!', 'sucesso')
+        } catch {
+            mostrarToast('Erro ao gerar cartaz.', 'erro')
+        }
+    }
+
     const partilharInstagram = async (oc: Ocorrencia) => {
         const animal = oc.animais as any
         mostrarToast('A gerar imagem...', 'info')
@@ -186,12 +205,12 @@ export default function Ocorrencias() {
                     <button
                         onClick={() => { setTabPrincipal('meus-animais'); setSelecionada(null) }}
                         className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tabPrincipal === 'meus-animais'
-                                ? 'border-orange-600 text-orange-600'
+                                ? 'border-green-600 text-green-700'
                                 : 'border-transparent text-stone-500 hover:text-stone-800'
                             }`}
                     >
                         🐾 Os meus animais
-                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${tabPrincipal === 'meus-animais' ? 'bg-orange-100 text-orange-600' : 'bg-stone-100 text-stone-500'
+                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${tabPrincipal === 'meus-animais' ? 'bg-green-100 text-green-700' : 'bg-stone-100 text-stone-500'
                             }`}>
                             {ocorrencias.length}
                         </span>
@@ -199,12 +218,12 @@ export default function Ocorrencias() {
                     <button
                         onClick={() => { setTabPrincipal('meus-avistamentos'); setSelecionada(null) }}
                         className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tabPrincipal === 'meus-avistamentos'
-                                ? 'border-orange-600 text-orange-600'
+                                ? 'border-green-600 text-green-700'
                                 : 'border-transparent text-stone-500 hover:text-stone-800'
                             }`}
                     >
                         👁 Avistamentos que reportei
-                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${tabPrincipal === 'meus-avistamentos' ? 'bg-orange-100 text-orange-600' : 'bg-stone-100 text-stone-500'
+                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${tabPrincipal === 'meus-avistamentos' ? 'bg-green-100 text-green-700' : 'bg-stone-100 text-stone-500'
                             }`}>
                             {meusAvistamentos.length}
                         </span>
@@ -218,7 +237,7 @@ export default function Ocorrencias() {
                             <div className="text-center py-20">
                                 <div className="text-5xl mb-4">🐾</div>
                                 <p className="text-stone-500 mb-4">Ainda não tens animais registados.</p>
-                                <a href="/registar-animal" className="bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors">
+                                <a href="/registar-animal" className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                                     Registar animal desaparecido
                                 </a>
                             </div>
@@ -232,7 +251,7 @@ export default function Ocorrencias() {
                                             className={`bg-white rounded-2xl border-2 p-4 cursor-pointer transition-all hover:shadow-md ${selecionada?.id === oc.id ? 'border-orange-500 shadow-md' : 'border-stone-200'
                                                 }`}>
                                             <div className="flex gap-3 items-start">
-                                                <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
+                                                <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
                                                     {(oc.animais as any)?.foto_url
                                                         ? <img src={(oc.animais as any).foto_url} alt="" className="w-full h-full object-cover rounded-xl" />
                                                         : ((oc.animais as any)?.especie === 'gato' ? '🐈' : '🐕')}
@@ -261,7 +280,7 @@ export default function Ocorrencias() {
                                         {/* Header */}
                                         <div className="bg-white rounded-2xl border border-stone-200 p-5">
                                             <div className="flex items-start gap-4">
-                                                <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-4xl flex-shrink-0 overflow-hidden">
+                                                <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center text-4xl flex-shrink-0 overflow-hidden">
                                                     {(selecionada.animais as any)?.foto_url
                                                         ? <img src={(selecionada.animais as any).foto_url} alt="" className="w-full h-full object-cover rounded-2xl" />
                                                         : ((selecionada.animais as any)?.especie === 'gato' ? '🐈' : '🐕')}
@@ -344,6 +363,10 @@ export default function Ocorrencias() {
                                                     className="flex items-center gap-2 bg-stone-100 text-stone-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-stone-200 transition-colors">
                                                     🔗 Copiar link
                                                 </button>
+                                                <button onClick={() => gerarCartaz(selecionada)}
+                                                    className="flex items-center gap-2 bg-stone-100 text-stone-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-stone-200 transition-colors">
+                                                    🖨️ Cartaz QR
+                                                </button>
                                             </div>
                                             <p className="text-xs text-stone-400 mt-2">Instagram: descarrega a imagem e partilha manualmente na app</p>
                                         </div>
@@ -355,7 +378,7 @@ export default function Ocorrencias() {
                                                 {loadingAvistamentos ? <SkeletonTimeline /> : (
                                                     <div className="flex flex-col gap-0">
                                                         <div className="flex gap-3 pb-4 relative">
-                                                            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-sm flex-shrink-0 z-10">📝</div>
+                                                            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-sm flex-shrink-0 z-10">📝</div>
                                                             {avistamentos.length > 0 && <div className="absolute left-4 top-8 bottom-0 w-0.5 bg-stone-100"></div>}
                                                             <div className="pt-1">
                                                                 <div className="text-sm font-semibold text-stone-900">Ocorrência aberta</div>
@@ -400,14 +423,14 @@ export default function Ocorrencias() {
                                                             {avistamentos.filter(a => a.latitude && a.longitude).map(av => (
                                                                 <Marker key={av.id} position={[av.latitude, av.longitude]} />
                                                             ))}
-                                                            {polylinePoints.length > 1 && <Polyline positions={polylinePoints} color="#f97316" weight={3} dashArray="8,4" />}
+                                                            {polylinePoints.length > 1 && <Polyline positions={polylinePoints} color="#16a34a" weight={3} dashArray="8,4" />}
                                                         </MapContainer>
                                                     </div>
                                                 ) : (
                                                     <div className="h-64 flex items-center justify-center text-stone-400 text-sm">Sem localização disponível</div>
                                                 )}
                                                 <div className="px-4 py-2 text-xs text-stone-400 bg-stone-50">
-                                                    🔵 Local de desaparecimento · <span className="text-orange-500">▬▬</span> Trajeto
+                                                    🔵 Local de desaparecimento · <span className="text-green-600">▬▬</span> Trajeto
                                                 </div>
                                             </div>
                                         </div>
@@ -432,7 +455,7 @@ export default function Ocorrencias() {
                             <div className="text-center py-20">
                                 <div className="text-5xl mb-4">👁</div>
                                 <p className="text-stone-500 mb-4">Ainda não reportaste nenhum avistamento.</p>
-                                <a href="/mapa" className="bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors">
+                                <a href="/mapa" className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                                     Ver animais desaparecidos
                                 </a>
                             </div>
@@ -443,7 +466,7 @@ export default function Ocorrencias() {
                                     <div key={av.id} className="bg-white rounded-2xl border border-stone-200 p-5">
                                         <div className="flex gap-4 items-start">
                                             {/* Foto do animal */}
-                                            <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
+                                            <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
                                                 {av.animais?.foto_url
                                                     ? <img src={av.animais.foto_url} alt="" className="w-full h-full object-cover rounded-2xl" />
                                                     : (av.animais?.especie === 'gato' ? '🐈' : '🐕')}

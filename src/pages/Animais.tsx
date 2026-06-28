@@ -45,7 +45,7 @@ export default function Animais() {
                         <h1 className="text-3xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Animais desaparecidos</h1>
                         <p className="text-stone-500 mt-1">{loading ? 'A carregar...' : `${filtrados.length} resultado${filtrados.length !== 1 ? 's' : ''}`}</p>
                     </div>
-                    <Link to="/registar-animal" className="bg-orange-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors">
+                    <Link to="/registar-animal" className="bg-green-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                         + Registar Animal
                     </Link>
                 </div>
@@ -57,17 +57,17 @@ export default function Animais() {
                         placeholder="Pesquisar por nome ou raça..."
                         value={pesquisa}
                         onChange={e => setPesquisa(e.target.value)}
-                        className="flex-1 min-w-48 px-4 py-2 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm"
+                        className="flex-1 min-w-48 px-4 py-2 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
                     />
                     <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
-                        className="px-4 py-2 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm bg-white">
+                        className="px-4 py-2 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm bg-white">
                         <option value="">Todos os estados</option>
                         <option value="desaparecido">Desaparecido</option>
                         <option value="avistado">Avistado</option>
                         <option value="encontrado">Encontrado</option>
                     </select>
                     <select value={filtroEspecie} onChange={e => setFiltroEspecie(e.target.value)}
-                        className="px-4 py-2 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm bg-white">
+                        className="px-4 py-2 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm bg-white">
                         <option value="">Todas as espécies</option>
                         <option value="cao">Cão</option>
                         <option value="gato">Gato</option>
@@ -94,8 +94,8 @@ export default function Animais() {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {filtrados.map(animal => (
-                            <Link key={animal.id} to={`/animais/${animal.id}`} className="bg-white rounded-2xl overflow-hidden border border-stone-200 hover:shadow-md hover:border-orange-200 transition-all block">
-                                <div className="h-44 bg-orange-50 flex items-center justify-center text-6xl overflow-hidden">
+                            <Link key={animal.id} to={`/animais/${animal.id}`} className="bg-white rounded-2xl overflow-hidden border border-stone-200 hover:shadow-md hover:border-green-200 transition-all block">
+                                <div className="h-44 bg-green-50 flex items-center justify-center text-6xl overflow-hidden">
                                     {animal.foto_url
                                         ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
                                         : (animal.especie === 'gato' ? '🐈' : animal.especie === 'cao' ? '🐕' : '🐾')

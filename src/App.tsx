@@ -18,6 +18,7 @@ import Definicoes from './pages/Definicoes'
 import SubmeterAvistamento from './pages/SubmeterAvistamento'
 import Admin from './pages/Admin'
 import AnimalPerfil from './pages/AnimalPerfil'
+import Estatisticas from './pages/Estatisticas'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -33,10 +34,10 @@ export default function App() {
   }, [])
 
   if (loading) return (
-    <div className="flex items-center justify-center h-screen bg-orange-50">
+    <div className="flex items-center justify-center h-screen bg-green-50">
       <div className="text-center">
         <div className="text-4xl mb-4">🐾</div>
-        <div className="text-orange-600 font-semibold">A carregar...</div>
+        <div className="text-green-700 font-semibold">A carregar...</div>
       </div>
     </div>
   )
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/animais/:id" element={<AnimalPerfil />} />
           <Route path="/mapa" element={<Mapa />} />
           <Route path="/identificar" element={<IdentificarAnimal />} />
+          <Route path="/estatisticas" element={<Estatisticas />} />
           <Route path="/avistamento/:animalId" element={<SubmeterAvistamento />} />
           <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
           <Route path="/registo" element={!session ? <Registo /> : <Navigate to="/" />} />

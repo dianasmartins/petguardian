@@ -124,7 +124,7 @@ export default function Registo() {
     }
 
     if (sucesso) return (
-        <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center">
                 <div className="text-5xl mb-4">✅</div>
                 <h2 className="text-xl font-bold text-stone-900 mb-2">
@@ -143,7 +143,7 @@ export default function Registo() {
     const { texto: textoF, cor: corF } = textoForca(forca)
 
     return (
-        <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4 py-10">
+        <div className="min-h-screen bg-green-50 flex items-center justify-center p-4 py-10">
             <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md">
                 <div className="text-center mb-8">
                     <div className="text-4xl mb-3">🐾</div>
@@ -154,7 +154,7 @@ export default function Registo() {
                 <div className="flex gap-2 mb-6">
                     {(['singular', 'organizacao'] as TipoConta[]).map(tipo => (
                         <button key={tipo} type="button" onClick={() => setTipoConta(tipo)}
-                            className={`flex-1 py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${tipoConta === tipo ? 'border-orange-600 bg-orange-50 text-orange-700' : 'border-stone-200 text-stone-600'
+                            className={`flex-1 py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${tipoConta === tipo ? 'border-green-600 bg-green-50 text-green-800' : 'border-stone-200 text-stone-600'
                                 }`}>
                             {tipo === 'singular' ? '👤 Pessoa singular' : '🏢 Organização'}
                         </button>
@@ -174,7 +174,7 @@ export default function Registo() {
                         </label>
                         <input type="text" value={nome} onChange={e => setNome(e.target.value)} required
                             placeholder={tipoConta === 'organizacao' ? 'Nome do responsável' : 'O teu nome'}
-                            className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm" />
+                            className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                     </div>
 
                     {tipoConta === 'organizacao' && (
@@ -183,14 +183,14 @@ export default function Registo() {
                                 <label className="text-sm font-semibold text-stone-500">Nome da organização *</label>
                                 <input type="text" value={orgNome} onChange={e => setOrgNome(e.target.value)}
                                     placeholder="Ex: Associação Amigos dos Animais"
-                                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm" />
+                                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                             </div>
                             <div className="flex flex-col gap-1">
                                 <label className="text-sm font-semibold text-stone-500">NIF / NIPC (opcional)</label>
                                 <input type="text" value={orgNif}
                                     onChange={e => setOrgNif(e.target.value.replace(/\D/g, '').slice(0, 9))}
                                     placeholder="123456789"
-                                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm" />
+                                    className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                             </div>
                         </>
                     )}
@@ -199,7 +199,7 @@ export default function Registo() {
                         <label className="text-sm font-semibold text-stone-500">Email *</label>
                         <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
                             placeholder="o.teu@email.com"
-                            className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm" />
+                            className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                     </div>
 
                     <div className="flex flex-col gap-1">
@@ -207,7 +207,7 @@ export default function Registo() {
                         <input type="tel" value={telemovel}
                             onChange={e => setTelemovel(e.target.value.replace(/\D/g, '').slice(0, 9))}
                             placeholder="912345678"
-                            className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm" />
+                            className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                     </div>
 
                     {tipoConta === 'singular' && (
@@ -219,7 +219,7 @@ export default function Registo() {
                                 onChange={e => { setDataNascimento(e.target.value); validarIdade(e.target.value) }}
                                 max={new Date().toISOString().split('T')[0]}
                                 required
-                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm" />
+                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                             {erroIdade && (
                                 <div className={`text-xs px-3 py-2 rounded-lg mt-1 ${erroIdade.includes('13 anos') ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-600'
                                     }`}>
@@ -233,7 +233,7 @@ export default function Registo() {
                         <label className="text-sm font-semibold text-stone-500">Password *</label>
                         <input type="password" value={password} onChange={e => setPassword(e.target.value)} required
                             placeholder="••••••••"
-                            className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm" />
+                            className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
                         {password.length > 0 && (
                             <div className="mt-2">
                                 <div className="flex gap-1 mb-1">
@@ -265,18 +265,18 @@ export default function Registo() {
 
                     <div className="flex items-start gap-2 text-sm text-stone-500">
                         <input type="checkbox" required className="mt-1" />
-                        <span>Aceito os <a href="#" className="text-orange-600 hover:underline">Termos de Serviço</a> e a <a href="#" className="text-orange-600 hover:underline">Política de Privacidade</a></span>
+                        <span>Aceito os <a href="#" className="text-green-700 hover:underline">Termos de Serviço</a> e a <a href="#" className="text-green-700 hover:underline">Política de Privacidade</a></span>
                     </div>
 
                     <button type="submit"
                         disabled={loading || (tipoConta === 'singular' && erroIdade.includes('13 anos'))}
-                        className="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors disabled:opacity-60 mt-2">
+                        className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60 mt-2">
                         {loading ? 'A criar conta...' : tipoConta === 'organizacao' ? 'Submeter pedido de registo' : 'Criar conta gratuita'}
                     </button>
                 </form>
 
                 <p className="text-center text-sm text-stone-500 mt-6">
-                    Já tens conta? <Link to="/login" className="text-orange-600 font-semibold hover:underline">Entra aqui</Link>
+                    Já tens conta? <Link to="/login" className="text-green-700 font-semibold hover:underline">Entra aqui</Link>
                 </p>
             </div>
         </div>

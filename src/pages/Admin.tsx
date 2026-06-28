@@ -29,8 +29,8 @@ interface Animal {
     dono_id: string
 }
 
-// Admin emails autorizados 
-const ADMIN_EMAILS = ['dmartins94@gmail.com']
+// Admin emails autorizados - adiciona o teu email aqui
+const ADMIN_EMAILS = ['diana@gmail.com', 'admin@petguardian.pt']
 
 export default function Admin() {
     const [authorized, setAuthorized] = useState(false)
@@ -139,7 +139,7 @@ export default function Admin() {
                     ].map(tab => (
                         <button key={tab.id} onClick={() => setTabActiva(tab.id as any)}
                             className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${tabActiva === tab.id
-                                    ? 'border-orange-600 text-orange-600'
+                                    ? 'border-green-600 text-green-700'
                                     : 'border-transparent text-stone-500 hover:text-stone-800'
                                 }`}>
                             {tab.label}
@@ -157,7 +157,7 @@ export default function Admin() {
                                 { label: 'Animais registados', value: stats.totalAnimais, cor: 'text-stone-900', bg: 'bg-white' },
                                 { label: 'Desaparecidos', value: stats.totalDesaparecidos, cor: 'text-red-600', bg: 'bg-red-50' },
                                 { label: 'Encontrados', value: stats.totalEncontrados, cor: 'text-green-600', bg: 'bg-green-50' },
-                                { label: 'Avistamentos', value: stats.totalAvistamentos, cor: 'text-orange-600', bg: 'bg-orange-50' },
+                                { label: 'Avistamentos', value: stats.totalAvistamentos, cor: 'text-green-700', bg: 'bg-green-50' },
                                 { label: 'Taxa reencontro', value: `${stats.taxaReencontro}%`, cor: 'text-purple-600', bg: 'bg-purple-50' },
                             ].map(stat => (
                                 <div key={stat.label} className={`${stat.bg} rounded-2xl border border-stone-200 p-4 text-center`}>
@@ -173,7 +173,7 @@ export default function Admin() {
                         <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden mb-6">
                             <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center">
                                 <h2 className="font-bold text-stone-900">🐾 Últimos animais registados</h2>
-                                <button onClick={() => setTabActiva('animais')} className="text-orange-600 text-sm hover:underline">Ver todos →</button>
+                                <button onClick={() => setTabActiva('animais')} className="text-green-700 text-sm hover:underline">Ver todos →</button>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
@@ -208,7 +208,7 @@ export default function Admin() {
                         <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                             <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center">
                                 <h2 className="font-bold text-stone-900">👥 Últimos utilizadores registados</h2>
-                                <button onClick={() => setTabActiva('utilizadores')} className="text-orange-600 text-sm hover:underline">Ver todos →</button>
+                                <button onClick={() => setTabActiva('utilizadores')} className="text-green-700 text-sm hover:underline">Ver todos →</button>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">

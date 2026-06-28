@@ -82,7 +82,7 @@ export default function Perfil() {
                 {/* Avatar */}
                 <div className="bg-white rounded-2xl border border-stone-200 p-6 mb-6">
                     <div className="flex items-center gap-5">
-                        <div className="w-20 h-20 rounded-full bg-orange-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                        <div className="w-20 h-20 rounded-full bg-green-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
                             {nome ? nome.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : '?'}
                         </div>
                         <div>
@@ -106,7 +106,7 @@ export default function Perfil() {
                                 onChange={e => setNome(e.target.value)}
                                 required
                                 placeholder="O teu nome"
-                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm"
+                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
                             />
                         </div>
 
@@ -128,7 +128,7 @@ export default function Perfil() {
                                 value={telemovel}
                                 onChange={e => setTelemovel(e.target.value.replace(/\D/g, '').slice(0, 9))}
                                 placeholder="912345678"
-                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm"
+                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
                             />
                         </div>
 
@@ -155,7 +155,7 @@ export default function Perfil() {
                             <button
                                 type="submit"
                                 disabled={guardando}
-                                className="flex-2 bg-orange-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-orange-700 transition-colors disabled:opacity-60"
+                                className="flex-2 bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60"
                             >
                                 {guardando ? 'A guardar...' : 'Guardar alterações'}
                             </button>

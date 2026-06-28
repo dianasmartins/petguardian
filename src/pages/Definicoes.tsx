@@ -69,7 +69,7 @@ export default function Definicoes() {
                                 onChange={e => setNovaPw(e.target.value)}
                                 required
                                 placeholder="••••••••"
-                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm"
+                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
                             />
                         </div>
                         <div className="flex flex-col gap-1">
@@ -80,7 +80,7 @@ export default function Definicoes() {
                                 onChange={e => setConfirmPw(e.target.value)}
                                 required
                                 placeholder="••••••••"
-                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-orange-500 focus:outline-none text-sm"
+                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
                             />
                         </div>
 
@@ -94,7 +94,7 @@ export default function Definicoes() {
                         <button
                             type="submit"
                             disabled={loadingPw}
-                            className="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors disabled:opacity-60"
+                            className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60"
                         >
                             {loadingPw ? 'A alterar...' : 'Alterar password'}
                         </button>
@@ -119,7 +119,7 @@ export default function Definicoes() {
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
                                     <input type="checkbox" defaultChecked={item.checked} disabled={item.disabled} className="sr-only peer" />
-                                    <div className="w-10 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600 peer-disabled:opacity-50"></div>
+                                    <div className="w-10 h-6 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600 peer-disabled:opacity-50"></div>
                                 </label>
                             </div>
                         ))}

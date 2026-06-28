@@ -253,7 +253,7 @@ export default function IdentificarAnimal() {
                             <h2 className="font-bold text-stone-900 mb-4">📷 1. Foto do animal encontrado</h2>
                             <div
                                 onClick={() => fileRef.current?.click()}
-                                className="border-2 border-dashed border-stone-300 rounded-2xl p-8 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-colors mb-4"
+                                className="border-2 border-dashed border-stone-300 rounded-2xl p-8 text-center cursor-pointer hover:border-orange-400 hover:bg-green-50 transition-colors mb-4"
                             >
                                 {fotoPreview ? (
                                     <img src={fotoPreview} alt="Preview" className="max-h-48 mx-auto rounded-xl object-cover" />
@@ -269,7 +269,7 @@ export default function IdentificarAnimal() {
                             <button
                                 onClick={analisar}
                                 disabled={!foto || analisando}
-                                className="w-full bg-orange-600 text-white py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors disabled:opacity-60"
+                                className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60"
                             >
                                 {analisando ? '🤖 A analisar...' : '🤖 Analisar com IA'}
                             </button>
@@ -285,8 +285,8 @@ export default function IdentificarAnimal() {
                                     </span>
                                 </div>
                                 <div className="flex flex-wrap gap-2 mb-3">
-                                    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold">{resultado.especie}</span>
-                                    <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-semibold">{resultado.raca_estimada}</span>
+                                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">{resultado.especie}</span>
+                                    <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">{resultado.raca_estimada}</span>
                                     <span className="bg-stone-100 text-stone-700 px-3 py-1 rounded-full text-sm">{resultado.cor_principal}</span>
                                     {resultado.cores_secundarias?.map(c => (
                                         <span key={c} className="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-sm">{c}</span>
@@ -327,7 +327,7 @@ export default function IdentificarAnimal() {
                                                     }`}>
                                                     {/* Header do cartão */}
                                                     <div className="p-4 flex gap-3">
-                                                        <div className="w-16 h-16 rounded-xl bg-orange-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
+                                                        <div className="w-16 h-16 rounded-xl bg-green-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
                                                             {animal.foto_url
                                                                 ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover rounded-xl" />
                                                                 : (animal.especie === 'gato' ? '🐈' : '🐕')}
@@ -355,10 +355,10 @@ export default function IdentificarAnimal() {
                                                     </div>
 
                                                     {/* Ações de follow-up */}
-                                                    <div className={`px-4 py-3 border-t flex flex-wrap gap-2 ${i === 0 && score >= 60 ? 'bg-orange-50 border-orange-200' : 'bg-stone-50 border-stone-200'
+                                                    <div className={`px-4 py-3 border-t flex flex-wrap gap-2 ${i === 0 && score >= 60 ? 'bg-green-50 border-green-200' : 'bg-stone-50 border-stone-200'
                                                         }`}>
                                                         {score >= 60 && (
-                                                            <div className="w-full text-xs font-semibold text-orange-700 mb-1">
+                                                            <div className="w-full text-xs font-semibold text-green-800 mb-1">
                                                                 🎯 Correspondência provável — toma uma ação:
                                                             </div>
                                                         )}
@@ -366,7 +366,7 @@ export default function IdentificarAnimal() {
                                                             <>
                                                                 <button
                                                                     onClick={() => handleReportarAvistamento(animal.id)}
-                                                                    className="flex items-center gap-1.5 bg-orange-600 text-white px-3 py-2 rounded-xl text-xs font-semibold hover:bg-orange-700 transition-colors"
+                                                                    className="flex items-center gap-1.5 bg-green-600 text-white px-3 py-2 rounded-xl text-xs font-semibold hover:bg-green-700 transition-colors"
                                                                 >
                                                                     👁 Reportar avistamento
                                                                 </button>
@@ -406,7 +406,7 @@ export default function IdentificarAnimal() {
                                     <p className="text-stone-400 text-xs mb-5">O animal pode não estar registado ainda.</p>
                                     <div className="flex flex-col gap-2">
                                         <Link to="/animais"
-                                            className="block w-full text-center bg-orange-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors">
+                                            className="block w-full text-center bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors">
                                             Ver todos os animais desaparecidos
                                         </Link>
                                     </div>

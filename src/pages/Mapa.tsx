@@ -58,6 +58,7 @@ export default function Mapa() {
     const [vista, setVista] = useState<'mapa' | 'lista'>('mapa')
     const [alertaProximidade, setAlertaProximidade] = useState<number | null>(null)
     const [daltonico, setDaltonico] = useState(false)
+    const [filtroDistrito, setFiltroDistrito] = useState('')
     const { mostrarToast } = useToast()
 
     useEffect(() => {
@@ -100,9 +101,31 @@ export default function Mapa() {
         return () => { supabase.removeChannel(channel) }
     }, [])
 
+    const DISTRITOS = ['Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra', 'Évora', 'Faro', 'Guarda', 'Leiria', 'Lisboa', 'Portalegre', 'Porto', 'Santarém', 'Setúbal', 'Viana do Castelo', 'Vila Real', 'Viseu', 'Açores', 'Madeira']
+
     const filtrados = animais.filter(a => {
         if (filtroEstado && a.estado !== filtroEstado) return false
         if (filtroEspecie && a.especie !== filtroEspecie) return false
+        if (filtroDistrito && !(a.descricao || '').toLowerCase().includes(filtroDistrito.toLowerCase()) &&
+            !(a.nome || '').toLowerCase().includes(filtroDistrito.toLowerCase())) {
+            // Filtra por proximidade geográfica aproximada por distrito
+            const centros: Record<string, [number, number]> = {
+                'Lisboa': [38.72, -9.14], 'Porto': [41.15, -8.61], 'Braga': [41.54, -8.43],
+                'Coimbra': [40.21, -8.43], 'Aveiro': [40.64, -8.65], 'Faro': [37.02, -7.93],
+                'Setúbal': [38.52, -8.89], 'Leiria': [39.74, -8.81], 'Viseu': [40.66, -7.91],
+                'Évora': [38.57, -7.91], 'Santarém': [39.24, -8.69], 'Beja': [38.01, -7.86],
+                'Viana do Castelo': [41.69, -8.83], 'Vila Real': [41.30, -7.75],
+                'Bragança': [41.80, -6.76], 'Guarda': [40.53, -7.27],
+                'Castelo Branco': [39.82, -7.49], 'Portalegre': [39.29, -7.43],
+            }
+            const centro = centros[filtroDistrito]
+            if (centro && a.latitude && a.longitude) {
+                const dist = Math.sqrt(Math.pow(a.latitude - centro[0], 2) + Math.pow(a.longitude - centro[1], 2)) * 111
+                if (dist > 50) return false
+            } else if (!centro) {
+                return true // distrito sem coordenadas — mostra tudo
+            }
+        }
         return true
     })
 
@@ -117,7 +140,7 @@ export default function Mapa() {
 
             {/* Alerta de proximidade */}
             {alertaProximidade !== null && alertaProximidade > 0 && (
-                <div className="bg-orange-600 text-white px-4 py-2 flex items-center justify-between text-sm">
+                <div className="bg-green-600 text-white px-4 py-2 flex items-center justify-between text-sm">
                     <span>📍 {alertaProximidade} animal{alertaProximidade > 1 ? 'is' : ''} desaparecido{alertaProximidade > 1 ? 's' : ''} a menos de 2km de ti</span>
                     <button onClick={() => setAlertaProximidade(null)} className="ml-4 opacity-70 hover:opacity-100">✕</button>
                 </div>
@@ -126,7 +149,7 @@ export default function Mapa() {
             {/* Filter bar */}
             <div className="bg-white border-b border-stone-200 px-4 py-3 flex flex-wrap gap-3 items-center">
                 <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}
-                    className="px-3 py-2 border-2 border-stone-200 rounded-xl text-sm bg-white focus:border-orange-500 focus:outline-none">
+                    className="px-3 py-2 border-2 border-stone-200 rounded-xl text-sm bg-white focus:border-green-500 focus:outline-none">
                     <option value="">Todos os estados</option>
                     <option value="desaparecido">Desaparecido</option>
                     <option value="avistado">Avistado</option>
@@ -134,11 +157,17 @@ export default function Mapa() {
                 </select>
 
                 <select value={filtroEspecie} onChange={e => setFiltroEspecie(e.target.value)}
-                    className="px-3 py-2 border-2 border-stone-200 rounded-xl text-sm bg-white focus:border-orange-500 focus:outline-none">
+                    className="px-3 py-2 border-2 border-stone-200 rounded-xl text-sm bg-white focus:border-green-500 focus:outline-none">
                     <option value="">Todas as espécies</option>
                     <option value="cao">Cão</option>
                     <option value="gato">Gato</option>
                     <option value="outro">Outro</option>
+                </select>
+
+                <select value={filtroDistrito} onChange={e => setFiltroDistrito(e.target.value)}
+                    className="px-3 py-2 border-2 border-stone-200 rounded-xl text-sm bg-white focus:border-green-500 focus:outline-none">
+                    <option value="">Todos os distritos</option>
+                    {DISTRITOS.map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
 
                 {/* Legenda */}
@@ -171,11 +200,11 @@ export default function Mapa() {
 
                 <div className="ml-auto flex border-2 border-stone-200 rounded-xl overflow-hidden">
                     <button onClick={() => setVista('mapa')}
-                        className={`px-4 py-2 text-sm font-semibold transition-colors ${vista === 'mapa' ? 'bg-orange-600 text-white' : 'text-stone-600 hover:bg-stone-50'}`}>
+                        className={`px-4 py-2 text-sm font-semibold transition-colors ${vista === 'mapa' ? 'bg-green-600 text-white' : 'text-stone-600 hover:bg-stone-50'}`}>
                         🗺 Mapa
                     </button>
                     <button onClick={() => setVista('lista')}
-                        className={`px-4 py-2 text-sm font-semibold transition-colors ${vista === 'lista' ? 'bg-orange-600 text-white' : 'text-stone-600 hover:bg-stone-50'}`}>
+                        className={`px-4 py-2 text-sm font-semibold transition-colors ${vista === 'lista' ? 'bg-green-600 text-white' : 'text-stone-600 hover:bg-stone-50'}`}>
                         📋 Lista
                     </button>
                 </div>
@@ -213,7 +242,7 @@ export default function Mapa() {
                                         {animal.estado !== 'encontrado' && (
                                             <Link
                                                 to={`/avistamento/${animal.id}`}
-                                                className="block w-full text-center bg-orange-600 text-white py-2 px-3 rounded-lg text-xs font-semibold hover:bg-orange-700 transition-colors"
+                                                className="block w-full text-center bg-green-600 text-white py-2 px-3 rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors"
                                             >
                                                 👁 Reportar avistamento
                                             </Link>
@@ -229,7 +258,7 @@ export default function Mapa() {
                     <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {filtrados.map(animal => (
                             <div key={animal.id} className="bg-white rounded-2xl overflow-hidden border border-stone-200 hover:shadow-md transition-shadow">
-                                <div className="h-36 bg-orange-50 flex items-center justify-center text-5xl overflow-hidden">
+                                <div className="h-36 bg-green-50 flex items-center justify-center text-5xl overflow-hidden">
                                     {animal.foto_url
                                         ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
                                         : (animal.especie === 'gato' ? '🐈' : animal.especie === 'cao' ? '🐕' : '🐾')}
@@ -242,7 +271,7 @@ export default function Mapa() {
                                     <div className="text-xs text-stone-400 mb-2">{animal.cor}</div>
                                     {animal.estado !== 'encontrado' && (
                                         <Link to={`/avistamento/${animal.id}`}
-                                            className="block w-full text-center bg-orange-600 text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-orange-700 transition-colors">
+                                            className="block w-full text-center bg-green-600 text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors">
                                             👁 Reportar avistamento
                                         </Link>
                                     )}

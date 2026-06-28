@@ -155,7 +155,7 @@ export default function AnimalPerfil() {
 
                 {/* Breadcrumb */}
                 <div className="flex items-center gap-2 text-sm text-stone-400 mb-6">
-                    <Link to="/animais" className="hover:text-orange-600">Animais</Link>
+                    <Link to="/animais" className="hover:text-green-700">Animais</Link>
                     <span>›</span>
                     <span className="text-stone-700">{animal.nome}</span>
                 </div>
@@ -166,7 +166,7 @@ export default function AnimalPerfil() {
 
                         {/* Foto quadrada */}
                         <div className="flex-shrink-0 mx-auto md:mx-0">
-                            <div className="w-52 h-52 rounded-2xl overflow-hidden bg-orange-50 flex items-center justify-center border border-stone-200 shadow-sm">
+                            <div className="w-52 h-52 rounded-2xl overflow-hidden bg-green-50 flex items-center justify-center border border-stone-200 shadow-sm">
                                 {animal.foto_url
                                     ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
                                     : <span className="text-8xl">{animal.especie === 'gato' ? '🐈' : '🐕'}</span>
@@ -212,7 +212,7 @@ export default function AnimalPerfil() {
                             <div className="flex flex-wrap gap-2">
                                 {animal.estado !== 'encontrado' && (
                                     <Link to={`/avistamento/${animal.id}`}
-                                        className="bg-orange-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-orange-700 transition-colors text-sm flex items-center gap-2">
+                                        className="bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition-colors text-sm flex items-center gap-2">
                                         👁 Reportar avistamento
                                     </Link>
                                 )}
@@ -233,7 +233,7 @@ export default function AnimalPerfil() {
                         { id: 'chat', label: `💬 Mensagens (${mensagens.length})` },
                     ].map(t => (
                         <button key={t.id} onClick={() => setTab(t.id as Tab)}
-                            className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tab === t.id ? 'border-orange-600 text-orange-600' : 'border-transparent text-stone-500 hover:text-stone-800'
+                            className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tab === t.id ? 'border-green-600 text-green-700' : 'border-transparent text-stone-500 hover:text-stone-800'
                                 }`}>
                             {t.label}
                         </button>
@@ -269,7 +269,7 @@ export default function AnimalPerfil() {
                                 <h2 className="font-bold text-stone-900 mb-4">👤 Dono do animal</h2>
                                 {dono ? (
                                     <div className="flex items-center gap-4 mb-4">
-                                        <div className="w-14 h-14 rounded-full bg-orange-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                                        <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                                             {dono.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()}
                                         </div>
                                         <div className="flex-1">
@@ -277,7 +277,7 @@ export default function AnimalPerfil() {
                                             {dono.telemovel && !isDono && (
                                                 <div className="text-sm text-stone-500 mt-0.5">📱 {dono.telemovel}</div>
                                             )}
-                                            {isDono && <div className="text-xs text-orange-600 font-medium mt-1">Este é o teu animal</div>}
+                                            {isDono && <div className="text-xs text-green-700 font-medium mt-1">Este é o teu animal</div>}
                                         </div>
                                     </div>
                                 ) : (
@@ -285,7 +285,7 @@ export default function AnimalPerfil() {
                                 )}
                                 {/* Botão para enviar msg — leva para tab chat */}
                                 <button onClick={() => setTab('chat')}
-                                    className="w-full bg-orange-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors">
+                                    className="w-full bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors">
                                     💬 {isDono ? 'Ver mensagens' : 'Enviar mensagem ao dono'}
                                 </button>
                             </div>
@@ -319,7 +319,7 @@ export default function AnimalPerfil() {
                                 <p className="text-stone-500 mb-4">Ainda não há avistamentos reportados.</p>
                                 {animal.estado !== 'encontrado' && (
                                     <Link to={`/avistamento/${animal.id}`}
-                                        className="bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors">
+                                        className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                                         Ser o primeiro a reportar
                                     </Link>
                                 )}
@@ -357,7 +357,7 @@ export default function AnimalPerfil() {
                                                 {avistamentos.filter(a => a.latitude && a.longitude).map((av, i) => (
                                                     <Marker key={av.id} position={[av.latitude, av.longitude]} icon={iconeAvistamento(i + 1)}>
                                                         <Popup>
-                                                            <div className="text-sm font-semibold text-orange-700">👁 Avistamento #{i + 1}</div>
+                                                            <div className="text-sm font-semibold text-green-800">👁 Avistamento #{i + 1}</div>
                                                             <div className="text-xs text-stone-500 mt-1">{new Date(av.created_at).toLocaleString('pt-PT')}</div>
                                                             {av.descricao && <div className="text-xs text-stone-600 mt-1">{av.descricao}</div>}
                                                         </Popup>
@@ -366,7 +366,7 @@ export default function AnimalPerfil() {
 
                                                 {/* Polilinha laranja tracejada */}
                                                 {polylinePoints.length > 1 && (
-                                                    <Polyline positions={polylinePoints} color="#f97316" weight={3} dashArray="8,5" opacity={0.8} />
+                                                    <Polyline positions={polylinePoints} color="#16a34a" weight={3} dashArray="8,5" opacity={0.8} />
                                                 )}
                                             </MapContainer>
                                         </div>
@@ -377,11 +377,11 @@ export default function AnimalPerfil() {
                                                 Local de desaparecimento
                                             </span>
                                             <span className="flex items-center gap-1.5">
-                                                <span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+                                                <span className="w-3 h-3 rounded-full bg-green-500 inline-block"></span>
                                                 Avistamentos (numerados)
                                             </span>
                                             <span className="flex items-center gap-1.5">
-                                                <span className="text-orange-500 font-bold">▬▬</span>
+                                                <span className="text-green-600 font-bold">▬▬</span>
                                                 Percurso
                                             </span>
                                         </div>
@@ -393,7 +393,7 @@ export default function AnimalPerfil() {
                                     {avistamentos.map((av, i) => (
                                         <div key={av.id} className="bg-white rounded-2xl border border-stone-200 p-5">
                                             <div className="flex items-start gap-4">
-                                                <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5">
+                                                <div className="w-9 h-9 rounded-full bg-green-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5">
                                                     {i + 1}
                                                 </div>
                                                 <div className="flex-1">
@@ -415,7 +415,7 @@ export default function AnimalPerfil() {
                                 {animal.estado !== 'encontrado' && (
                                     <div className="text-center">
                                         <Link to={`/avistamento/${animal.id}`}
-                                            className="bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-orange-700 transition-colors">
+                                            className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
                                             + Reportar novo avistamento
                                         </Link>
                                     </div>
@@ -453,7 +453,7 @@ export default function AnimalPerfil() {
                                     const isDonoAnimal = msg.sender_id === animal.dono_id
                                     return (
                                         <div key={msg.id} className={`flex gap-3 ${isMinha ? 'flex-row-reverse' : ''}`}>
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isDonoAnimal ? 'bg-orange-600 text-white' : 'bg-stone-200 text-stone-700'
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isDonoAnimal ? 'bg-green-600 text-white' : 'bg-stone-200 text-stone-700'
                                                 }`}>
                                                 {(msg.profiles?.nome || 'U')[0].toUpperCase()}
                                             </div>
@@ -461,11 +461,11 @@ export default function AnimalPerfil() {
                                                 <div className={`flex items-center gap-2 ${isMinha ? 'flex-row-reverse' : ''}`}>
                                                     <span className="text-xs font-semibold text-stone-500">{msg.profiles?.nome || 'Utilizador'}</span>
                                                     {isDonoAnimal && (
-                                                        <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-medium">Dono</span>
+                                                        <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-medium">Dono</span>
                                                     )}
                                                 </div>
                                                 <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMinha
-                                                        ? 'bg-orange-600 text-white rounded-tr-sm'
+                                                        ? 'bg-green-600 text-white rounded-tr-sm'
                                                         : 'bg-white text-stone-800 border border-stone-200 rounded-tl-sm'
                                                     }`}>
                                                     {msg.conteudo}
@@ -490,17 +490,17 @@ export default function AnimalPerfil() {
                                         value={novaMensagem}
                                         onChange={e => setNovaMensagem(e.target.value)}
                                         placeholder={isDono ? 'Responde a um voluntário...' : `Escreve uma mensagem ao dono de ${animal.nome}...`}
-                                        className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-2xl focus:border-orange-500 focus:outline-none text-sm"
+                                        className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-2xl focus:border-green-500 focus:outline-none text-sm"
                                     />
                                     <button type="submit" disabled={enviando || !novaMensagem.trim()}
-                                        className="bg-orange-600 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-orange-700 disabled:opacity-60 transition-colors">
+                                        className="bg-green-600 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-green-700 disabled:opacity-60 transition-colors">
                                         {enviando ? '...' : '→'}
                                     </button>
                                 </form>
                             ) : (
                                 <div className="text-center py-3">
                                     <p className="text-stone-500 text-sm mb-3">Faz login para enviar uma mensagem ao dono</p>
-                                    <Link to="/login" className="bg-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-orange-700 transition-colors">
+                                    <Link to="/login" className="bg-green-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors">
                                         Entrar
                                     </Link>
                                 </div>
