@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
@@ -28,7 +28,6 @@ export default function SubmeterAvistamento() {
     const [loading, setLoading] = useState(false)
     const [sucesso, setSucesso] = useState(false)
     const fileRef = useRef<HTMLInputElement>(null)
-    const navigate = useNavigate()
     const { mostrarToast } = useToast()
 
     const handleFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
