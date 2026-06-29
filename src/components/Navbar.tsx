@@ -11,6 +11,7 @@ const LAST_VISIT_KEY = 'pg-last-ocorrencias-visit'
 export default function Navbar({ session }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [bellOpen, setBellOpen] = useState(false)
   const [nomeUtilizador, setNomeUtilizador] = useState('')
   const [fotoPerfil, setFotoPerfil] = useState<string | null>(null)
   const [novosAvistamentos, setNovosAvistamentos] = useState(0)
@@ -72,6 +73,7 @@ export default function Navbar({ session }: Props) {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false)
+      setBellOpen(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -133,23 +135,62 @@ export default function Navbar({ session }: Props) {
                 + Registar Animal
               </Link>
               {/* Sino de notificações */}
-              <button onClick={() => {
-                  if ('Notification' in window && Notification.permission === 'default') {
-                    Notification.requestPermission()
-                  }
-                }}
-                className="relative w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 hover:bg-green-50 hover:text-green-700 transition-colors"
-                title="Notificações">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                {novosAvistamentos > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                    {novosAvistamentos > 9 ? '9+' : novosAvistamentos}
-                  </span>
+              <div className="relative">
+                <button onClick={() => setBellOpen(!bellOpen)}
+                  className="relative w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 hover:bg-green-50 hover:text-green-700 transition-colors"
+                  title="Notificações">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                  </svg>
+                  {novosAvistamentos > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                      {novosAvistamentos > 9 ? '9+' : novosAvistamentos}
+                    </span>
+                  )}
+                </button>
+
+                {bellOpen && (
+                  <div className="absolute right-0 top-11 w-72 bg-white border border-stone-200 rounded-2xl shadow-xl py-2 z-50">
+                    <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
+                      <span className="font-semibold text-stone-900 text-sm">Notificações</span>
+                      {novosAvistamentos > 0 && (
+                        <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">{novosAvistamentos} novo{novosAvistamentos > 1 ? 's' : ''}</span>
+                      )}
+                    </div>
+                    {novosAvistamentos > 0 ? (
+                      <div className="px-4 py-3">
+                        <div className="flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 flex-shrink-0 mt-0.5">👁</div>
+                          <div>
+                            <div className="text-sm font-semibold text-stone-900">{novosAvistamentos} avistamento{novosAvistamentos > 1 ? 's' : ''} novo{novosAvistamentos > 1 ? 's' : ''}</div>
+                            <div className="text-xs text-stone-400 mt-0.5">Os teus animais foram avistados</div>
+                            <button onClick={() => { setBellOpen(false); navigate('/ocorrencias') }}
+                              className="text-xs text-green-700 font-semibold mt-2 hover:underline">
+                              Ver ocorrências →
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="px-4 py-8 text-center">
+                        <div className="text-3xl mb-2">🔔</div>
+                        <div className="text-sm font-semibold text-stone-700">Sem notificações</div>
+                        <div className="text-xs text-stone-400 mt-1">Quando alguém avistar o teu animal, aparece aqui.</div>
+                        {typeof Notification !== 'undefined' && Notification.permission === 'default' && (
+                          <button onClick={() => { Notification.requestPermission(); setBellOpen(false) }}
+                            className="mt-3 text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors">
+                            Ativar notificações push
+                          </button>
+                        )}
+                        {typeof Notification !== 'undefined' && Notification.permission === 'granted' && (
+                          <div className="mt-2 text-xs text-green-600">✓ Notificações push ativas</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
-              </button>
+              </div>
 
               <div className="relative" ref={profileRef}>
                 <button onClick={() => setProfileOpen(!profileOpen)}
