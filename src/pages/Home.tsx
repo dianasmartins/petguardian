@@ -16,7 +16,6 @@ const VERDE_CLARO = '#f7fee7'
 const VERDE_BORDA = '#d9f99d'
 const LARANJA = '#ea580c'
 const LARANJA_ESCURO = '#c2410c'
-const LARANJA_CLARO = '#fff7ed'
 
 export default function Home() {
   const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
@@ -124,7 +123,7 @@ export default function Home() {
 
       {/* STATS */}
       <section style={{ background: VERDE_ESCURO }}>
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x" style={{ divideColor: '#4d7c0f' }}>
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4">
           {[
             { value: stats.desaparecidos, label: 'Perdidos agora' },
             { value: stats.encontrados, label: 'Reunidos com a família' },
@@ -257,7 +256,7 @@ export default function Home() {
                 <div>
                   <label className="text-sm font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Classificação</label>
                   <div className="flex gap-1">
-                    {[1,2,3,4,5].map(n => (
+                    {[1, 2, 3, 4, 5].map(n => (
                       <button key={n} type="button" onClick={() => setReviewEstrelas(n)}
                         className="text-2xl transition-transform hover:scale-110"
                         style={{ color: n <= reviewEstrelas ? '#f59e0b' : '#e5e7eb' }}>★</button>
