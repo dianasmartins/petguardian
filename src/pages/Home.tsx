@@ -26,8 +26,6 @@ export default function Home() {
   const [reviewEstrelas, setReviewEstrelas] = useState(5)
   const [reviewNome, setReviewNome] = useState('')
   const [enviandoReview, setEnviandoReview] = useState(false)
-  const [quickTipo, setQuickTipo] = useState<'perdeu' | 'encontrou'>('perdeu')
-  const [quickNome, setQuickNome] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -52,12 +50,6 @@ export default function Home() {
     fetchData()
   }, [])
 
-  const handleQuickSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (quickTipo === 'encontrou') navigate('/identificar')
-    else navigate(session ? '/registar-animal' : '/registo')
-  }
-
   const enviarReview = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!reviewTexto.trim() || !reviewNome.trim()) return
@@ -75,7 +67,7 @@ export default function Home() {
 
       {/* HERO */}
       <section style={{ background: VERDE_CLARO }}>
-        <div className="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-8 py-24 grid md:grid-cols-2 gap-12 items-center">
 
           {/* Esquerda */}
           <div>
@@ -84,12 +76,12 @@ export default function Home() {
               <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: VERDE }}></span>
               {stats.desaparecidos} animais perdidos agora em Portugal
             </div>
-            <h1 className="text-5xl font-black leading-tight mb-5" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif', letterSpacing: '-1px' }}>
+            <h1 className="text-6xl font-black leading-tight mb-6" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif', letterSpacing: '-1px' }}>
               O teu animal<br />
               <em style={{ color: VERDE, fontStyle: 'normal' }}>perdido</em><br />
               volta a casa.
             </h1>
-            <p className="text-base mb-8 leading-relaxed" style={{ color: '#4d7c0f' }}>
+            <p className="text-xl mb-10 leading-relaxed" style={{ color: '#4d7c0f' }}>
               Mapa em tempo real, identificação por IA e uma comunidade portuguesa pronta a ajudar — sempre gratuito.
             </p>
             <div className="flex flex-wrap gap-3 mb-4">
@@ -98,7 +90,7 @@ export default function Home() {
                 style={{ background: LARANJA, boxShadow: '0 4px 14px rgba(234,88,12,.3)' }}>
                 Criar alerta agora
               </button>
-              <Link to="/mapa" className="px-7 py-3.5 rounded-xl font-bold text-sm border-2 transition-all"
+              <Link to="/mapa" className="px-9 py-4 rounded-xl font-bold text-lg border-2 transition-all"
                 style={{ color: VERDE_ESCURO, borderColor: VERDE, background: 'white' }}>
                 Ver mapa ao vivo
               </Link>
@@ -108,62 +100,30 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Formulário rápido */}
-          <div className="bg-white rounded-2xl p-7 border" style={{ borderColor: VERDE_BORDA, boxShadow: '0 8px 32px rgba(101,163,13,.12)' }}>
-            <h2 className="text-lg font-bold mb-1" style={{ color: VERDE_ESCURO }}>Criar alerta gratuito</h2>
-            <p className="text-sm mb-5" style={{ color: '#6b7280' }}>Preenche os dados e começa a alertar a comunidade agora.</p>
-
-            <form onSubmit={handleQuickSubmit} className="flex flex-col gap-4">
-              <div>
-                <label className="text-xs font-semibold mb-2 block" style={{ color: VERDE_ESCURO }}>O que aconteceu?</label>
-                <div className="flex rounded-xl overflow-hidden border-2" style={{ borderColor: VERDE_BORDA }}>
-                  <button type="button" onClick={() => setQuickTipo('perdeu')}
-                    className="flex-1 py-2.5 text-xs font-bold transition-colors"
-                    style={{ background: quickTipo === 'perdeu' ? VERDE : 'white', color: quickTipo === 'perdeu' ? 'white' : '#6b7280' }}>
-                    Perdi o meu animal
-                  </button>
-                  <button type="button" onClick={() => setQuickTipo('encontrou')}
-                    className="flex-1 py-2.5 text-xs font-bold transition-colors"
-                    style={{ background: quickTipo === 'encontrou' ? VERDE : 'white', color: quickTipo === 'encontrou' ? 'white' : '#6b7280' }}>
-                    Encontrei um animal
-                  </button>
+          {/* Cards informativos lado direito */}
+          <div className="flex flex-col gap-4">
+            {[
+              { icon: '🗺️', title: 'Mapa em tempo real', desc: 'Vê todos os animais desaparecidos numa carta interactiva, actualizada ao segundo via WebSockets.' },
+              { icon: '🤖', title: 'Identificação por IA', desc: 'Carrega a foto de um animal encontrado e a IA compara automaticamente com os desaparecidos.' },
+              { icon: '🔔', title: 'Notificações instantâneas', desc: 'Recebe alerta imediato quando alguém avistar o teu animal — mesmo com o browser fechado.' },
+              { icon: '🖨️', title: 'Cartaz QR Code', desc: 'Gera um cartaz A4 para imprimir e afixar na zona. Qualquer pessoa pode reportar ao ler o QR.' },
+            ].map(item => (
+              <div key={item.title} className="flex items-start gap-4 bg-white rounded-2xl px-6 py-5 border"
+                style={{ borderColor: VERDE_BORDA, boxShadow: '0 2px 8px rgba(101,163,13,.08)' }}>
+                <span className="text-3xl flex-shrink-0 mt-0.5">{item.icon}</span>
+                <div>
+                  <div className="font-bold text-base mb-1" style={{ color: VERDE_ESCURO }}>{item.title}</div>
+                  <div className="text-base leading-relaxed" style={{ color: '#4d7c0f', opacity: .8 }}>{item.desc}</div>
                 </div>
               </div>
-
-              {quickTipo === 'perdeu' ? (
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Nome do animal</label>
-                    <input value={quickNome} onChange={e => setQuickNome(e.target.value)}
-                      placeholder="Ex: Bolinhas"
-                      className="w-full px-3 py-2.5 rounded-xl text-xs border-2 focus:outline-none"
-                      style={{ borderColor: VERDE_BORDA, background: VERDE_CLARO, color: VERDE_ESCURO }} />
-                  </div>
-                  <div className="bg-lime-50 border border-lime-200 rounded-xl px-4 py-3 text-xs" style={{ color: '#365314' }}>
-                    📝 Preenches os restantes dados (foto, GPS, descrição) no passo seguinte.
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-xl px-4 py-3 text-xs" style={{ background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
-                  🤖 Usa a nossa IA para identificar o animal e encontrar o dono rapidamente.
-                </div>
-              )}
-
-              <button type="submit" className="w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5"
-                style={{ background: LARANJA, boxShadow: '0 4px 14px rgba(234,88,12,.25)' }}>
-                {quickTipo === 'perdeu' ? 'Criar alerta agora 🐾' : 'Identificar animal com IA 🤖'}
-              </button>
-              <p className="text-center text-xs" style={{ color: '#9ca3af' }}>
-                100% gratuito · sem anúncios · apenas maiores de 18
-              </p>
-            </form>
+            ))}
           </div>
         </div>
       </section>
 
       {/* STATS */}
       <section style={{ background: VERDE_ESCURO }}>
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x" style={{ ['--tw-divide-color' as any]: '#4d7c0f' }}>
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: '#4d7c0f' }}>
           {[
             { value: stats.desaparecidos, label: 'Perdidos agora' },
             { value: stats.encontrados, label: 'Reunidos com a família' },
@@ -171,22 +131,22 @@ export default function Home() {
             { value: '87%', label: 'Taxa de sucesso' },
           ].map(s => (
             <div key={s.label} className="text-center py-6 px-4">
-              <div className="text-3xl font-black" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>{s.value}</div>
-              <div className="text-xs mt-1" style={{ color: '#86efac' }}>{s.label}</div>
+              <div className="text-4xl font-black" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>{s.value}</div>
+              <div className="text-sm mt-1.5" style={{ color: '#86efac' }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
       {/* COMO FUNCIONA */}
-      <section className="py-20 px-6" style={{ background: 'white' }}>
-        <div className="max-w-5xl mx-auto">
+      <section className="py-28 px-8" style={{ background: 'white' }}>
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
               style={{ background: '#ecfccb', color: VERDE_ESCURO, border: `1px solid ${VERDE_BORDA}` }}>
               Como funciona
             </div>
-            <h2 className="text-4xl font-bold" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif' }}>
+            <h2 className="text-5xl font-bold" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif' }}>
               Três passos para reunir a tua família
             </h2>
           </div>
@@ -196,12 +156,12 @@ export default function Home() {
               { icon: '🗺️', num: '02', title: 'Comunidade ajuda', desc: 'Voluntários reportam avistamentos com foto e localização. Recebes notificação em tempo real.' },
               { icon: '🤝', num: '03', title: 'Reencontro', desc: 'Acompanha a linha do tempo e marca como encontrado quando reunires o teu animal.' },
             ].map(item => (
-              <div key={item.num} className="p-8 rounded-3xl border-2 relative overflow-hidden"
+              <div key={item.num} className="p-10 rounded-3xl border-2 relative overflow-hidden"
                 style={{ background: VERDE_CLARO, borderColor: VERDE_BORDA }}>
                 <div className="absolute top-2 right-4 text-6xl font-black" style={{ color: '#ecfccb', fontFamily: 'Georgia, serif' }}>{item.num}</div>
                 <div className="text-3xl mb-4">{item.icon}</div>
-                <h3 className="font-bold text-lg mb-2" style={{ color: VERDE_ESCURO }}>{item.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#4d7c0f' }}>{item.desc}</p>
+                <h3 className="font-bold text-xl mb-3" style={{ color: VERDE_ESCURO }}>{item.title}</h3>
+                <p className="text-base leading-relaxed" style={{ color: '#4d7c0f' }}>{item.desc}</p>
               </div>
             ))}
           </div>
@@ -209,15 +169,15 @@ export default function Home() {
       </section>
 
       {/* INFO BOX */}
-      <section className="py-16 px-6" style={{ background: VERDE_CLARO }}>
-        <div className="max-w-5xl mx-auto">
+      <section className="py-24 px-8" style={{ background: VERDE_CLARO }}>
+        <div className="max-w-6xl mx-auto">
           <div className="rounded-3xl p-10" style={{ background: VERDE_ESCURO }}>
             <div className="text-center mb-10">
               <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
                 style={{ background: 'rgba(217,249,157,.15)', color: '#d9f99d', border: '1px solid rgba(217,249,157,.2)' }}>
                 Como o PetGuardian ajuda
               </div>
-              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+              <h2 className="text-4xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
                 Tudo para reunir o teu animal
               </h2>
             </div>
@@ -231,7 +191,7 @@ export default function Home() {
                 { icon: '🎉', text: 'Junta-te a centenas de famílias portuguesas que já reuniram os seus animais com o PetGuardian' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-4 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)' }}>
-                  <span className="text-2xl flex-shrink-0">{item.icon}</span>
+                  <span className="text-3xl flex-shrink-0 mt-0.5">{item.icon}</span>
                   <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,.75)' }}>{item.text}</p>
                 </div>
               ))}
@@ -241,14 +201,14 @@ export default function Home() {
       </section>
 
       {/* REVIEWS */}
-      <section className="py-20 px-6" style={{ background: 'white' }}>
-        <div className="max-w-5xl mx-auto">
+      <section className="py-28 px-8" style={{ background: 'white' }}>
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
               style={{ background: '#ecfccb', color: VERDE_ESCURO, border: `1px solid ${VERDE_BORDA}` }}>
               Testemunhos
             </div>
-            <h2 className="text-4xl font-bold" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif' }}>
+            <h2 className="text-5xl font-bold" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif' }}>
               O que dizem as famílias
             </h2>
           </div>
@@ -296,7 +256,7 @@ export default function Home() {
                 <div>
                   <label className="text-sm font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Classificação</label>
                   <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map(n => (
+                    {[1,2,3,4,5].map(n => (
                       <button key={n} type="button" onClick={() => setReviewEstrelas(n)}
                         className="text-2xl transition-transform hover:scale-110"
                         style={{ color: n <= reviewEstrelas ? '#f59e0b' : '#e5e7eb' }}>★</button>

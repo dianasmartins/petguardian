@@ -99,7 +99,7 @@ export default function Navbar({ session }: Props) {
 
   return (
     <nav className="sticky top-0 z-50 bg-white shadow-sm" style={{borderBottom: "2px solid #65a30d"}}>
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between gap-4">
 
         {/* Logo */}
         <Link to="/" className="font-bold text-xl text-lime-800 shrink-0 flex items-center gap-2" style={{ fontFamily: 'Georgia, serif' }}>
@@ -108,12 +108,12 @@ export default function Navbar({ session }: Props) {
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-1">
-          <Link to="/" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/')}`}>Início</Link>
-          <Link to="/animais" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/animais')}`}>Animais</Link>
-          <Link to="/mapa" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/mapa')}`}>Mapa</Link>
-          <Link to="/identificar" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/identificar')}`}>Identificar por IA</Link>
-          <Link to="/como-funciona" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/como-funciona')}`}>Como funciona</Link>
-          <Link to="/estatisticas" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/estatisticas')}`}>Estatísticas</Link>
+          <Link to="/" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/')}`}>Início</Link>
+          <Link to="/animais" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/animais')}`}>Animais</Link>
+          <Link to="/mapa" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/mapa')}`}>Mapa</Link>
+          <Link to="/identificar" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/identificar')}`}>Identificar por IA</Link>
+          <Link to="/como-funciona" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/como-funciona')}`}>Como funciona</Link>
+          <Link to="/estatisticas" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/estatisticas')}`}>Estatísticas</Link>
 
           {session && (
             <Link to="/ocorrencias" className={`relative px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/ocorrencias')}`}>
@@ -132,7 +132,7 @@ export default function Navbar({ session }: Props) {
           {session ? (
             <>
               <Link to="/registar-animal"
-                className="text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors" style={{background:"#ea580c"}}>
+                className="text-white px-6 py-2.5 rounded-xl text-base font-semibold transition-colors" style={{background:"#ea580c"}}>
                 + Registar Animal
               </Link>
               {/* Sino de notificações */}
