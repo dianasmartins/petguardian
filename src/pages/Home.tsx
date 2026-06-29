@@ -1,4 +1,4 @@
-{ useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Animal } from '../types'
@@ -22,6 +22,9 @@ export default function Home() {
   const [reviewNome, setReviewNome] = useState('')
   const [enviandoReview, setEnviandoReview] = useState(false)
   const navigate = useNavigate()
+  const [quickTipo, setQuickTipo] = useState<'perdeu' | 'encontrou'>('perdeu')
+  const [quickNome, setQuickNome] = useState('')
+  const [quickMorada, setQuickMorada] = useState('')
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -49,6 +52,15 @@ export default function Home() {
   }, [])
 
   const handleRegistarAnimal = () => navigate(session ? '/registar-animal' : '/login')
+
+  const handleQuickSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (quickTipo === 'encontrou') {
+      navigate('/identificar')
+    } else {
+      navigate(session ? '/registar-animal' : '/registo')
+    }
+  }
 
   const enviarReview = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -110,55 +122,76 @@ export default function Home() {
             )}
           </div>
 
-          {/* Direita — cartões flutuantes de status */}
-          <div className="relative hidden md:flex flex-col gap-4 items-end">
-            {/* Cartão de alerta perdido */}
-            <div className="w-full max-w-xs bg-white rounded-2xl shadow-lg border border-stone-100 p-4 flex items-center gap-3"
-              style={{ animation: 'float 4s ease-in-out infinite' }}>
-              <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl flex-shrink-0">🐕</div>
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                  <span className="text-xs font-bold text-red-600 uppercase tracking-wide">Perdido agora</span>
-                </div>
-                <div className="font-bold text-stone-900 text-sm">Duke — Corgi</div>
-                <div className="text-xs text-stone-400">Lisboa · há 2 horas</div>
-              </div>
-            </div>
+          {/* Direita — formulário rápido */}
+          <div className="w-full max-w-md mx-auto md:mx-0">
+            <div className="bg-white rounded-3xl shadow-xl border border-stone-100 p-7">
+              <h2 className="text-2xl font-bold text-green-700 mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+                Criar alerta gratuito
+              </h2>
+              <p className="text-stone-500 text-sm mb-6">Preenche os dados e começa a alertar a comunidade agora.</p>
 
-            {/* Cartão de avistamento */}
-            <div className="w-full max-w-xs bg-white rounded-2xl shadow-lg border border-stone-100 p-4 flex items-center gap-3"
-              style={{ animation: 'float 4s ease-in-out infinite', animationDelay: '1.3s' }}>
-              <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-2xl flex-shrink-0">🐈</div>
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="w-2 h-2 bg-amber-400 rounded-full"></span>
-                  <span className="text-xs font-bold text-amber-600 uppercase tracking-wide">Avistada</span>
+              <form onSubmit={handleQuickSubmit} className="flex flex-col gap-4">
+                {/* Toggle perdeu / encontrou */}
+                <div>
+                  <label className="text-sm font-semibold text-stone-600 mb-2 block">O que aconteceu? <span className="text-red-500">*</span></label>
+                  <div className="flex rounded-xl overflow-hidden border-2 border-stone-200">
+                    <button type="button" onClick={() => setQuickTipo('perdeu')}
+                      className={`flex-1 py-2.5 text-sm font-bold transition-colors ${
+                        quickTipo === 'perdeu' ? 'bg-green-600 text-white' : 'bg-white text-stone-500 hover:bg-stone-50'
+                      }`}>
+                      Perdi o meu animal
+                    </button>
+                    <button type="button" onClick={() => setQuickTipo('encontrou')}
+                      className={`flex-1 py-2.5 text-sm font-bold transition-colors ${
+                        quickTipo === 'encontrou' ? 'bg-green-600 text-white' : 'bg-white text-stone-500 hover:bg-stone-50'
+                      }`}>
+                      Encontrei um animal
+                    </button>
+                  </div>
                 </div>
-                <div className="font-bold text-stone-900 text-sm">Mimi — Persa</div>
-                <div className="text-xs text-stone-400">Porto · há 45 min</div>
-              </div>
-            </div>
 
-            {/* Cartão de sucesso */}
-            <div className="w-full max-w-xs bg-white rounded-2xl shadow-lg border border-green-200 p-4 flex items-center gap-3"
-              style={{ animation: 'float 4s ease-in-out infinite', animationDelay: '2.6s' }}>
-              <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-2xl flex-shrink-0">🐶</div>
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                  <span className="text-xs font-bold text-green-600 uppercase tracking-wide">Reunido! 🎉</span>
-                </div>
-                <div className="font-bold text-stone-900 text-sm">Rex — Labrador</div>
-                <div className="text-xs text-stone-400">Braga · encontrado hoje</div>
-              </div>
-            </div>
+                {quickTipo === 'perdeu' && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-sm font-semibold text-stone-600 mb-1.5 block">
+                        Nome do animal <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        value={quickNome}
+                        onChange={e => setQuickNome(e.target.value)}
+                        placeholder="Ex: Bolinhas"
+                        className="w-full px-3 py-2.5 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-semibold text-stone-600 mb-1.5 block">
+                        Última localização <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        value={quickMorada}
+                        onChange={e => setQuickMorada(e.target.value)}
+                        placeholder="Ex: Rua das Flores"
+                        className="w-full px-3 py-2.5 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
 
-            {/* Patas decorativas */}
-            <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-6 opacity-20">
-              {['🐾','🐾','🐾','🐾'].map((p,i) => (
-                <span key={i} className="text-2xl" style={{ transform: `rotate(${[-15,15,-15,15][i]}deg)`, animationDelay: i * 0.3 + 's' }}>{p}</span>
-              ))}
+                {quickTipo === 'encontrou' && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-blue-700 text-sm">
+                    🤖 Usa a nossa IA para identificar o animal e encontrar o dono rapidamente.
+                  </div>
+                )}
+
+                <button type="submit"
+                  className="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold text-base hover:bg-green-700 transition-all shadow-md shadow-green-200 hover:-translate-y-0.5">
+                  {quickTipo === 'perdeu' ? 'Criar alerta agora 🐾' : 'Identificar animal com IA 🤖'}
+                </button>
+
+                <p className="text-center text-xs text-stone-400">
+                  100% gratuito · Sem anúncios · Apenas maiores de 18 anos
+                </p>
+              </form>
             </div>
           </div>
         </div>
