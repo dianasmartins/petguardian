@@ -207,15 +207,17 @@ export default function Home() {
                             {recentes.map(animal => (
                                 <Link key={animal.id} to={`/animais/${animal.id}`}
                                     className="bg-white rounded-2xl overflow-hidden border-2 border-stone-100 hover:border-green-300 hover:shadow-lg transition-all group">
-                                    <div className="h-40 bg-green-50 flex items-center justify-center text-6xl overflow-hidden relative">
+                                    <div className="h-40 bg-green-50 flex items-center justify-center text-6xl overflow-hidden">
                                         {animal.foto_url
                                             ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                                             : (animal.especie === 'gato' ? '🐈' : animal.especie === 'cao' ? '🐕' : '🐾')
                                         }
-                                        <div className="absolute top-2 right-2">{estadoBadge(animal.estado)}</div>
                                     </div>
                                     <div className="p-4">
-                                        <div className="font-bold text-stone-900 mb-1">{animal.nome}</div>
+                                        <div className="flex items-start justify-between gap-1 mb-1">
+                                            <span className="font-bold text-stone-900">{animal.nome}</span>
+                                            {estadoBadge(animal.estado)}
+                                        </div>
                                         <div className="text-xs text-stone-400">{animal.especie === 'cao' ? 'Cão' : animal.especie === 'gato' ? 'Gato' : 'Outro'} · {animal.cor}</div>
                                     </div>
                                 </Link>
