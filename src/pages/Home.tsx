@@ -16,6 +16,7 @@ const VERDE_CLARO = '#f7fee7'
 const VERDE_BORDA = '#d9f99d'
 const LARANJA = '#ea580c'
 const LARANJA_ESCURO = '#c2410c'
+const LARANJA_CLARO = '#fff7ed'
 
 export default function Home() {
   const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
@@ -109,7 +110,9 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Formulário rápido */}
+          {/* Imagem + Formulário */}
+          <div className="flex flex-col gap-5">
+            <img src="/hero-illustration.png" alt="Família reunida com o seu animal de estimação" className="w-full max-w-md mx-auto drop-shadow-xl" />
           <div className="bg-white rounded-2xl p-7 border" style={{ borderColor: VERDE_BORDA, boxShadow: '0 8px 32px rgba(101,163,13,.12)' }}>
             <h2 className="text-lg font-bold mb-1" style={{ color: VERDE_ESCURO }}>Criar alerta gratuito</h2>
             <p className="text-sm mb-5" style={{ color: '#6b7280' }}>Preenche os dados e começa a alertar a comunidade agora.</p>
@@ -162,6 +165,7 @@ export default function Home() {
                 100% gratuito · sem anúncios · apenas maiores de 18
               </p>
             </form>
+          </div>
           </div>
         </div>
       </section>
