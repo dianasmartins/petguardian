@@ -232,7 +232,7 @@ export default function AnimaisEncontrados() {
             { n: 1, label: 'Identificar com IA', passo: 'ia' },
             { n: 2, label: 'Ver correspondências', passo: 'resultados' },
             { n: 3, label: 'Registar se necessário', passo: 'formulario' },
-          ].map((s, i) => {
+          ].map((s) => {
             const passos = ['ia', 'resultados', 'formulario', 'sucesso']
             const atual = passos.indexOf(passo)
             const este = passos.indexOf(s.passo)
