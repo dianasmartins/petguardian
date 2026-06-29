@@ -164,20 +164,32 @@ export default function Mensagens() {
   const enviarMensagem = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!novaMensagem.trim() || !selecionada || !session) return
-    setEnviando(true)
+    const texto = novaMensagem.trim()
+    setNovaMensagem('')
+
+    // Adiciona optimisticamente
+    const msgTemp = {
+      id: 'temp-' + Date.now(),
+      conversa_id: selecionada.id,
+      sender_id: session.user.id,
+      conteudo: texto,
+      lida: false,
+      created_at: new Date().toISOString()
+    }
+    setMensagens(prev => [...prev, msgTemp])
 
     const { error } = await supabase.from('mensagens_privadas').insert({
       conversa_id: selecionada.id,
       sender_id: session.user.id,
-      conteudo: novaMensagem.trim()
+      conteudo: texto
     })
 
     if (error) {
       mostrarToast('Erro ao enviar mensagem.', 'erro')
+      setMensagens(prev => prev.filter(m => m.id !== msgTemp.id))
     } else {
-      setNovaMensagem('')
+      fetchMensagens(selecionada.id)
     }
-    setEnviando(false)
   }
 
   const totalNaoLidas = conversas.reduce((acc, c) => acc + (c.nao_lidas || 0), 0)

@@ -27,6 +27,9 @@ export default function Ocorrencias() {
   const [loadingAvistamentos, setLoadingAvistamentos] = useState(false)
   const [atualizando, setAtualizando] = useState(false)
   const [confirmarArquivar, setConfirmarArquivar] = useState(false)
+  const [editandoDescricao, setEditandoDescricao] = useState(false)
+  const [novaDescricao, setNovaDescricao] = useState('')
+  const [novoEstado, setNovoEstado] = useState('')
   const { mostrarToast } = useToast()
 
   useEffect(() => {
@@ -90,6 +93,25 @@ export default function Ocorrencias() {
       .order('created_at', { ascending: true })
     setAvistamentos(data || [])
     setLoadingAvistamentos(false)
+  }
+
+  const editarDescricao = async () => {
+    if (!selecionada) return
+    await supabase.from('animais').update({ descricao: novaDescricao }).eq('id', selecionada.animal_id)
+    await fetchTudo()
+    setEditandoDescricao(false)
+    mostrarToast('Descrição actualizada!', 'sucesso')
+  }
+
+  const mudarEstado = async (estado: string) => {
+    if (!selecionada) return
+    await supabase.from('animais').update({ estado }).eq('id', selecionada.animal_id)
+    if (estado === 'encontrado') {
+      await supabase.from('ocorrencias').update({ estado: 'resolvida', resolvida_at: new Date().toISOString() }).eq('id', selecionada.id)
+    }
+    await fetchTudo()
+    setSelecionada(prev => prev ? { ...prev, estado: estado as any } : null)
+    mostrarToast('Estado actualizado!', 'sucesso')
   }
 
   const marcarResolvida = async (ocorrenciaId: string, animalId: string) => {
@@ -346,6 +368,63 @@ export default function Ocorrencias() {
                       </div>
                     </div>
 
+                    {/* Editar estado e descrição */}
+                    <div className="bg-white rounded-2xl border border-stone-200 p-5">
+                      <h3 className="font-bold text-stone-900 mb-4">✏️ Editar ocorrência</h3>
+                      <div className="flex flex-col gap-4">
+                        {/* Mudar estado */}
+                        <div>
+                          <label className="text-sm font-semibold text-stone-500 mb-1.5 block">Estado do animal</label>
+                          <select
+                            value={(selecionada.animais as any)?.estado || 'desaparecido'}
+                            onChange={e => mudarEstado(e.target.value)}
+                            className="w-full px-4 py-2.5 border-2 border-stone-200 rounded-xl text-sm focus:outline-none focus:border-lime-600 bg-white"
+                          >
+                            <option value="desaparecido">⚠ Desaparecido</option>
+                            <option value="avistado">👁 Avistado</option>
+                            <option value="encontrado">✓ Encontrado</option>
+                          </select>
+                        </div>
+                        {/* Editar descrição */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="text-sm font-semibold text-stone-500">Descrição do animal</label>
+                            {!editandoDescricao && (
+                              <button onClick={() => {
+                                setNovaDescricao((selecionada.animais as any)?.descricao || '')
+                                setEditandoDescricao(true)
+                              }} className="text-xs text-lime-700 font-semibold hover:underline">Editar</button>
+                            )}
+                          </div>
+                          {editandoDescricao ? (
+                            <div className="flex flex-col gap-2">
+                              <textarea
+                                value={novaDescricao}
+                                onChange={e => setNovaDescricao(e.target.value)}
+                                rows={3}
+                                className="w-full px-4 py-3 border-2 border-lime-300 rounded-xl text-sm resize-none focus:outline-none focus:border-lime-600"
+                              />
+                              <div className="flex gap-2">
+                                <button onClick={() => setEditandoDescricao(false)}
+                                  className="flex-1 border-2 border-stone-200 text-stone-600 py-2 rounded-xl text-sm font-semibold hover:bg-stone-50">
+                                  Cancelar
+                                </button>
+                                <button onClick={editarDescricao}
+                                  className="flex-1 text-white py-2 rounded-xl text-sm font-semibold"
+                                  style={{background:'#65a30d'}}>
+                                  Guardar
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-stone-500 bg-stone-50 rounded-xl px-4 py-3">
+                              {(selecionada.animais as any)?.descricao || 'Sem descrição. Clica em Editar para adicionar.'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Partilhar */}
                     <div className="bg-white rounded-2xl border border-stone-200 p-5">
                       <h3 className="font-bold text-stone-900 mb-3">📤 Partilhar para aumentar o alcance</h3>
@@ -370,7 +449,8 @@ export default function Ocorrencias() {
                           🔗 Copiar link
                         </button>
                         <button onClick={() => gerarCartaz(selecionada)}
-                          className="flex items-center gap-2 bg-stone-100 text-stone-700 px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-stone-200 transition-colors">
+                          className="flex items-center gap-2 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                          style={{background:'#365314'}}>
                           🖨️ Cartaz QR
                         </button>
                       </div>

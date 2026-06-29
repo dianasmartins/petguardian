@@ -20,6 +20,8 @@ import Admin from './pages/Admin'
 import AnimalPerfil from './pages/AnimalPerfil'
 import Estatisticas from './pages/Estatisticas'
 import ComoFunciona from './pages/ComoFunciona'
+import EsqueciPassword from './pages/EsqueciPassword'
+import RedefinirPassword from './pages/RedefinirPassword'
 import Mensagens from './pages/Mensagens'
 
 export default function App() {
@@ -57,6 +59,8 @@ export default function App() {
           <Route path="/identificar" element={<IdentificarAnimal />} />
           <Route path="/estatisticas" element={<Estatisticas />} />
           <Route path="/como-funciona" element={<ComoFunciona />} />
+          <Route path="/esqueci-password" element={<EsqueciPassword />} />
+          <Route path="/redefinir-password" element={<RedefinirPassword />} />
           <Route path="/avistamento/:animalId" element={<SubmeterAvistamento />} />
           <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
           <Route path="/registo" element={!session ? <Registo /> : <Navigate to="/" />} />

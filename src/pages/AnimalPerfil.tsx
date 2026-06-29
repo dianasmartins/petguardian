@@ -173,12 +173,7 @@ export default function AnimalPerfil() {
                     👁 Reportar avistamento
                   </Link>
                 )}
-                {!isDono && session && dono && (
-                  <button onClick={() => navigate('/mensagens?iniciar=' + dono.id + '&animal=' + animal.id)}
-                    className="bg-stone-100 text-stone-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-stone-200 transition-colors text-sm">
-                    💬 Contactar dono
-                  </button>
-                )}
+
                 {isDono && animal.estado !== 'encontrado' && (
                   <button onClick={() => setMostrarModalEncontrado(true)}
                     className="bg-lime-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-lime-800 transition-colors text-sm">

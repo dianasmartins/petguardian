@@ -85,7 +85,10 @@ export default function Login() {
               className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-stone-500">Password</label>
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-stone-500">Password</label>
+              <Link to="/esqueci-password" className="text-xs hover:underline" style={{color:'#65a30d'}}>Esqueci a password</Link>
+            </div>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required placeholder="••••••••"
               className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
           </div>
