@@ -28,7 +28,6 @@ export default function Home() {
   const [enviandoReview, setEnviandoReview] = useState(false)
   const [quickTipo, setQuickTipo] = useState<'perdeu' | 'encontrou'>('perdeu')
   const [quickNome, setQuickNome] = useState('')
-  const [quickMorada, setQuickMorada] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -164,7 +163,7 @@ export default function Home() {
 
       {/* STATS */}
       <section style={{ background: VERDE_ESCURO }}>
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-[#4d7c0f]">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x" style={{ ['--tw-divide-color' as any]: '#4d7c0f' }}>
           {[
             { value: stats.desaparecidos, label: 'Perdidos agora' },
             { value: stats.encontrados, label: 'Reunidos com a família' },
