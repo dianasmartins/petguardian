@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+{ useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Animal } from '../types'
@@ -230,105 +230,6 @@ export default function Home() {
                 <p className="text-stone-500 text-sm leading-relaxed">{item.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PREVIEW LISTAGEM */}
-      <section className="py-20 px-4 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-200">Últimas ocorrências</span>
-              <h2 className="text-4xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Precisam de ajuda</h2>
-            </div>
-            <Link to="/animais" className="text-green-700 font-semibold hover:underline flex items-center gap-1">Ver todos →</Link>
-          </div>
-
-          {recentes.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-              {recentes.map(animal => (
-                <Link key={animal.id} to={`/animais/${animal.id}`}
-                  className="bg-white rounded-2xl overflow-hidden border-2 border-stone-100 hover:border-green-300 hover:shadow-lg transition-all group">
-                  <div className="h-40 bg-green-50 flex items-center justify-center text-6xl overflow-hidden">
-                    {animal.foto_url
-                      ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                      : (animal.especie === 'gato' ? '🐈' : animal.especie === 'cao' ? '🐕' : '🐾')
-                    }
-                  </div>
-                  <div className="p-4">
-                    <div className="flex items-start justify-between gap-1 mb-1">
-                      <span className="font-bold text-stone-900">{animal.nome}</span>
-                      {estadoBadge(animal.estado)}
-                    </div>
-                    <div className="text-xs text-stone-400">{animal.especie === 'cao' ? 'Cão' : animal.especie === 'gato' ? 'Gato' : 'Outro'} · {animal.cor}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 text-stone-400">
-              <div className="text-5xl mb-4">🐾</div>
-              <p>Ainda não há animais registados.</p>
-              <button onClick={handleRegistarAnimal} className="mt-4 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors text-sm">Registar o primeiro</button>
-            </div>
-          )}
-
-          {/* Preview do mapa */}
-          <div className="mt-12 bg-stone-50 rounded-3xl overflow-hidden border-2 border-stone-100">
-            <div className="p-6 flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Mapa interativo em tempo real</h3>
-                <p className="text-stone-500 text-sm mt-1">Filtros por estado, espécie e distrito · Modo daltónico · Alerta de proximidade</p>
-              </div>
-              <Link to="/mapa" className="bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition-colors text-sm flex-shrink-0">
-                Abrir mapa →
-              </Link>
-            </div>
-            {/* Mockup visual do mapa */}
-            <div className="relative h-56 bg-gradient-to-br from-green-100 via-emerald-50 to-teal-100 overflow-hidden">
-              {/* Estradas simuladas */}
-              <div className="absolute inset-0 opacity-30">
-                <div className="absolute top-1/3 left-0 right-0 h-px bg-stone-400"></div>
-                <div className="absolute top-2/3 left-0 right-0 h-px bg-stone-400"></div>
-                <div className="absolute left-1/4 top-0 bottom-0 w-px bg-stone-400"></div>
-                <div className="absolute left-2/3 top-0 bottom-0 w-px bg-stone-400"></div>
-                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-stone-300"></div>
-              </div>
-
-              {/* Marcadores animados */}
-              {[
-                { left: '20%', top: '40%', cor: 'bg-red-500', delay: '0s', nome: 'Duke' },
-                { left: '45%', top: '25%', cor: 'bg-amber-400', delay: '0.5s', nome: 'Mimi' },
-                { left: '65%', top: '55%', cor: 'bg-green-600', delay: '1s', nome: 'Rex' },
-                { left: '35%', top: '65%', cor: 'bg-red-500', delay: '1.5s', nome: 'Luna' },
-                { left: '75%', top: '30%', cor: 'bg-red-500', delay: '2s', nome: 'Bobi' },
-              ].map((m, i) => (
-                <div key={i} className="absolute flex flex-col items-center"
-                  style={{ left: m.left, top: m.top, animation: `markerPop 0.5s ${m.delay} both` }}>
-                  <div className={`w-8 h-8 ${m.cor} rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-xs font-bold`}>
-                    {m.nome[0]}
-                  </div>
-                  <div className="bg-white text-stone-700 text-xs font-semibold px-2 py-0.5 rounded-full border border-stone-200 mt-1 shadow-sm whitespace-nowrap">
-                    {m.nome}
-                  </div>
-                </div>
-              ))}
-
-              {/* Filtros sobrepostos */}
-              <div className="absolute top-3 left-3 right-3 flex gap-2">
-                <div className="bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 shadow-sm">Todos os estados</div>
-                <div className="bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 shadow-sm">Todas as espécies</div>
-                <div className="bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 shadow-sm">Distrito</div>
-              </div>
-
-              {/* Legenda */}
-              <div className="absolute bottom-3 left-3 bg-white rounded-xl px-3 py-2 flex items-center gap-3 text-xs border border-stone-200 shadow-sm">
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-red-500 rounded-full inline-block"></span>Perdido</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-amber-400 rounded-full inline-block"></span>Avistado</span>
-                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-green-600 rounded-full inline-block"></span>Encontrado</span>
-              </div>
-            </div>
           </div>
         </div>
       </section>
