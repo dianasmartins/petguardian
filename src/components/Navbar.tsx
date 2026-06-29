@@ -150,7 +150,6 @@ export default function Navbar({ session }: Props) {
 
           <NavDropdown label="Comunidade" items={[
             { to: '/familias-felizes', icon: '🎉', label: 'Famílias Felizes', desc: 'Casos de reencontro com sucesso' },
-            { to: '/testemunhos', icon: '💬', label: 'Testemunhos', desc: 'O que dizem as famílias' },
             { to: '/estatisticas', icon: '📊', label: 'Estatísticas', desc: 'Dados em tempo real' },
             { to: '/como-funciona', icon: '❓', label: 'Como funciona', desc: 'Guia completo da plataforma' },
           ]} />

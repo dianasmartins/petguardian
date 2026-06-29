@@ -23,7 +23,6 @@ import ComoFunciona from './pages/ComoFunciona'
 import EsqueciPassword from './pages/EsqueciPassword'
 import AnimaisEncontrados from './pages/AnimaisEncontrados'
 import FamiliasFeliizes from './pages/FamiliasFeliizes'
-import Testemunhos from './pages/Testemunhos'
 import RedefinirPassword from './pages/RedefinirPassword'
 import Mensagens from './pages/Mensagens'
 
@@ -65,7 +64,6 @@ export default function App() {
           <Route path="/esqueci-password" element={<EsqueciPassword />} />
           <Route path="/animais-encontrados" element={<AnimaisEncontrados />} />
           <Route path="/familias-felizes" element={<FamiliasFeliizes />} />
-          <Route path="/testemunhos" element={<Testemunhos />} />
           <Route path="/redefinir-password" element={<RedefinirPassword />} />
           <Route path="/avistamento/:animalId" element={<SubmeterAvistamento />} />
           <Route path="/login" element={!session ? <Login /> : <Navigate to="/" />} />
