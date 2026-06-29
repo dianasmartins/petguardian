@@ -149,20 +149,35 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Funcionalidades — tom claro */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-            {[
-              { icon: '🗺️', title: 'Mapa em tempo real' },
-              { icon: '🤖', title: 'Identificação por IA' },
-              { icon: '🔔', title: 'Notificações instantâneas' },
-              { icon: '🖨️', title: 'Cartaz QR Code' },
-            ].map(item => (
-              <div key={item.title} className="flex flex-col items-center text-center gap-3 py-6 px-4 rounded-2xl"
-                style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
-                <span className="text-3xl">{item.icon}</span>
-                <span className="text-sm font-semibold" style={{ color: '#6b7280' }}>{item.title}</span>
-              </div>
-            ))}
+          {/* Carrossel de funcionalidades */}
+          <div className="relative overflow-hidden rounded-2xl" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+            <div className="flex" style={{ animation: 'pgSlide 12s linear infinite' }}>
+              {[
+                { icon: '🗺️', title: 'Mapa em tempo real', desc: 'Todos os animais desaparecidos num só lugar' },
+                { icon: '🤖', title: 'Identificação por IA', desc: 'Google Gemini analisa e compara animais' },
+                { icon: '🔔', title: 'Notificações instantâneas', desc: 'Alerta em tempo real via WebSockets' },
+                { icon: '🖨️', title: 'Cartaz QR Code', desc: 'Cartaz A4 para imprimir em segundos' },
+                { icon: '💬', title: 'Mensagens privadas', desc: 'Chat directo com o dono do animal' },
+                { icon: '📤', title: 'Partilha automática', desc: 'WhatsApp, Facebook e Instagram' },
+                { icon: '🗺️', title: 'Mapa em tempo real', desc: 'Todos os animais desaparecidos num só lugar' },
+                { icon: '🤖', title: 'Identificação por IA', desc: 'Google Gemini analisa e compara animais' },
+              ].map((item, i) => (
+                <div key={i} className="flex-shrink-0 flex items-center gap-4 px-8 py-5"
+                  style={{ minWidth: 280 }}>
+                  <span className="text-3xl flex-shrink-0">{item.icon}</span>
+                  <div>
+                    <div className="font-semibold text-sm" style={{ color: '#374151' }}>{item.title}</div>
+                    <div className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>{item.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <style>{`
+              @keyframes pgSlide {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
+              }
+            `}</style>
           </div>
         </div>
       </section>
