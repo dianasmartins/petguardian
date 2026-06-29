@@ -109,62 +109,55 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Imagem + Formulário */}
-          <div className="flex flex-col gap-5">
-            <img src="/hero-illustration.png" alt="Família reunida com o seu animal de estimação" className="w-full max-w-md mx-auto drop-shadow-xl" />
-            <div className="bg-white rounded-2xl p-7 border" style={{ borderColor: VERDE_BORDA, boxShadow: '0 8px 32px rgba(101,163,13,.12)' }}>
-              <h2 className="text-lg font-bold mb-1" style={{ color: VERDE_ESCURO }}>Criar alerta gratuito</h2>
-              <p className="text-sm mb-5" style={{ color: '#6b7280' }}>Preenche os dados e começa a alertar a comunidade agora.</p>
+          {/* Formulário rápido */}
+          <div className="bg-white rounded-2xl p-7 border" style={{ borderColor: VERDE_BORDA, boxShadow: '0 8px 32px rgba(101,163,13,.12)' }}>
+            <h2 className="text-lg font-bold mb-1" style={{ color: VERDE_ESCURO }}>Criar alerta gratuito</h2>
+            <p className="text-sm mb-5" style={{ color: '#6b7280' }}>Preenche os dados e começa a alertar a comunidade agora.</p>
 
-              <form onSubmit={handleQuickSubmit} className="flex flex-col gap-4">
-                <div>
-                  <label className="text-xs font-semibold mb-2 block" style={{ color: VERDE_ESCURO }}>O que aconteceu?</label>
-                  <div className="flex rounded-xl overflow-hidden border-2" style={{ borderColor: VERDE_BORDA }}>
-                    <button type="button" onClick={() => setQuickTipo('perdeu')}
-                      className="flex-1 py-2.5 text-xs font-bold transition-colors"
-                      style={{ background: quickTipo === 'perdeu' ? VERDE : 'white', color: quickTipo === 'perdeu' ? 'white' : '#6b7280' }}>
-                      Perdi o meu animal
-                    </button>
-                    <button type="button" onClick={() => setQuickTipo('encontrou')}
-                      className="flex-1 py-2.5 text-xs font-bold transition-colors"
-                      style={{ background: quickTipo === 'encontrou' ? VERDE : 'white', color: quickTipo === 'encontrou' ? 'white' : '#6b7280' }}>
-                      Encontrei um animal
-                    </button>
+            <form onSubmit={handleQuickSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-semibold mb-2 block" style={{ color: VERDE_ESCURO }}>O que aconteceu?</label>
+                <div className="flex rounded-xl overflow-hidden border-2" style={{ borderColor: VERDE_BORDA }}>
+                  <button type="button" onClick={() => setQuickTipo('perdeu')}
+                    className="flex-1 py-2.5 text-xs font-bold transition-colors"
+                    style={{ background: quickTipo === 'perdeu' ? VERDE : 'white', color: quickTipo === 'perdeu' ? 'white' : '#6b7280' }}>
+                    Perdi o meu animal
+                  </button>
+                  <button type="button" onClick={() => setQuickTipo('encontrou')}
+                    className="flex-1 py-2.5 text-xs font-bold transition-colors"
+                    style={{ background: quickTipo === 'encontrou' ? VERDE : 'white', color: quickTipo === 'encontrou' ? 'white' : '#6b7280' }}>
+                    Encontrei um animal
+                  </button>
+                </div>
+              </div>
+
+              {quickTipo === 'perdeu' ? (
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Nome do animal</label>
+                    <input value={quickNome} onChange={e => setQuickNome(e.target.value)}
+                      placeholder="Ex: Bolinhas"
+                      className="w-full px-3 py-2.5 rounded-xl text-xs border-2 focus:outline-none"
+                      style={{ borderColor: VERDE_BORDA, background: VERDE_CLARO, color: VERDE_ESCURO }} />
+                  </div>
+                  <div className="bg-lime-50 border border-lime-200 rounded-xl px-4 py-3 text-xs" style={{ color: '#365314' }}>
+                    📝 Preenches os restantes dados (foto, GPS, descrição) no passo seguinte.
                   </div>
                 </div>
+              ) : (
+                <div className="rounded-xl px-4 py-3 text-xs" style={{ background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
+                  🤖 Usa a nossa IA para identificar o animal e encontrar o dono rapidamente.
+                </div>
+              )}
 
-                {quickTipo === 'perdeu' ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Nome do animal</label>
-                      <input value={quickNome} onChange={e => setQuickNome(e.target.value)}
-                        placeholder="Ex: Bolinhas"
-                        className="w-full px-3 py-2.5 rounded-xl text-xs border-2 focus:outline-none"
-                        style={{ borderColor: VERDE_BORDA, background: VERDE_CLARO, color: VERDE_ESCURO }} />
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Última localização</label>
-                      <input value={quickMorada} onChange={e => setQuickMorada(e.target.value)}
-                        placeholder="Ex: Rua das Flores"
-                        className="w-full px-3 py-2.5 rounded-xl text-xs border-2 focus:outline-none"
-                        style={{ borderColor: VERDE_BORDA, background: VERDE_CLARO, color: VERDE_ESCURO }} />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="rounded-xl px-4 py-3 text-xs" style={{ background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
-                    🤖 Usa a nossa IA para identificar o animal e encontrar o dono rapidamente.
-                  </div>
-                )}
-
-                <button type="submit" className="w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5"
-                  style={{ background: LARANJA, boxShadow: '0 4px 14px rgba(234,88,12,.25)' }}>
-                  {quickTipo === 'perdeu' ? 'Criar alerta agora 🐾' : 'Identificar animal com IA 🤖'}
-                </button>
-                <p className="text-center text-xs" style={{ color: '#9ca3af' }}>
-                  100% gratuito · sem anúncios · apenas maiores de 18
-                </p>
-              </form>
-            </div>
+              <button type="submit" className="w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5"
+                style={{ background: LARANJA, boxShadow: '0 4px 14px rgba(234,88,12,.25)' }}>
+                {quickTipo === 'perdeu' ? 'Criar alerta agora 🐾' : 'Identificar animal com IA 🤖'}
+              </button>
+              <p className="text-center text-xs" style={{ color: '#9ca3af' }}>
+                100% gratuito · sem anúncios · apenas maiores de 18
+              </p>
+            </form>
           </div>
         </div>
       </section>
