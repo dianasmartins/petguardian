@@ -284,7 +284,7 @@ export default function RegistarAnimal() {
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-semibold text-stone-500">Mensagem de apelo <span className="text-stone-400 font-normal">(opcional)</span></label>
                     <textarea value={apelo} onChange={e => setApelo(e.target.value)} rows={2}
-                      placeholder="Ex: O Bolinhas é muito tímido, por favor não o persiga. A família está desesperada..."
+                      placeholder=""
                       className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm resize-none" />
                     <p className="text-xs text-stone-400">Esta mensagem aparece no anúncio do animal e aumenta o apelo emocional.</p>
                   </div>

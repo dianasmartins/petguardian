@@ -4,6 +4,7 @@ import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
+import { gerarCartazPDF } from '../lib/gerarQRCode'
 import type { Animal, Avistamento } from '../types'
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -35,6 +36,7 @@ interface Dono {
   id: string
   nome: string
   telemovel: string | null
+  foto_url?: string | null
 }
 
 type Tab = 'perfil' | 'avistamentos'
@@ -66,11 +68,21 @@ export default function AnimalPerfil() {
     const { data: animalData } = await supabase.from('animais').select('*').eq('id', id).single()
     if (!animalData) { setLoading(false); return }
     setAnimal(animalData)
-    const { data: donoData } = await supabase.from('profiles').select('*').eq('id', animalData.dono_id).single()
+    const { data: donoData } = await supabase.from('profiles').select('id, nome, telemovel, foto_url').eq('id', animalData.dono_id).maybeSingle()
     setDono(donoData)
     const { data: avsData } = await supabase.from('avistamentos').select('*').eq('animal_id', id).order('created_at', { ascending: true })
     setAvistamentos(avsData || [])
     setLoading(false)
+  }
+
+  const handleGerarCartaz = async () => {
+    mostrarToast('A gerar cartaz...', 'info')
+    try {
+      await gerarCartazPDF(animal as any, window.location.origin)
+      mostrarToast('Cartaz aberto — usa Ctrl+P para imprimir!', 'sucesso')
+    } catch {
+      mostrarToast('Erro ao gerar cartaz.', 'erro')
+    }
   }
 
   const handleMarcarEncontrado = async () => {
@@ -173,6 +185,10 @@ export default function AnimalPerfil() {
                     ✓ Marcar como encontrado
                   </button>
                 )}
+                <button onClick={handleGerarCartaz}
+                  className="bg-stone-100 text-stone-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-stone-200 transition-colors text-sm">
+                  🖨️ Cartaz QR
+                </button>
               </div>
             </div>
           </div>
@@ -221,8 +237,11 @@ export default function AnimalPerfil() {
                 <h2 className="font-bold text-stone-900 mb-4">👤 Dono do animal</h2>
                 {dono ? (
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-full bg-green-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                      {dono.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()}
+                    <div className="w-14 h-14 rounded-full overflow-hidden bg-green-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                      {dono.foto_url
+                        ? <img src={dono.foto_url} alt={dono.nome} className="w-full h-full object-cover" />
+                        : dono.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
+                      }
                     </div>
                     <div className="flex-1">
                       <div className="font-bold text-stone-900">{dono.nome}</div>
