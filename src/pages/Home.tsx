@@ -16,6 +16,7 @@ const VERDE_CLARO = '#f7fee7'
 const VERDE_BORDA = '#d9f99d'
 const LARANJA = '#ea580c'
 const LARANJA_ESCURO = '#c2410c'
+const LARANJA_CLARO = '#fff7ed'
 
 export default function Home() {
   const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
@@ -123,7 +124,7 @@ export default function Home() {
 
       {/* STATS */}
       <section style={{ background: VERDE_ESCURO }}>
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x" style={{ borderColor: '#4d7c0f' }}>
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x" style={{ divideColor: '#4d7c0f' }}>
           {[
             { value: stats.desaparecidos, label: 'Perdidos agora' },
             { value: stats.encontrados, label: 'Reunidos com a família' },
@@ -327,41 +328,31 @@ export default function Home() {
 
       {/* FOOTER */}
       <footer style={{ background: VERDE_ESCURO }}>
-        <div className="max-w-6xl mx-auto px-6 pt-14 pb-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 pb-10" style={{ borderBottom: '1px solid rgba(255,255,255,.1)' }}>
-            <div className="col-span-2 md:col-span-1">
-              <div className="text-xl font-bold mb-3" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</div>
-              <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,.4)' }}>
-                Plataforma portuguesa gratuita para localizar animais de estimação desaparecidos.
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-10 pb-10" style={{ borderBottom: '1px solid rgba(255,255,255,.1)' }}>
+            {/* Logo + descrição */}
+            <div className="max-w-xs">
+              <div className="text-2xl font-bold mb-3" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</div>
+              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,.45)' }}>
+                Plataforma portuguesa gratuita para localizar animais de estimação desaparecidos. Mapa em tempo real, IA de identificação e comunidade de voluntários.
               </p>
-              <div className="text-xs" style={{ color: 'rgba(255,255,255,.25)' }}>Projeto Final · GSC · Atlântica · 2026</div>
             </div>
-            <div>
-              <div className="text-xs font-bold mb-4 uppercase tracking-wider" style={{ color: 'rgba(255,255,255,.35)' }}>Plataforma</div>
-              {[['/', 'Início'], ['/animais', 'Ver animais'], ['/mapa', 'Mapa interativo'], ['/identificar', 'Identificar por IA'], ['/estatisticas', 'Estatísticas']].map(([to, label]) => (
-                <Link key={to} to={to} className="block text-sm mb-2.5 hover:underline" style={{ color: 'rgba(255,255,255,.4)' }}>{label}</Link>
-              ))}
-            </div>
-            <div>
-              <div className="text-xs font-bold mb-4 uppercase tracking-wider" style={{ color: 'rgba(255,255,255,.35)' }}>Recursos</div>
-              {[['/como-funciona', 'Como funciona'], ['/registo', 'Criar conta'], ['/login', 'Entrar'], ['/ocorrencias', 'Ocorrências'], ['/mensagens', 'Mensagens']].map(([to, label]) => (
-                <Link key={to} to={to} className="block text-sm mb-2.5 hover:underline" style={{ color: 'rgba(255,255,255,.4)' }}>{label}</Link>
-              ))}
-            </div>
-            <div>
-              <div className="text-xs font-bold mb-4 uppercase tracking-wider" style={{ color: 'rgba(255,255,255,.35)' }}>Informação</div>
-              {['100% gratuito', 'Sem anúncios', 'RGPD compliant', 'Apenas maiores de 18', '🇵🇹 Made in Portugal'].map(item => (
-                <div key={item} className="text-sm mb-2.5" style={{ color: 'rgba(255,255,255,.4)' }}>{item}</div>
+            {/* Links */}
+            <div className="flex flex-wrap gap-x-12 gap-y-3">
+              {[
+                ['/como-funciona', 'How It Works'],
+                ['/familias-felizes', 'About Us'],
+                ['/animais', 'Frequently Asked Questions'],
+                ['/definicoes', 'Privacy Policy'],
+                ['/como-funciona', 'Terms of Service'],
+              ].map(([to, label]) => (
+                <Link key={label} to={to} className="text-sm hover:underline block" style={{ color: 'rgba(255,255,255,.5)' }}>{label}</Link>
               ))}
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8">
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,.2)' }}>© 2026 PetGuardian · Diana Soares Martins · Atlântica</span>
-            <div className="flex gap-6">
-              {[['/como-funciona', 'Como funciona'], ['/estatisticas', 'Estatísticas'], ['/mapa', 'Mapa']].map(([to, label]) => (
-                <Link key={to} to={to} className="text-xs hover:underline" style={{ color: 'rgba(255,255,255,.2)' }}>{label}</Link>
-              ))}
-            </div>
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,.2)' }}>© 2026 PetGuardian · Diana Soares Martins · Atlântica · 🇵🇹 Made in Portugal</span>
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,.2)' }}>Projeto Final de Licenciatura · GSC</span>
           </div>
         </div>
       </footer>
