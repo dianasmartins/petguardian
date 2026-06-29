@@ -149,67 +149,68 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Carrossel de funcionalidades */}
-          <div className="relative overflow-hidden rounded-2xl" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
-            <div className="flex" style={{ animation: 'pgSlide 12s linear infinite' }}>
-              {[
-                { icon: '🗺️', title: 'Mapa em tempo real', desc: 'Todos os animais desaparecidos num só lugar' },
-                { icon: '🤖', title: 'Identificação por IA', desc: 'Google Gemini analisa e compara animais' },
-                { icon: '🔔', title: 'Notificações instantâneas', desc: 'Alerta em tempo real via WebSockets' },
-                { icon: '🖨️', title: 'Cartaz QR Code', desc: 'Cartaz A4 para imprimir em segundos' },
-                { icon: '💬', title: 'Mensagens privadas', desc: 'Chat directo com o dono do animal' },
-                { icon: '📤', title: 'Partilha automática', desc: 'WhatsApp, Facebook e Instagram' },
-                { icon: '🗺️', title: 'Mapa em tempo real', desc: 'Todos os animais desaparecidos num só lugar' },
-                { icon: '🤖', title: 'Identificação por IA', desc: 'Google Gemini analisa e compara animais' },
-              ].map((item, i) => (
-                <div key={i} className="flex-shrink-0 flex items-center gap-4 px-8 py-5"
-                  style={{ minWidth: 280 }}>
-                  <span className="text-3xl flex-shrink-0">{item.icon}</span>
-                  <div>
-                    <div className="font-semibold text-sm" style={{ color: '#374151' }}>{item.title}</div>
-                    <div className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>{item.desc}</div>
+          {/* Cards que rodam ao clicar */}
+          <style>{`
+            .flip-card { perspective: 1000px; cursor: pointer; }
+            .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(.4,0,.2,1); transform-style: preserve-3d; }
+            .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+            .flip-front, .flip-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 20px; text-align: center; }
+            .flip-back { transform: rotateY(180deg); }
+          `}</style>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
+            {[
+              {
+                icon: '🗺️', title: 'Mapa em tempo real',
+                backTitle: 'Como funciona',
+                backDesc: 'WebSockets actualizam os marcadores ao segundo. Filtra por estado, espécie e distrito. Modo daltónico incluído.',
+                color: '#ecfccb', colorDark: '#365314', colorBorder: '#d9f99d'
+              },
+              {
+                icon: '🤖', title: 'Identificação por IA',
+                backTitle: 'Google Gemini',
+                backDesc: 'Analisa a foto do animal e extrai espécie, raça, cor e características. Compara com os desaparecidos com scoring até 100%.',
+                color: '#dbeafe', colorDark: '#1e3a8a', colorBorder: '#bfdbfe'
+              },
+              {
+                icon: '🔔', title: 'Notificações push',
+                backTitle: 'Alertas em tempo real',
+                backDesc: 'Recebe notificação no browser mesmo com a página fechada. Service Worker integrado para alertas instantâneos.',
+                color: '#fef3c7', colorDark: '#92400e', colorBorder: '#fcd34d'
+              },
+              {
+                icon: '🖨️', title: 'Cartaz QR Code',
+                backTitle: 'Pronto a imprimir',
+                backDesc: 'Gera um cartaz A4 com foto, dados e QR Code em segundos. Qualquer pessoa pode reportar ao ler o código.',
+                color: '#ffe4e6', colorDark: '#881337', colorBorder: '#fecdd3'
+              },
+              {
+                icon: '💬', title: 'Mensagens privadas',
+                backTitle: 'Chat em tempo real',
+                backDesc: 'Fala directamente com o dono do animal. Ticks de lido/enviado e histórico completo de conversas.',
+                color: '#f3e8ff', colorDark: '#581c87', colorBorder: '#e9d5ff'
+              },
+              {
+                icon: '📤', title: 'Partilha automática',
+                backTitle: 'Aumenta o alcance',
+                backDesc: 'Partilha para WhatsApp, Facebook e Instagram com um clique. Mensagem pré-redigida com foto e link do perfil.',
+                color: '#ecfccb', colorDark: '#365314', colorBorder: '#d9f99d'
+              },
+            ].map((card, i) => (
+              <div key={i} className="flip-card" style={{ height: 180 }}
+                onClick={e => (e.currentTarget as HTMLElement).classList.toggle('flipped')}>
+                <div className="flip-card-inner" style={{ height: '100%' }}>
+                  <div className="flip-front" style={{ background: card.color, border: `1.5px solid ${card.colorBorder}` }}>
+                    <span className="text-4xl mb-3">{card.icon}</span>
+                    <span className="font-bold text-sm" style={{ color: card.colorDark }}>{card.title}</span>
+                    <span className="text-xs mt-2 opacity-60" style={{ color: card.colorDark }}>Clica para saber mais</span>
+                  </div>
+                  <div className="flip-back" style={{ background: card.colorDark }}>
+                    <div className="font-bold text-sm text-white mb-2">{card.backTitle}</div>
+                    <p className="text-xs leading-relaxed" style={{ color: 'rgba(255,255,255,.8)' }}>{card.backDesc}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-            <style>{`
-              @keyframes pgSlide {
-                0% { transform: translateX(0); }
-                100% { transform: translateX(-50%); }
-              }
-            `}</style>
-          </div>
-        </div>
-      </section>
-
-      {/* INFO BOX */}
-      <section className="py-24 px-8" style={{ background: VERDE_CLARO }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="rounded-3xl p-10" style={{ background: VERDE_ESCURO }}>
-            <div className="text-center mb-10">
-              <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
-                style={{ background: 'rgba(217,249,157,.15)', color: '#d9f99d', border: '1px solid rgba(217,249,157,.2)' }}>
-                Como o PetGuardian ajuda
               </div>
-              <h2 className="text-4xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
-                Tudo para reunir o teu animal
-              </h2>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {[
-                { icon: '🗺️', text: 'Mapa em tempo real com todos os animais desaparecidos de Portugal — visível por toda a comunidade instantaneamente' },
-                { icon: '🤖', text: 'Identificação por IA — analisa a foto do animal encontrado e compara com os desaparecidos registados' },
-                { icon: '📋', text: 'Regista o teu animal na base de dados portuguesa de animais perdidos, actualizada em tempo real' },
-                { icon: '🖨️', text: 'Gera um cartaz A4 com QR Code para imprimir e afixar na zona do desaparecimento' },
-                { icon: '📤', text: 'Partilha automática para WhatsApp, Facebook e Instagram para aumentar o alcance da pesquisa' },
-                { icon: '🎉', text: 'Junta-te a centenas de famílias portuguesas que já reuniram os seus animais com o PetGuardian' },
-              ].map((item, i) => (
-                <div key={i} className="flex items-start gap-4 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)' }}>
-                  <span className="text-3xl flex-shrink-0 mt-0.5">{item.icon}</span>
-                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,.75)' }}>{item.text}</p>
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
       </section>
