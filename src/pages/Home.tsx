@@ -10,6 +10,14 @@ interface Review {
   created_at: string
 }
 
+const VERDE = '#65a30d'
+const VERDE_ESCURO = '#365314'
+const VERDE_CLARO = '#f7fee7'
+const VERDE_BORDA = '#d9f99d'
+const LARANJA = '#ea580c'
+const LARANJA_ESCURO = '#c2410c'
+const LARANJA_CLARO = '#fff7ed'
+
 export default function Home() {
   const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
   const [session, setSession] = useState<any>(null)
@@ -19,10 +27,10 @@ export default function Home() {
   const [reviewEstrelas, setReviewEstrelas] = useState(5)
   const [reviewNome, setReviewNome] = useState('')
   const [enviandoReview, setEnviandoReview] = useState(false)
-  const navigate = useNavigate()
   const [quickTipo, setQuickTipo] = useState<'perdeu' | 'encontrou'>('perdeu')
   const [quickNome, setQuickNome] = useState('')
   const [quickMorada, setQuickMorada] = useState('')
+  const navigate = useNavigate()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -38,25 +46,18 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data } = await supabase.from('animais').select('*').order('created_at', { ascending: false })
-      if (data) {
-        setStats({ total: data.length, encontrados: data.filter(a => a.estado === 'encontrado').length, desaparecidos: data.filter(a => a.estado === 'desaparecido').length })
-      }
+      const { data } = await supabase.from('animais').select('id, estado').order('created_at', { ascending: false })
+      if (data) setStats({ total: data.length, encontrados: data.filter(a => a.estado === 'encontrado').length, desaparecidos: data.filter(a => a.estado === 'desaparecido').length })
       const { data: revs } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(6)
       setReviews(revs || [])
     }
     fetchData()
   }, [])
 
-  const handleRegistarAnimal = () => navigate(session ? '/registar-animal' : '/login')
-
   const handleQuickSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (quickTipo === 'encontrou') {
-      navigate('/identificar')
-    } else {
-      navigate(session ? '/registar-animal' : '/registo')
-    }
+    if (quickTipo === 'encontrou') navigate('/identificar')
+    else navigate(session ? '/registar-animal' : '/registo')
   }
 
   const enviarReview = async (e: React.FormEvent) => {
@@ -72,146 +73,159 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen" style={{ background: VERDE_CLARO }}>
 
       {/* HERO */}
-      <section className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-24 px-4 overflow-hidden">
-        <div className="absolute top-10 right-10 w-72 h-72 bg-green-200 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-56 h-56 bg-emerald-300 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
+      <section style={{ background: VERDE_CLARO }}>
+        <div className="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12 items-center">
 
-        <div className="max-w-6xl mx-auto w-full grid md:grid-cols-2 gap-16 items-center relative z-10">
-          {/* Texto esquerda */}
+          {/* Esquerda */}
           <div>
-            <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 text-xs font-bold px-4 py-1.5 rounded-full border border-green-200 mb-8">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full text-xs font-bold border"
+              style={{ background: '#ecfccb', color: VERDE_ESCURO, borderColor: VERDE_BORDA }}>
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: VERDE }}></span>
               {stats.desaparecidos} animais perdidos agora em Portugal
             </div>
-            <h1 className="text-5xl md:text-6xl font-black text-stone-900 leading-tight mb-6" style={{ fontFamily: 'Georgia, serif' }}>
-              Encontra o teu<br />
-              <span className="text-green-600">companheiro</span><br />
-              perdido
+            <h1 className="text-5xl font-black leading-tight mb-5" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif', letterSpacing: '-1px' }}>
+              O teu animal<br />
+              <em style={{ color: VERDE, fontStyle: 'normal' }}>perdido</em><br />
+              volta a casa.
             </h1>
-            <p className="text-lg text-stone-500 mb-10 leading-relaxed max-w-md">
-              Mapa em tempo real · Identificação por IA · Comunidade portuguesa gratuita
+            <p className="text-base mb-8 leading-relaxed" style={{ color: '#4d7c0f' }}>
+              Mapa em tempo real, identificação por IA e uma comunidade portuguesa pronta a ajudar — sempre gratuito.
             </p>
-            <div className="flex flex-wrap gap-4 mb-6">
-              <button onClick={handleRegistarAnimal}
-                className="bg-green-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-700 transition-all shadow-lg shadow-green-200 hover:-translate-y-0.5">
-                Registar animal
+            <div className="flex flex-wrap gap-3 mb-4">
+              <button onClick={() => navigate(session ? '/registar-animal' : '/registo')}
+                className="px-7 py-3.5 rounded-xl font-bold text-white text-sm transition-all hover:-translate-y-0.5"
+                style={{ background: LARANJA, boxShadow: '0 4px 14px rgba(234,88,12,.3)' }}>
+                Criar alerta agora
               </button>
-              <Link to="/mapa" className="bg-white text-green-700 border-2 border-green-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-50 transition-all">
+              <Link to="/mapa" className="px-7 py-3.5 rounded-xl font-bold text-sm border-2 transition-all"
+                style={{ color: VERDE_ESCURO, borderColor: VERDE, background: 'white' }}>
                 Ver mapa ao vivo
               </Link>
             </div>
-            <Link to="/identificar" className="text-stone-500 text-sm hover:text-green-700 transition-colors">
-              Encontrei um animal perdido 🔍
+            <Link to="/identificar" className="text-sm transition-colors hover:underline" style={{ color: '#4d7c0f' }}>
+              Encontrei um animal perdido →
             </Link>
-            {!session && (
-              <p className="text-stone-400 text-sm mt-3">
-                <Link to="/registo" className="text-green-600 hover:underline font-medium">Criar conta gratuita</Link> — apenas maiores de 18 anos
-              </p>
-            )}
           </div>
 
-          {/* Direita — formulário rápido */}
-          <div className="w-full max-w-md mx-auto md:mx-0">
-            <div className="bg-white rounded-3xl shadow-xl border border-stone-100 p-7">
-              <h2 className="text-2xl font-bold text-green-700 mb-1" style={{ fontFamily: 'Georgia, serif' }}>
-                Criar alerta gratuito
-              </h2>
-              <p className="text-stone-500 text-sm mb-6">Preenche os dados e começa a alertar a comunidade agora.</p>
+          {/* Formulário rápido */}
+          <div className="bg-white rounded-2xl p-7 border" style={{ borderColor: VERDE_BORDA, boxShadow: '0 8px 32px rgba(101,163,13,.12)' }}>
+            <h2 className="text-lg font-bold mb-1" style={{ color: VERDE_ESCURO }}>Criar alerta gratuito</h2>
+            <p className="text-sm mb-5" style={{ color: '#6b7280' }}>Preenche os dados e começa a alertar a comunidade agora.</p>
 
-              <form onSubmit={handleQuickSubmit} className="flex flex-col gap-4">
-                {/* Toggle perdeu / encontrou */}
-                <div>
-                  <label className="text-sm font-semibold text-stone-600 mb-2 block">O que aconteceu? <span className="text-red-500">*</span></label>
-                  <div className="flex rounded-xl overflow-hidden border-2 border-stone-200">
-                    <button type="button" onClick={() => setQuickTipo('perdeu')}
-                      className={`flex-1 py-2.5 text-sm font-bold transition-colors ${
-                        quickTipo === 'perdeu' ? 'bg-green-600 text-white' : 'bg-white text-stone-500 hover:bg-stone-50'
-                      }`}>
-                      Perdi o meu animal
-                    </button>
-                    <button type="button" onClick={() => setQuickTipo('encontrou')}
-                      className={`flex-1 py-2.5 text-sm font-bold transition-colors ${
-                        quickTipo === 'encontrou' ? 'bg-green-600 text-white' : 'bg-white text-stone-500 hover:bg-stone-50'
-                      }`}>
-                      Encontrei um animal
-                    </button>
+            <form onSubmit={handleQuickSubmit} className="flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-semibold mb-2 block" style={{ color: VERDE_ESCURO }}>O que aconteceu?</label>
+                <div className="flex rounded-xl overflow-hidden border-2" style={{ borderColor: VERDE_BORDA }}>
+                  <button type="button" onClick={() => setQuickTipo('perdeu')}
+                    className="flex-1 py-2.5 text-xs font-bold transition-colors"
+                    style={{ background: quickTipo === 'perdeu' ? VERDE : 'white', color: quickTipo === 'perdeu' ? 'white' : '#6b7280' }}>
+                    Perdi o meu animal
+                  </button>
+                  <button type="button" onClick={() => setQuickTipo('encontrou')}
+                    className="flex-1 py-2.5 text-xs font-bold transition-colors"
+                    style={{ background: quickTipo === 'encontrou' ? VERDE : 'white', color: quickTipo === 'encontrou' ? 'white' : '#6b7280' }}>
+                    Encontrei um animal
+                  </button>
+                </div>
+              </div>
+
+              {quickTipo === 'perdeu' ? (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Nome do animal</label>
+                    <input value={quickNome} onChange={e => setQuickNome(e.target.value)}
+                      placeholder="Ex: Bolinhas"
+                      className="w-full px-3 py-2.5 rounded-xl text-xs border-2 focus:outline-none"
+                      style={{ borderColor: VERDE_BORDA, background: VERDE_CLARO, color: VERDE_ESCURO }} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Última localização</label>
+                    <input value={quickMorada} onChange={e => setQuickMorada(e.target.value)}
+                      placeholder="Ex: Rua das Flores"
+                      className="w-full px-3 py-2.5 rounded-xl text-xs border-2 focus:outline-none"
+                      style={{ borderColor: VERDE_BORDA, background: VERDE_CLARO, color: VERDE_ESCURO }} />
                   </div>
                 </div>
+              ) : (
+                <div className="rounded-xl px-4 py-3 text-xs" style={{ background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }}>
+                  🤖 Usa a nossa IA para identificar o animal e encontrar o dono rapidamente.
+                </div>
+              )}
 
-                {quickTipo === 'perdeu' && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-sm font-semibold text-stone-600 mb-1.5 block">
-                        Nome do animal <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        value={quickNome}
-                        onChange={e => setQuickNome(e.target.value)}
-                        placeholder="Ex: Bolinhas"
-                        className="w-full px-3 py-2.5 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-semibold text-stone-600 mb-1.5 block">
-                        Última localização <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        value={quickMorada}
-                        onChange={e => setQuickMorada(e.target.value)}
-                        placeholder="Ex: Rua das Flores"
-                        className="w-full px-3 py-2.5 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {quickTipo === 'encontrou' && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-blue-700 text-sm">
-                    🤖 Usa a nossa IA para identificar o animal e encontrar o dono rapidamente.
-                  </div>
-                )}
-
-                <button type="submit"
-                  className="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold text-base hover:bg-green-700 transition-all shadow-md shadow-green-200 hover:-translate-y-0.5">
-                  {quickTipo === 'perdeu' ? 'Criar alerta agora 🐾' : 'Identificar animal com IA 🤖'}
-                </button>
-
-                <p className="text-center text-xs text-stone-400">
-                  100% gratuito · Sem anúncios · Apenas maiores de 18 anos
-                </p>
-              </form>
-            </div>
+              <button type="submit" className="w-full py-3.5 rounded-xl font-bold text-sm text-white transition-all hover:-translate-y-0.5"
+                style={{ background: LARANJA, boxShadow: '0 4px 14px rgba(234,88,12,.25)' }}>
+                {quickTipo === 'perdeu' ? 'Criar alerta agora 🐾' : 'Identificar animal com IA 🤖'}
+              </button>
+              <p className="text-center text-xs" style={{ color: '#9ca3af' }}>
+                100% gratuito · sem anúncios · apenas maiores de 18
+              </p>
+            </form>
           </div>
         </div>
       </section>
 
-      {/* STATS BAR */}
-      <section className="bg-green-600 py-8 px-4">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-0 text-center divide-x divide-green-500">
+      {/* STATS */}
+      <section style={{ background: VERDE_ESCURO }}>
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x" style={{ divideColor: '#4d7c0f' }}>
           {[
-            { value: stats.desaparecidos, label: 'Perdidos' },
+            { value: stats.desaparecidos, label: 'Perdidos agora' },
             { value: stats.encontrados, label: 'Reunidos com a família' },
             { value: stats.total, label: 'Animais registados' },
             { value: '87%', label: 'Taxa de sucesso' },
-          ].map(stat => (
-            <div key={stat.label} className="px-4 py-2">
-              <div className="text-3xl font-black text-white" style={{ fontFamily: 'Georgia, serif' }}>{stat.value}</div>
-              <div className="text-green-200 text-xs mt-1">{stat.label}</div>
+          ].map(s => (
+            <div key={s.label} className="text-center py-6 px-4">
+              <div className="text-3xl font-black" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>{s.value}</div>
+              <div className="text-xs mt-1" style={{ color: '#86efac' }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* BOX INFORMATIVA */}
-      <section className="py-16 px-4 bg-white">
+      {/* COMO FUNCIONA */}
+      <section className="py-20 px-6" style={{ background: 'white' }}>
         <div className="max-w-5xl mx-auto">
-          <div className="bg-gradient-to-br from-green-600 to-emerald-700 rounded-3xl p-8 md:p-12">
+          <div className="text-center mb-14">
+            <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
+              style={{ background: '#ecfccb', color: VERDE_ESCURO, border: `1px solid ${VERDE_BORDA}` }}>
+              Como funciona
+            </div>
+            <h2 className="text-4xl font-bold" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif' }}>
+              Três passos para reunir a tua família
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { icon: '📝', num: '01', title: 'Regista o animal', desc: 'Foto, dados e GPS. Aparece no mapa em segundos para toda a comunidade ver.' },
+              { icon: '🗺️', num: '02', title: 'Comunidade ajuda', desc: 'Voluntários reportam avistamentos com foto e localização. Recebes notificação em tempo real.' },
+              { icon: '🤝', num: '03', title: 'Reencontro', desc: 'Acompanha a linha do tempo e marca como encontrado quando reunires o teu animal.' },
+            ].map(item => (
+              <div key={item.num} className="p-8 rounded-3xl border-2 relative overflow-hidden"
+                style={{ background: VERDE_CLARO, borderColor: VERDE_BORDA }}>
+                <div className="absolute top-2 right-4 text-6xl font-black" style={{ color: '#ecfccb', fontFamily: 'Georgia, serif' }}>{item.num}</div>
+                <div className="text-3xl mb-4">{item.icon}</div>
+                <h3 className="font-bold text-lg mb-2" style={{ color: VERDE_ESCURO }}>{item.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: '#4d7c0f' }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* INFO BOX */}
+      <section className="py-16 px-6" style={{ background: VERDE_CLARO }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="rounded-3xl p-10" style={{ background: VERDE_ESCURO }}>
             <div className="text-center mb-10">
-              <span className="inline-block bg-green-500 text-green-100 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-400">Como o PetGuardian ajuda</span>
-              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>Tudo para reunir o teu animal</h2>
+              <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
+                style={{ background: 'rgba(217,249,157,.15)', color: '#d9f99d', border: '1px solid rgba(217,249,157,.2)' }}>
+                Como o PetGuardian ajuda
+              </div>
+              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
+                Tudo para reunir o teu animal
+              </h2>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               {[
@@ -220,172 +234,172 @@ export default function Home() {
                 { icon: '📋', text: 'Regista o teu animal na base de dados portuguesa de animais perdidos, actualizada em tempo real' },
                 { icon: '🖨️', text: 'Gera um cartaz A4 com QR Code para imprimir e afixar na zona do desaparecimento' },
                 { icon: '📤', text: 'Partilha automática para WhatsApp, Facebook e Instagram para aumentar o alcance da pesquisa' },
-                { icon: '🎉', text: 'Junta-te a centenas de famílias portuguesas que já reuniram os seus animais com a ajuda do PetGuardian' },
+                { icon: '🎉', text: 'Junta-te a centenas de famílias portuguesas que já reuniram os seus animais com o PetGuardian' },
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-4 rounded-2xl p-4 border border-white border-opacity-30">
+                <div key={i} className="flex items-start gap-4 rounded-2xl p-4" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.08)' }}>
                   <span className="text-2xl flex-shrink-0">{item.icon}</span>
-                  <p className="text-white text-sm leading-relaxed">{item.text}</p>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,.75)' }}>{item.text}</p>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* COMO FUNCIONA */}
-      <section className="py-20 px-4 bg-stone-50">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-200">Como funciona</span>
-            <h2 className="text-4xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Três passos simples</h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { icon: '📝', num: '01', title: 'Regista o animal', desc: 'Foto, descrição e localização GPS. Aparece imediatamente no mapa para toda a comunidade.', cor: 'bg-green-50 border-green-200' },
-              { icon: '🗺️', num: '02', title: 'Comunidade ajuda', desc: 'Voluntários reportam avistamentos com foto e localização. Recebe notificação em tempo real.', cor: 'bg-emerald-50 border-emerald-200' },
-              { icon: '🤝', num: '03', title: 'Reencontro', desc: 'Acompanha a linha do tempo da ocorrência e marca o caso como resolvido quando encontrar.', cor: 'bg-teal-50 border-teal-200' },
-            ].map(item => (
-              <div key={item.num} className={`p-8 rounded-3xl border-2 ${item.cor} hover:shadow-lg transition-all`}>
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-green-100">{item.icon}</div>
-                  <span className="text-4xl font-black text-green-200" style={{ fontFamily: 'Georgia, serif' }}>{item.num}</span>
-                </div>
-                <h3 className="font-bold text-stone-900 text-lg mb-3">{item.title}</h3>
-                <p className="text-stone-500 text-sm leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
 
       {/* REVIEWS */}
-      <section className="py-20 px-4 bg-stone-50">
+      <section className="py-20 px-6" style={{ background: 'white' }}>
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-200">Testemunhos</span>
-            <h2 className="text-4xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>O que dizem os utilizadores</h2>
+            <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
+              style={{ background: '#ecfccb', color: VERDE_ESCURO, border: `1px solid ${VERDE_BORDA}` }}>
+              Testemunhos
+            </div>
+            <h2 className="text-4xl font-bold" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif' }}>
+              O que dizem as famílias
+            </h2>
           </div>
+
           {reviews.length > 0 && (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+            <div className="grid md:grid-cols-3 gap-5 mb-10">
               {reviews.map(review => (
-                <div key={review.id} className="bg-white rounded-2xl p-6 border border-stone-200 hover:border-green-200 hover:shadow-md transition-all">
-                  <div className="flex items-center gap-1 mb-3">{[...Array(5)].map((_, i) => <span key={i} className={i < review.estrelas ? 'text-amber-400 text-lg' : 'text-stone-200 text-lg'}>★</span>)}</div>
-                  <p className="text-stone-600 text-sm leading-relaxed mb-4">"{review.texto}"</p>
+                <div key={review.id} className="rounded-2xl p-6 border" style={{ background: VERDE_CLARO, borderColor: VERDE_BORDA }}>
+                  <div className="flex gap-1 mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} style={{ color: i < review.estrelas ? '#f59e0b' : '#e5e7eb', fontSize: 16 }}>★</span>
+                    ))}
+                  </div>
+                  <p className="text-sm leading-relaxed mb-4" style={{ color: '#4d7c0f', fontStyle: 'italic' }}>"{review.texto}"</p>
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm">{review.nome[0].toUpperCase()}</div>
-                    <span className="font-semibold text-stone-900 text-sm">{review.nome}</span>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                      style={{ background: '#ecfccb', color: VERDE_ESCURO }}>{review.nome[0].toUpperCase()}</div>
+                    <span className="font-semibold text-sm" style={{ color: VERDE_ESCURO }}>{review.nome}</span>
                   </div>
                 </div>
               ))}
             </div>
           )}
-          {reviews.length === 0 && <div className="text-center py-10 mb-10"><div className="text-5xl mb-4">💬</div><p className="text-stone-400">Ainda não há testemunhos. Sê o primeiro!</p></div>}
+
           {session && !mostrarFormReview && (
-            <div className="text-center"><button onClick={() => setMostrarFormReview(true)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">✍️ Deixar um testemunho</button></div>
+            <div className="text-center">
+              <button onClick={() => setMostrarFormReview(true)}
+                className="px-6 py-3 rounded-xl font-semibold text-white text-sm"
+                style={{ background: LARANJA }}>
+                ✍️ Deixar um testemunho
+              </button>
+            </div>
           )}
+
           {session && mostrarFormReview && (
-            <form onSubmit={enviarReview} className="bg-white rounded-2xl border border-green-200 p-6 max-w-lg mx-auto">
-              <h3 className="font-bold text-stone-900 mb-4">O teu testemunho</h3>
+            <form onSubmit={enviarReview} className="rounded-2xl border p-6 max-w-lg mx-auto" style={{ borderColor: VERDE_BORDA, background: VERDE_CLARO }}>
+              <h3 className="font-bold mb-4" style={{ color: VERDE_ESCURO }}>O teu testemunho</h3>
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-semibold text-stone-500">Nome</label>
-                  <input value={reviewNome} onChange={e => setReviewNome(e.target.value)} required className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                <div>
+                  <label className="text-sm font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Nome</label>
+                  <input value={reviewNome} onChange={e => setReviewNome(e.target.value)} required
+                    className="w-full px-4 py-3 rounded-xl border-2 focus:outline-none text-sm"
+                    style={{ borderColor: VERDE_BORDA, background: 'white', color: VERDE_ESCURO }} />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-semibold text-stone-500">Classificação</label>
-                  <div className="flex gap-1">{[1,2,3,4,5].map(n => <button key={n} type="button" onClick={() => setReviewEstrelas(n)} className={`text-2xl transition-transform hover:scale-110 ${n <= reviewEstrelas ? 'text-amber-400' : 'text-stone-200'}`}>★</button>)}</div>
+                <div>
+                  <label className="text-sm font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Classificação</label>
+                  <div className="flex gap-1">
+                    {[1,2,3,4,5].map(n => (
+                      <button key={n} type="button" onClick={() => setReviewEstrelas(n)}
+                        className="text-2xl transition-transform hover:scale-110"
+                        style={{ color: n <= reviewEstrelas ? '#f59e0b' : '#e5e7eb' }}>★</button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-semibold text-stone-500">A tua experiência</label>
-                  <textarea value={reviewTexto} onChange={e => setReviewTexto(e.target.value)} rows={3} required className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm resize-none" />
+                <div>
+                  <label className="text-sm font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>A tua experiência</label>
+                  <textarea value={reviewTexto} onChange={e => setReviewTexto(e.target.value)} rows={3} required
+                    className="w-full px-4 py-3 rounded-xl border-2 focus:outline-none text-sm resize-none"
+                    style={{ borderColor: VERDE_BORDA, background: 'white', color: VERDE_ESCURO }} />
                 </div>
                 <div className="flex gap-3">
-                  <button type="button" onClick={() => setMostrarFormReview(false)} className="flex-1 border-2 border-stone-200 text-stone-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-stone-50">Cancelar</button>
-                  <button type="submit" disabled={enviandoReview} className="flex-1 bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 disabled:opacity-60">{enviandoReview ? 'A enviar...' : 'Publicar'}</button>
+                  <button type="button" onClick={() => setMostrarFormReview(false)}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold border-2"
+                    style={{ borderColor: VERDE_BORDA, color: VERDE_ESCURO }}>Cancelar</button>
+                  <button type="submit" disabled={enviandoReview}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white"
+                    style={{ background: LARANJA }}>
+                    {enviandoReview ? 'A enviar...' : 'Publicar'}
+                  </button>
                 </div>
               </div>
             </form>
           )}
-          {!session && <div className="text-center"><p className="text-stone-400 text-sm mb-3">Faz login para deixar um testemunho</p><Link to="/login" className="text-green-700 font-semibold hover:underline text-sm">Entrar →</Link></div>}
+
+          {!session && (
+            <div className="text-center">
+              <p className="text-sm mb-3" style={{ color: '#9ca3af' }}>Faz login para deixar um testemunho</p>
+              <Link to="/login" className="font-semibold text-sm hover:underline" style={{ color: VERDE }}>Entrar →</Link>
+            </div>
+          )}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 bg-gradient-to-br from-green-600 to-emerald-700">
-        <div className="max-w-2xl mx-auto text-center">
+      <section className="py-20 px-6 text-center" style={{ background: LARANJA }}>
+        <div className="max-w-2xl mx-auto">
           <div className="text-5xl mb-6">🐾</div>
-          <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>Ajuda a reunir mais famílias</h2>
-          <p className="text-green-100 text-lg mb-10">O PetGuardian é gratuito, sem anúncios e funciona em qualquer dispositivo.</p>
+          <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>
+            Ajuda a reunir mais famílias
+          </h2>
+          <p className="text-lg mb-10" style={{ color: 'rgba(255,255,255,.8)' }}>
+            O PetGuardian é gratuito, sem anúncios e funciona em qualquer dispositivo.
+          </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/registo" className="bg-white text-green-700 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-50 transition-all shadow-lg">Criar conta gratuita</Link>
-            <Link to="/animais" className="bg-green-700 text-white border-2 border-green-400 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-800 transition-all">Ver animais desaparecidos</Link>
+            <Link to="/registo" className="px-10 py-4 rounded-2xl font-bold text-lg transition-all"
+              style={{ background: VERDE_CLARO, color: LARANJA_ESCURO }}>
+              Criar conta gratuita
+            </Link>
+            <Link to="/animais" className="px-10 py-4 rounded-2xl font-bold text-lg border-2 border-white text-white transition-all hover:bg-white hover:text-orange-600">
+              Ver animais desaparecidos
+            </Link>
           </div>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-stone-950 pt-16 pb-8 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 pb-12 border-b border-stone-800">
-
-            {/* Logo e descrição */}
+      <footer style={{ background: VERDE_ESCURO }}>
+        <div className="max-w-6xl mx-auto px-6 pt-14 pb-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 pb-10" style={{ borderBottom: '1px solid rgba(255,255,255,.1)' }}>
             <div className="col-span-2 md:col-span-1">
-              <span className="text-green-400 font-bold text-2xl block mb-3" style={{ fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</span>
-              <p className="text-stone-400 text-sm leading-relaxed mb-4">
-                Plataforma portuguesa gratuita para localizar animais de estimação desaparecidos. Em tempo real, com IA.
+              <div className="text-xl font-bold mb-3" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</div>
+              <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(255,255,255,.4)' }}>
+                Plataforma portuguesa gratuita para localizar animais de estimação desaparecidos.
               </p>
-              <div className="text-stone-500 text-xs">Projeto Final de Licenciatura<br />GSC · Atlântica · 2026</div>
+              <div className="text-xs" style={{ color: 'rgba(255,255,255,.25)' }}>Projeto Final · GSC · Atlântica · 2026</div>
             </div>
-
-            {/* Plataforma */}
             <div>
-              <div className="text-stone-300 font-semibold text-sm mb-4 uppercase tracking-wider">Plataforma</div>
-              <div className="flex flex-col gap-2.5">
-                {[['/', 'Início'], ['/animais', 'Ver animais'], ['/mapa', 'Mapa interativo'], ['/identificar', 'Identificar por IA'], ['/estatisticas', 'Estatísticas']].map(([to, label]) => (
-                  <Link key={to} to={to} className="text-stone-400 hover:text-green-400 text-sm transition-colors">{label}</Link>
-                ))}
-              </div>
+              <div className="text-xs font-bold mb-4 uppercase tracking-wider" style={{ color: 'rgba(255,255,255,.35)' }}>Plataforma</div>
+              {[['/', 'Início'], ['/animais', 'Ver animais'], ['/mapa', 'Mapa interativo'], ['/identificar', 'Identificar por IA'], ['/estatisticas', 'Estatísticas']].map(([to, label]) => (
+                <Link key={to} to={to} className="block text-sm mb-2.5 hover:underline" style={{ color: 'rgba(255,255,255,.4)' }}>{label}</Link>
+              ))}
             </div>
-
-            {/* Recursos */}
             <div>
-              <div className="text-stone-300 font-semibold text-sm mb-4 uppercase tracking-wider">Recursos</div>
-              <div className="flex flex-col gap-2.5">
-                {[['/como-funciona', 'Como funciona'], ['/registo', 'Criar conta gratuita'], ['/login', 'Entrar'], ['/ocorrencias', 'As minhas ocorrências'], ['/mensagens', 'Mensagens']].map(([to, label]) => (
-                  <Link key={to} to={to} className="text-stone-400 hover:text-green-400 text-sm transition-colors">{label}</Link>
-                ))}
-              </div>
+              <div className="text-xs font-bold mb-4 uppercase tracking-wider" style={{ color: 'rgba(255,255,255,.35)' }}>Recursos</div>
+              {[['/como-funciona', 'Como funciona'], ['/registo', 'Criar conta'], ['/login', 'Entrar'], ['/ocorrencias', 'Ocorrências'], ['/mensagens', 'Mensagens']].map(([to, label]) => (
+                <Link key={to} to={to} className="block text-sm mb-2.5 hover:underline" style={{ color: 'rgba(255,255,255,.4)' }}>{label}</Link>
+              ))}
             </div>
-
-            {/* Contacto / Info */}
             <div>
-              <div className="text-stone-300 font-semibold text-sm mb-4 uppercase tracking-wider">Informação</div>
-              <div className="flex flex-col gap-2.5 text-stone-400 text-sm">
-                <span>100% gratuito</span>
-                <span>Sem anúncios</span>
-                <span>RGPD compliant</span>
-                <span>Apenas maiores de 18</span>
-                <span className="text-green-500 font-medium mt-1">🇵🇹 Made in Portugal</span>
-              </div>
+              <div className="text-xs font-bold mb-4 uppercase tracking-wider" style={{ color: 'rgba(255,255,255,.35)' }}>Informação</div>
+              {['100% gratuito', 'Sem anúncios', 'RGPD compliant', 'Apenas maiores de 18', '🇵🇹 Made in Portugal'].map(item => (
+                <div key={item} className="text-sm mb-2.5" style={{ color: 'rgba(255,255,255,.4)' }}>{item}</div>
+              ))}
             </div>
           </div>
-
-          {/* Bottom */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-xs text-stone-500">
-            <span>© 2026 PetGuardian · Diana Soares Martins · Atlântica</span>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8">
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,.2)' }}>© 2026 PetGuardian · Diana Soares Martins · Atlântica</span>
             <div className="flex gap-6">
-              <Link to="/como-funciona" className="hover:text-stone-300 transition-colors">Como funciona</Link>
-              <Link to="/estatisticas" className="hover:text-stone-300 transition-colors">Estatísticas</Link>
-              <Link to="/mapa" className="hover:text-stone-300 transition-colors">Mapa</Link>
+              {[['/como-funciona', 'Como funciona'], ['/estatisticas', 'Estatísticas'], ['/mapa', 'Mapa']].map(([to, label]) => (
+                <Link key={to} to={to} className="text-xs hover:underline" style={{ color: 'rgba(255,255,255,.2)' }}>{label}</Link>
+              ))}
             </div>
           </div>
         </div>
       </footer>
-
-      <style>{`
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-        @keyframes markerPop { from{transform:scale(0) translateY(8px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
-      `}</style>
     </div>
   )
 }

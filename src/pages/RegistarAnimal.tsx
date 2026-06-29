@@ -231,7 +231,7 @@ export default function RegistarAnimal() {
         <div className="flex gap-0 mb-8">
           {['Dados', 'Localização', 'Fotos'].map((label, i) => (
             <div key={i} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${
-              step === i + 1 ? 'border-green-600 text-green-700'
+              step === i + 1 ? 'border-lime-700 text-lime-800'
               : step > i + 1 ? 'border-emerald-500 text-emerald-600'
               : 'border-stone-200 text-stone-400'
             }`}>
@@ -250,7 +250,7 @@ export default function RegistarAnimal() {
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-semibold text-stone-500">Nome *</label>
                     <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Ex: Bolinhas"
-                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-semibold text-stone-500">Espécie *</label>
@@ -258,7 +258,7 @@ export default function RegistarAnimal() {
                       {[['cao', '🐕 Cão'], ['gato', '🐈 Gato'], ['outro', '🐾 Outro']].map(([val, label]) => (
                         <button key={val} type="button" onClick={() => setEspecie(val)}
                           className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${
-                            especie === val ? 'border-green-600 bg-green-50 text-green-700' : 'border-stone-200 text-stone-600'
+                            especie === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
                           }`}>{label}</button>
                       ))}
                     </div>
@@ -267,30 +267,30 @@ export default function RegistarAnimal() {
                     <div className="flex flex-col gap-1">
                       <label className="text-sm font-semibold text-stone-500">Raça</label>
                       <input value={raca} onChange={e => setRaca(e.target.value)} placeholder="Ex: Labrador"
-                        className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                        className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
                     </div>
                     <div className="flex flex-col gap-1">
                       <label className="text-sm font-semibold text-stone-500">Cor *</label>
                       <input value={cor} onChange={e => setCor(e.target.value)} placeholder="Ex: Castanho"
-                        className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                        className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-semibold text-stone-500">Descrição</label>
                     <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows={3}
                       placeholder="Coleira, marcas, comportamento..."
-                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm resize-none" />
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm resize-none" />
                   </div>
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-semibold text-stone-500">Mensagem de apelo <span className="text-stone-400 font-normal">(opcional)</span></label>
                     <textarea value={apelo} onChange={e => setApelo(e.target.value)} rows={2}
                       placeholder=""
-                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm resize-none" />
+                      className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm resize-none" />
                     <p className="text-xs text-stone-400">Esta mensagem aparece no anúncio do animal e aumenta o apelo emocional.</p>
                   </div>
                   {erro && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">{erro}</div>}
                   <button type="button" onClick={avancarStep1}
-                    className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                    className="w-full bg-lime-700 text-white py-3 rounded-xl font-semibold hover:bg-lime-800 transition-colors">
                     Seguinte: Localização →
                   </button>
                 </div>
@@ -305,9 +305,9 @@ export default function RegistarAnimal() {
                     <input value={morada} onChange={e => setMorada(e.target.value)}
                       placeholder="Ex: Rua das Flores, Lisboa"
                       onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), pesquisarMorada())}
-                      className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                      className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
                     <button type="button" onClick={pesquisarMorada} disabled={geocodingLoading}
-                      className="bg-green-600 text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-green-700 disabled:opacity-60 transition-colors whitespace-nowrap">
+                      className="bg-lime-700 text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-lime-800 disabled:opacity-60 transition-colors whitespace-nowrap">
                       {geocodingLoading ? '...' : '🔍 Pesquisar'}
                     </button>
                   </div>
@@ -321,7 +321,7 @@ export default function RegistarAnimal() {
                     📍 Usar GPS automático
                   </button>
                   {lat && lng && (
-                    <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-green-700 text-sm">
+                    <div className="bg-lime-50 border border-lime-200 rounded-xl px-4 py-3 text-lime-800 text-sm">
                       ✓ {lat.toFixed(5)}°N, {lng.toFixed(5)}°W
                     </div>
                   )}
@@ -331,7 +331,7 @@ export default function RegistarAnimal() {
                     <button type="button" onClick={() => { setErro(''); setStep(1) }}
                       className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 transition-colors">← Voltar</button>
                     <button type="button" onClick={avancarStep2}
-                      className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">Seguinte: Fotos →</button>
+                      className="flex-1 bg-lime-700 text-white py-3 rounded-xl font-semibold hover:bg-lime-800 transition-colors">Seguinte: Fotos →</button>
                   </div>
                 </div>
               </>
@@ -360,7 +360,7 @@ export default function RegistarAnimal() {
                     <button type="button" onClick={() => { setErro(''); setStep(2) }}
                       className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 transition-colors">← Voltar</button>
                     <button type="submit" disabled={loading}
-                      className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60">
+                      className="flex-1 bg-lime-700 text-white py-3 rounded-xl font-semibold hover:bg-lime-800 transition-colors disabled:opacity-60">
                       {loading ? 'A registar...' : '✓ Registar animal'}
                     </button>
                   </div>
@@ -384,7 +384,7 @@ export default function RegistarAnimal() {
               </MapContainer>
             </div>
             {lat && lng && (
-              <div className="px-5 py-3 bg-green-50 border-t border-green-100 text-green-700 text-sm">
+              <div className="px-5 py-3 bg-lime-50 border-t border-lime-100 text-lime-800 text-sm">
                 ✓ {lat.toFixed(4)}°N, {lng.toFixed(4)}°W
               </div>
             )}

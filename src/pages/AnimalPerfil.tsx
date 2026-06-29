@@ -103,7 +103,7 @@ export default function AnimalPerfil() {
   const estadoBadge = () => {
     if (animal.estado === 'desaparecido') return <span className="bg-red-100 text-red-700 text-sm font-bold px-3 py-1.5 rounded-full">⚠ Desaparecido</span>
     if (animal.estado === 'avistado') return <span className="bg-amber-100 text-amber-700 text-sm font-bold px-3 py-1.5 rounded-full">👁 Avistado</span>
-    return <span className="bg-green-100 text-green-700 text-sm font-bold px-3 py-1.5 rounded-full">✓ Encontrado</span>
+    return <span className="bg-lime-100 text-lime-800 text-sm font-bold px-3 py-1.5 rounded-full">✓ Encontrado</span>
   }
 
   const polylinePoints: [number, number][] = avistamentos
@@ -118,7 +118,7 @@ export default function AnimalPerfil() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-stone-400 mb-6">
-          <Link to="/animais" className="hover:text-green-700">Animais</Link>
+          <Link to="/animais" className="hover:text-lime-800">Animais</Link>
           <span>›</span>
           <span className="text-stone-700">{animal.nome}</span>
         </div>
@@ -127,7 +127,7 @@ export default function AnimalPerfil() {
         <div className="bg-white rounded-3xl border border-stone-200 p-6 mb-6">
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-shrink-0 mx-auto md:mx-0">
-              <div className="w-52 h-52 rounded-2xl overflow-hidden bg-green-50 flex items-center justify-center border border-stone-200 shadow-sm">
+              <div className="w-52 h-52 rounded-2xl overflow-hidden bg-lime-50 flex items-center justify-center border border-stone-200 shadow-sm">
                 {animal.foto_url
                   ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
                   : <span className="text-8xl">{animal.especie === 'gato' ? '🐈' : '🐕'}</span>
@@ -169,7 +169,7 @@ export default function AnimalPerfil() {
               <div className="flex flex-wrap gap-2">
                 {animal.estado !== 'encontrado' && (
                   <Link to={`/avistamento/${animal.id}`}
-                    className="bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition-colors text-sm">
+                    className="bg-lime-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-lime-800 transition-colors text-sm">
                     👁 Reportar avistamento
                   </Link>
                 )}
@@ -181,7 +181,7 @@ export default function AnimalPerfil() {
                 )}
                 {isDono && animal.estado !== 'encontrado' && (
                   <button onClick={() => setMostrarModalEncontrado(true)}
-                    className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition-colors text-sm">
+                    className="bg-lime-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-lime-800 transition-colors text-sm">
                     ✓ Marcar como encontrado
                   </button>
                 )}
@@ -202,7 +202,7 @@ export default function AnimalPerfil() {
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id as Tab)}
               className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${
-                tab === t.id ? 'border-green-600 text-green-700' : 'border-transparent text-stone-500 hover:text-stone-800'
+                tab === t.id ? 'border-lime-700 text-lime-800' : 'border-transparent text-stone-500 hover:text-stone-800'
               }`}>
               {t.label}
             </button>
@@ -237,7 +237,7 @@ export default function AnimalPerfil() {
                 <h2 className="font-bold text-stone-900 mb-4">👤 Dono do animal</h2>
                 {dono ? (
                   <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-full overflow-hidden bg-green-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                    <div className="w-14 h-14 rounded-full overflow-hidden bg-lime-700 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                       {dono.foto_url
                         ? <img src={dono.foto_url} alt={dono.nome} className="w-full h-full object-cover" />
                         : dono.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
@@ -246,7 +246,7 @@ export default function AnimalPerfil() {
                     <div className="flex-1">
                       <div className="font-bold text-stone-900">{dono.nome.split(' ')[0]}</div>
 
-                      {isDono && <div className="text-xs text-green-700 font-medium mt-1">Este é o teu animal</div>}
+                      {isDono && <div className="text-xs text-lime-800 font-medium mt-1">Este é o teu animal</div>}
                     </div>
                   </div>
                 ) : (
@@ -254,7 +254,7 @@ export default function AnimalPerfil() {
                 )}
                 {!isDono && session && dono && (
                   <button onClick={() => navigate('/mensagens?iniciar=' + dono.id + '&animal=' + animal.id)}
-                    className="w-full bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors">
+                    className="w-full bg-lime-700 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-lime-800 transition-colors">
                     💬 Enviar mensagem ao dono
                   </button>
                 )}
@@ -273,7 +273,7 @@ export default function AnimalPerfil() {
                     <button onClick={() => {
                       const txt = encodeURIComponent('🐾 *' + animal.nome + ' DESAPARECIDO!*\n\n' + (animal.especie === 'cao' ? 'Cão' : 'Gato') + (animal.raca ? ' · ' + animal.raca : '') + ' · ' + animal.cor + '\n\nSe o vires:\n🔗 ' + window.location.href)
                       window.open('https://wa.me/?text=' + txt, '_blank')
-                    }} className="flex items-center gap-2 bg-green-500 text-white px-3 py-2 rounded-xl text-xs font-semibold hover:bg-green-600 transition-colors">
+                    }} className="flex items-center gap-2 bg-lime-500 text-white px-3 py-2 rounded-xl text-xs font-semibold hover:bg-lime-700 transition-colors">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                       WhatsApp
                     </button>
@@ -322,7 +322,7 @@ export default function AnimalPerfil() {
                 <p className="text-stone-500 mb-4">Ainda não há avistamentos reportados.</p>
                 {animal.estado !== 'encontrado' && (
                   <Link to={`/avistamento/${animal.id}`}
-                    className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                    className="bg-lime-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-lime-800 transition-colors">
                     Ser o primeiro a reportar
                   </Link>
                 )}
@@ -394,7 +394,7 @@ export default function AnimalPerfil() {
                 {animal.estado !== 'encontrado' && (
                   <div className="text-center">
                     <Link to={`/avistamento/${animal.id}`}
-                      className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                      className="bg-lime-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-lime-800 transition-colors">
                       + Reportar novo avistamento
                     </Link>
                   </div>
@@ -425,7 +425,7 @@ export default function AnimalPerfil() {
                   ].map(([val, label]) => (
                     <button key={val} type="button" onClick={() => setFormaEncontrado(val)}
                       className={`py-2.5 px-3 rounded-xl text-sm font-semibold border-2 transition-colors text-left ${
-                        formaEncontrado === val ? 'border-green-600 bg-green-50 text-green-700' : 'border-stone-200 text-stone-600'
+                        formaEncontrado === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
                       }`}>{label}</button>
                   ))}
                 </div>
@@ -435,7 +435,7 @@ export default function AnimalPerfil() {
                 <div className="flex items-center gap-2">
                   <input type="number" value={distanciaEncontrado} onChange={e => setDistanciaEncontrado(e.target.value)}
                     placeholder="Ex: 2.5" min="0" step="0.1"
-                    className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                    className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
                   <span className="text-stone-500 text-sm font-medium">km</span>
                 </div>
               </div>
@@ -443,7 +443,7 @@ export default function AnimalPerfil() {
                 <button type="button" onClick={() => setMostrarModalEncontrado(false)}
                   className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 text-sm">Cancelar</button>
                 <button type="button" onClick={handleMarcarEncontrado} disabled={marcandoEncontrado}
-                  className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 disabled:opacity-60 text-sm">
+                  className="flex-1 bg-lime-700 text-white py-3 rounded-xl font-semibold hover:bg-lime-800 disabled:opacity-60 text-sm">
                   {marcandoEncontrado ? 'A guardar...' : '✓ Confirmar'}
                 </button>
               </div>

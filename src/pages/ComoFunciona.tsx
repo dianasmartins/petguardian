@@ -5,12 +5,12 @@ export default function ComoFunciona() {
     <div className="min-h-screen bg-white">
 
       {/* Hero */}
-      <section className="bg-gradient-to-br from-green-50 to-emerald-50 py-20 px-4 text-center">
-        <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-6 border border-green-200">
+      <section className="bg-gradient-to-br from-lime-50 to-emerald-50 py-20 px-4 text-center">
+        <span className="inline-block bg-lime-100 text-lime-800 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-6 border border-lime-200">
           Guia completo
         </span>
         <h1 className="text-5xl font-black text-stone-900 mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-          Como funciona o <span className="text-green-600">PetGuardian</span>
+          Como funciona o <span className="text-lime-700">PetGuardian</span>
         </h1>
         <p className="text-xl text-stone-500 max-w-2xl mx-auto">
           Da perda ao reencontro — tudo o que precisas de saber para usar a plataforma
@@ -61,7 +61,7 @@ export default function ComoFunciona() {
               },
             ].map(step => (
               <div key={step.num} className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-14 h-14 bg-green-600 text-white rounded-2xl flex items-center justify-center font-black text-lg" style={{ fontFamily: 'Georgia, serif' }}>
+                <div className="flex-shrink-0 w-14 h-14 bg-lime-700 text-white rounded-2xl flex items-center justify-center font-black text-lg" style={{ fontFamily: 'Georgia, serif' }}>
                   {step.num}
                 </div>
                 <div className="flex-1 pb-8 border-b border-stone-100 last:border-0">
@@ -71,7 +71,7 @@ export default function ComoFunciona() {
                   </div>
                   <p className="text-stone-500 text-sm leading-relaxed mb-3">{step.desc}</p>
                   {step.link && (
-                    <Link to={step.link} className="text-green-700 text-sm font-semibold hover:underline">{step.linkText}</Link>
+                    <Link to={step.link} className="text-lime-800 text-sm font-semibold hover:underline">{step.linkText}</Link>
                   )}
                 </div>
               </div>
@@ -124,7 +124,7 @@ export default function ComoFunciona() {
                   </div>
                   <p className="text-stone-500 text-sm leading-relaxed mb-3">{step.desc}</p>
                   {step.link && (
-                    <Link to={step.link} className="text-green-700 text-sm font-semibold hover:underline">{step.linkText}</Link>
+                    <Link to={step.link} className="text-lime-800 text-sm font-semibold hover:underline">{step.linkText}</Link>
                   )}
                 </div>
               </div>
@@ -151,7 +151,7 @@ export default function ComoFunciona() {
               { icon: '🛡️', title: 'Segurança e privacidade', desc: 'Row Level Security em todas as tabelas. JWT. RGPD compliant. Banner de cookies. Apenas maiores de 18 anos. Sem anúncios.' },
               { icon: '📱', title: 'Totalmente responsivo', desc: '6 breakpoints (375px a 1440px). Mobile-first. Funciona em Chrome, Firefox e Safari. Sem instalação necessária.' },
             ].map(feat => (
-              <div key={feat.title} className="bg-stone-50 rounded-2xl p-6 border border-stone-200 hover:border-green-300 hover:shadow-md transition-all">
+              <div key={feat.title} className="bg-stone-50 rounded-2xl p-6 border border-stone-200 hover:border-lime-300 hover:shadow-md transition-all">
                 <div className="text-3xl mb-3">{feat.icon}</div>
                 <h3 className="font-bold text-stone-900 mb-2">{feat.title}</h3>
                 <p className="text-stone-500 text-sm leading-relaxed">{feat.desc}</p>
@@ -178,7 +178,7 @@ export default function ComoFunciona() {
               { q: 'Posso registar mais do que um animal?', a: 'Sim, sem limite. Cada animal tem o seu perfil, ocorrência e histórico de avistamentos independente.' },
             ].map((item, i) => (
               <details key={i} className="bg-white rounded-2xl border border-stone-200 group">
-                <summary className="px-6 py-4 font-semibold text-stone-900 cursor-pointer list-none flex items-center justify-between hover:text-green-700 transition-colors">
+                <summary className="px-6 py-4 font-semibold text-stone-900 cursor-pointer list-none flex items-center justify-between hover:text-lime-800 transition-colors">
                   {item.q}
                   <span className="text-stone-400 group-open:rotate-180 transition-transform">↓</span>
                 </summary>
@@ -192,12 +192,12 @@ export default function ComoFunciona() {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 bg-gradient-to-br from-green-600 to-emerald-700 text-center">
+      <section className="py-20 px-4 bg-gradient-to-br from-lime-700 to-lime-800 text-center">
         <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>Pronto para começar?</h2>
-        <p className="text-green-100 text-lg mb-10">Cria a tua conta gratuita e publica o primeiro alerta em menos de 2 minutos.</p>
+        <p className="text-lime-100 text-lg mb-10">Cria a tua conta gratuita e publica o primeiro alerta em menos de 2 minutos.</p>
         <div className="flex flex-wrap gap-4 justify-center">
-          <Link to="/registo" className="bg-white text-green-700 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-50 transition-all shadow-lg">Criar conta gratuita</Link>
-          <Link to="/mapa" className="bg-green-700 text-white border-2 border-green-400 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-800 transition-all">Ver mapa ao vivo</Link>
+          <Link to="/registo" className="bg-white text-lime-800 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-lime-50 transition-all shadow-lg">Criar conta gratuita</Link>
+          <Link to="/mapa" className="bg-lime-800 text-white border-2 border-green-400 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-800 transition-all">Ver mapa ao vivo</Link>
         </div>
       </section>
     </div>

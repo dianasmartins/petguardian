@@ -88,8 +88,8 @@ export default function Navbar({ session }: Props) {
 
   const isActive = (path: string) =>
     location.pathname === path
-      ? 'text-green-700 bg-green-50 font-semibold'
-      : 'text-stone-600 hover:text-green-700 hover:bg-green-50'
+      ? 'text-lime-800 bg-lime-50 font-semibold'
+      : 'text-stone-600 hover:text-lime-800 hover:bg-lime-50'
 
   const initials = nomeUtilizador
     ? nomeUtilizador.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
@@ -98,11 +98,11 @@ export default function Navbar({ session }: Props) {
   const isAdmin = session?.user?.email === ADMIN_EMAIL
 
   return (
-    <nav className="sticky top-0 z-50 bg-white border-b border-stone-200 shadow-sm">
+    <nav className="sticky top-0 z-50 bg-white shadow-sm" style={{borderBottom: "2px solid #65a30d"}}>
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
 
         {/* Logo */}
-        <Link to="/" className="font-bold text-xl text-green-700 shrink-0 flex items-center gap-2" style={{ fontFamily: 'Georgia, serif' }}>
+        <Link to="/" className="font-bold text-xl text-lime-800 shrink-0 flex items-center gap-2" style={{ fontFamily: 'Georgia, serif' }}>
           🐾 <span>PetGuardian</span>
         </Link>
 
@@ -132,13 +132,13 @@ export default function Navbar({ session }: Props) {
           {session ? (
             <>
               <Link to="/registar-animal"
-                className="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors shadow-sm shadow-green-200">
+                className="text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors" style={{background:"#ea580c"}}>
                 + Registar Animal
               </Link>
               {/* Sino de notificações */}
               <div className="relative">
                 <button onClick={() => setBellOpen(!bellOpen)}
-                  className="relative w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 hover:bg-green-50 hover:text-green-700 transition-colors"
+                  className="relative w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 hover:bg-lime-50 hover:text-lime-800 transition-colors"
                   title="Notificações">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
@@ -162,12 +162,12 @@ export default function Navbar({ session }: Props) {
                     {novosAvistamentos > 0 ? (
                       <div className="px-4 py-3">
                         <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 flex-shrink-0 mt-0.5">👁</div>
+                          <div className="w-8 h-8 rounded-full bg-lime-100 flex items-center justify-center text-lime-800 flex-shrink-0 mt-0.5">👁</div>
                           <div>
                             <div className="text-sm font-semibold text-stone-900">{novosAvistamentos} avistamento{novosAvistamentos > 1 ? 's' : ''} novo{novosAvistamentos > 1 ? 's' : ''}</div>
                             <div className="text-xs text-stone-400 mt-0.5">Os teus animais foram avistados</div>
                             <button onClick={() => { setBellOpen(false); navigate('/ocorrencias') }}
-                              className="text-xs text-green-700 font-semibold mt-2 hover:underline">
+                              className="text-xs text-lime-800 font-semibold mt-2 hover:underline">
                               Ver ocorrências →
                             </button>
                           </div>
@@ -180,12 +180,12 @@ export default function Navbar({ session }: Props) {
                         <div className="text-xs text-stone-400 mt-1">Quando alguém avistar o teu animal, aparece aqui.</div>
                         {typeof Notification !== 'undefined' && Notification.permission === 'default' && (
                           <button onClick={() => { Notification.requestPermission(); setBellOpen(false) }}
-                            className="mt-3 text-xs bg-green-600 text-white px-3 py-1.5 rounded-lg hover:bg-green-700 transition-colors">
+                            className="mt-3 text-xs bg-lime-700 text-white px-3 py-1.5 rounded-lg hover:bg-lime-800 transition-colors">
                             Ativar notificações push
                           </button>
                         )}
                         {typeof Notification !== 'undefined' && Notification.permission === 'granted' && (
-                          <div className="mt-2 text-xs text-green-600">✓ Notificações push ativas</div>
+                          <div className="mt-2 text-xs text-lime-700">✓ Notificações push ativas</div>
                         )}
                       </div>
                     )}
@@ -195,7 +195,7 @@ export default function Navbar({ session }: Props) {
 
               <div className="relative" ref={profileRef}>
                 <button onClick={() => setProfileOpen(!profileOpen)}
-                  className="relative w-9 h-9 rounded-full overflow-hidden bg-green-600 flex items-center justify-center text-white text-sm font-bold hover:bg-green-700 transition-colors">
+                  className="relative w-9 h-9 rounded-full overflow-hidden bg-lime-700 flex items-center justify-center text-white text-sm font-bold hover:bg-lime-800 transition-colors">
                   {fotoPerfil ? <img src={fotoPerfil} alt="perfil" className="w-full h-full object-cover" /> : initials}
                   {novosAvistamentos > 0 && (
                     <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white" />
@@ -209,29 +209,29 @@ export default function Navbar({ session }: Props) {
                     </div>
                     <div className="py-1">
                       <Link to="/mensagens" onClick={() => setProfileOpen(false)}
-                        className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-700 hover:bg-lime-50 hover:text-lime-800 transition-colors">
                         <span className="flex items-center gap-3"><span>💬</span> Mensagens</span>
                         {mensagensNaoLidas > 0 && (
                           <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>
                         )}
                       </Link>
                       <Link to="/ocorrencias" onClick={() => setProfileOpen(false)}
-                        className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        className="flex items-center justify-between px-4 py-2.5 text-sm text-stone-700 hover:bg-lime-50 hover:text-lime-800 transition-colors">
                         <span className="flex items-center gap-3"><span>📋</span> As minhas ocorrências</span>
                         {novosAvistamentos > 0 && (
                           <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{novosAvistamentos > 9 ? '9+' : novosAvistamentos}</span>
                         )}
                       </Link>
                       <Link to="/registar-animal" onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-lime-50 hover:text-lime-800 transition-colors">
                         <span>➕</span> Registar animal
                       </Link>
                       <Link to="/perfil" onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-lime-50 hover:text-lime-800 transition-colors">
                         <span>👤</span> Editar perfil
                       </Link>
                       <Link to="/definicoes" onClick={() => setProfileOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-lime-50 hover:text-lime-800 transition-colors">
                         <span>⚙️</span> Definições
                       </Link>
                       {isAdmin && (
@@ -254,7 +254,7 @@ export default function Navbar({ session }: Props) {
           ) : (
             <>
               <Link to="/login" className="text-sm font-medium text-stone-600 px-3 py-2 rounded-xl hover:bg-stone-100 transition-colors">Entrar</Link>
-              <Link to="/registo" className="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700 transition-colors shadow-sm shadow-green-200">Criar conta</Link>
+              <Link to="/registo" className="bg-lime-700 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-lime-800 transition-colors shadow-sm shadow-lime-200">Criar conta</Link>
             </>
           )}
         </div>
@@ -273,8 +273,8 @@ export default function Navbar({ session }: Props) {
       {menuOpen && (
         <div className="md:hidden bg-white border-t border-stone-200 px-4 py-3 flex flex-col gap-1">
           {session && (
-            <div className="flex items-center gap-3 px-3 py-3 mb-1 bg-green-50 rounded-xl border border-green-100">
-              <div className="w-9 h-9 rounded-full bg-green-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">{initials}</div>
+            <div className="flex items-center gap-3 px-3 py-3 mb-1 bg-lime-50 rounded-xl border border-lime-100">
+              <div className="w-9 h-9 rounded-full bg-lime-700 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">{initials}</div>
               <div className="min-w-0">
                 <div className="font-semibold text-stone-900 text-sm truncate">{nomeUtilizador || 'Utilizador'}</div>
                 <div className="text-xs text-stone-400 truncate">{session.user.email}</div>
@@ -302,7 +302,7 @@ export default function Navbar({ session }: Props) {
               )}
               <div className="border-t border-stone-100 my-1" />
               <Link to="/registar-animal" onClick={() => setMenuOpen(false)}
-                className="bg-green-600 text-white px-3 py-3 rounded-xl text-sm font-semibold text-center">
+                className="bg-lime-700 text-white px-3 py-3 rounded-xl text-sm font-semibold text-center">
                 + Registar Animal
               </Link>
               <button onClick={handleLogout} className="text-sm text-red-600 px-3 py-2.5 text-left hover:bg-red-50 rounded-xl transition-colors">🚪 Terminar sessão</button>
@@ -311,7 +311,7 @@ export default function Navbar({ session }: Props) {
             <>
               <div className="border-t border-stone-100 my-1" />
               <Link to="/login" onClick={() => setMenuOpen(false)} className="px-3 py-2.5 rounded-xl text-sm font-medium text-stone-600">Entrar</Link>
-              <Link to="/registo" onClick={() => setMenuOpen(false)} className="bg-green-600 text-white px-3 py-3 rounded-xl text-sm font-semibold text-center mt-1">Criar conta</Link>
+              <Link to="/registo" onClick={() => setMenuOpen(false)} className="bg-lime-700 text-white px-3 py-3 rounded-xl text-sm font-semibold text-center mt-1">Criar conta</Link>
             </>
           )}
         </div>
