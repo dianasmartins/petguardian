@@ -231,9 +231,8 @@ export default function Mensagens() {
                 ) : (
                   conversas.map(c => (
                     <button key={c.id} onClick={() => setSelecionada(c)}
-                      className={`w-full text-left px-4 py-4 border-b border-stone-100 hover:bg-lime-50 transition-colors ${
-                        selecionada?.id === c.id ? 'bg-lime-50 border-l-2 border-l-green-600' : ''
-                      }`}>
+                      className={`w-full text-left px-4 py-4 border-b border-stone-100 hover:bg-lime-50 transition-colors ${selecionada?.id === c.id ? 'bg-lime-50 border-l-2 border-l-green-600' : ''
+                        }`}>
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-full bg-lime-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                           {(c.outro_user?.nome || 'U')[0].toUpperCase()}
@@ -297,11 +296,10 @@ export default function Mensagens() {
                         return (
                           <div key={msg.id} className={`flex gap-2 ${isMinha ? 'flex-row-reverse' : ''}`}>
                             <div className={`max-w-sm flex flex-col gap-1 ${isMinha ? 'items-end' : 'items-start'}`}>
-                              <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                                isMinha
+                              <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMinha
                                   ? 'bg-lime-700 text-white rounded-tr-sm'
                                   : 'bg-white text-stone-800 border border-stone-200 rounded-tl-sm'
-                              }`}>
+                                }`}>
                                 {msg.conteudo}
                               </div>
                               <div className="flex items-center gap-1 text-xs text-stone-400">
@@ -326,9 +324,9 @@ export default function Mensagens() {
                         placeholder="Escreve uma mensagem..."
                         className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-2xl focus:border-lime-600 focus:outline-none text-sm"
                       />
-                      <button type="submit" disabled={enviando || !novaMensagem.trim()}
+                      <button type="submit" disabled={!novaMensagem.trim()}
                         className="bg-lime-700 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-lime-800 disabled:opacity-60 transition-colors">
-                        {enviando ? '...' : '→'}
+                        →
                       </button>
                     </form>
                   </div>
