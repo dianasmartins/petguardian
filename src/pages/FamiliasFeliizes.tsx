@@ -165,7 +165,7 @@ export default function FamiliasFeliizes() {
               <div>
                 <label className="text-sm font-semibold block mb-1.5" style={{ color: '#365314' }}>Classificação *</label>
                 <div className="flex gap-2">
-                  {[1,2,3,4,5].map(n => (
+                  {[1, 2, 3, 4, 5].map(n => (
                     <button key={n} type="button" onClick={() => setEstrelas(n)}
                       className="text-3xl transition-transform hover:scale-110"
                       style={{ color: n <= estrelas ? '#f59e0b' : '#e5e7eb' }}>★</button>
@@ -262,23 +262,7 @@ export default function FamiliasFeliizes() {
         )}
       </div>
 
-      {/* CTA */}
-      <section className="py-16 px-6 text-center" style={{ background: 'white', borderTop: '2px solid #d9f99d' }}>
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4" style={{ color: '#365314', fontFamily: 'Georgia, serif' }}>
-            O teu animal também pode voltar a casa
-          </h2>
-          <p className="mb-8" style={{ color: '#4d7c0f' }}>
-            Junta-te à comunidade e regista o teu animal desaparecido agora.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/registar-animal" className="px-8 py-4 rounded-2xl font-bold text-white"
-              style={{ background: '#ea580c' }}>Registar animal desaparecido</Link>
-            <Link to="/mapa" className="px-8 py-4 rounded-2xl font-bold border-2"
-              style={{ borderColor: '#65a30d', color: '#365314' }}>Ver mapa ao vivo</Link>
-          </div>
-        </div>
-      </section>
+
     </div>
   )
 }

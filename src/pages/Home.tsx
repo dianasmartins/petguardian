@@ -292,8 +292,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative overflow-hidden" style={{ minHeight: 420 }}>
+      {/* CTA — só para não autenticados */}
+      {!session && <section className="relative overflow-hidden" style={{ minHeight: 420 }}>
         {/* Imagem de fundo */}
         <img
           src="/hero-illustration.png"
@@ -323,7 +323,7 @@ export default function Home() {
             </Link>
           </div>
         </div>
-      </section>
+      </section>}
 
       {/* FOOTER */}
       <footer style={{ background: VERDE_ESCURO }}>
