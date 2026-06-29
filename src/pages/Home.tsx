@@ -100,15 +100,8 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Ilustração lado direito */}
-          <div className="hidden md:flex items-center justify-center">
-            <img
-              src="/hero-illustration.png"
-              alt="Família reunida com o seu animal de estimação"
-              className="w-full max-w-xl object-contain drop-shadow-sm"
-              style={{ mixBlendMode: 'multiply' }}
-            />
-          </div>
+          {/* Lado direito — espaço visual */}
+          <div className="hidden md:block" />
         </div>
       </section>
 
