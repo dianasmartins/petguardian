@@ -255,7 +255,7 @@ export default function Home() {
                 <div>
                   <label className="text-sm font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Classificação</label>
                   <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map(n => (
+                    {[1,2,3,4,5].map(n => (
                       <button key={n} type="button" onClick={() => setReviewEstrelas(n)}
                         className="text-2xl transition-transform hover:scale-110"
                         style={{ color: n <= reviewEstrelas ? '#f59e0b' : '#e5e7eb' }}>★</button>
