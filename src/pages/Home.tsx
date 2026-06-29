@@ -100,24 +100,8 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Cards informativos lado direito */}
-          <div className="flex flex-col gap-4">
-            {[
-              { icon: '🗺️', title: 'Mapa em tempo real', desc: 'Vê todos os animais desaparecidos numa carta interactiva, actualizada ao segundo via WebSockets.' },
-              { icon: '🤖', title: 'Identificação por IA', desc: 'Carrega a foto de um animal encontrado e a IA compara automaticamente com os desaparecidos.' },
-              { icon: '🔔', title: 'Notificações instantâneas', desc: 'Recebe alerta imediato quando alguém avistar o teu animal — mesmo com o browser fechado.' },
-              { icon: '🖨️', title: 'Cartaz QR Code', desc: 'Gera um cartaz A4 para imprimir e afixar na zona. Qualquer pessoa pode reportar ao ler o QR.' },
-            ].map(item => (
-              <div key={item.title} className="flex items-start gap-4 bg-white rounded-2xl px-6 py-5 border"
-                style={{ borderColor: VERDE_BORDA, boxShadow: '0 2px 8px rgba(101,163,13,.08)' }}>
-                <span className="text-3xl flex-shrink-0 mt-0.5">{item.icon}</span>
-                <div>
-                  <div className="font-bold text-base mb-1" style={{ color: VERDE_ESCURO }}>{item.title}</div>
-                  <div className="text-base leading-relaxed" style={{ color: '#4d7c0f', opacity: .8 }}>{item.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Lado direito vazio — imagem de fundo faz o trabalho visual */}
+          <div className="hidden md:block" />
         </div>
       </section>
 
@@ -138,7 +122,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* COMO FUNCIONA */}
+      {/* COMO FUNCIONA + FUNCIONALIDADES */}
       <section className="py-28 px-8" style={{ background: 'white' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
@@ -150,7 +134,7 @@ export default function Home() {
               Três passos para reunir a tua família
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 mb-20">
             {[
               { icon: '📝', num: '01', title: 'Regista o animal', desc: 'Foto, dados e GPS. Aparece no mapa em segundos para toda a comunidade ver.' },
               { icon: '🗺️', num: '02', title: 'Comunidade ajuda', desc: 'Voluntários reportam avistamentos com foto e localização. Recebes notificação em tempo real.' },
@@ -162,6 +146,22 @@ export default function Home() {
                 <div className="text-3xl mb-4">{item.icon}</div>
                 <h3 className="font-bold text-xl mb-3" style={{ color: VERDE_ESCURO }}>{item.title}</h3>
                 <p className="text-base leading-relaxed" style={{ color: '#4d7c0f' }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Funcionalidades — tom claro */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {[
+              { icon: '🗺️', title: 'Mapa em tempo real' },
+              { icon: '🤖', title: 'Identificação por IA' },
+              { icon: '🔔', title: 'Notificações instantâneas' },
+              { icon: '🖨️', title: 'Cartaz QR Code' },
+            ].map(item => (
+              <div key={item.title} className="flex flex-col items-center text-center gap-3 py-6 px-4 rounded-2xl"
+                style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                <span className="text-3xl">{item.icon}</span>
+                <span className="text-sm font-semibold" style={{ color: '#6b7280' }}>{item.title}</span>
               </div>
             ))}
           </div>
