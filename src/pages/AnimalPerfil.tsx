@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
 import L from 'leaflet'
@@ -54,7 +54,7 @@ interface Dono {
     telemovel: string | null
 }
 
-type Tab = 'perfil' | 'avistamentos' | 'chat'
+type Tab = 'perfil' | 'avistamentos'
 
 export default function AnimalPerfil() {
     const { id } = useParams<{ id: string }>()
@@ -63,13 +63,9 @@ export default function AnimalPerfil() {
     const [animal, setAnimal] = useState<Animal | null>(null)
     const [dono, setDono] = useState<Dono | null>(null)
     const [avistamentos, setAvistamentos] = useState<Avistamento[]>([])
-    const [mensagens, setMensagens] = useState<Mensagem[]>([])
-    const [novaMensagem, setNovaMensagem] = useState('')
     const [session, setSession] = useState<any>(null)
     const [loading, setLoading] = useState(true)
-    const [enviando, setEnviando] = useState(false)
     const [tab, setTab] = useState<Tab>('perfil')
-    const chatEndRef = useRef<HTMLDivElement>(null)
     const { mostrarToast } = useToast()
 
     useEffect(() => {
@@ -150,6 +146,24 @@ export default function AnimalPerfil() {
         .map(a => [a.latitude, a.longitude])
 
     const isDono = session?.user?.id === animal.dono_id
+    const [mostrarModalEncontrado, setMostrarModalEncontrado] = useState(false)
+    const [distanciaEncontrado, setDistanciaEncontrado] = useState('')
+    const [formaEncontrado, setFormaEncontrado] = useState('pelo_site')
+    const [marcandoEncontrado, setMarcandoEncontrado] = useState(false)
+    const { mostrarToast } = useToast()
+
+    const handleMarcarEncontrado = async () => {
+        setMarcandoEncontrado(true)
+        await supabase.from('animais').update({ estado: 'encontrado' }).eq('id', animal.id)
+        await supabase.from('ocorrencias').update({
+            estado: 'resolvida',
+            resolvida_at: new Date().toISOString()
+        }).eq('animal_id', animal.id)
+        mostrarToast('Animal marcado como encontrado! 🎉', 'sucesso')
+        setMostrarModalEncontrado(false)
+        setMarcandoEncontrado(false)
+        fetchAnimal()
+    }
 
     return (
         <div className="min-h-screen bg-stone-50">
@@ -218,13 +232,21 @@ export default function AnimalPerfil() {
                                         👁 Reportar avistamento
                                     </Link>
                                 )}
-                                <button onClick={() => {
-                                    if (!session) { navigate('/login'); return }
-                                    if (dono) navigate('/mensagens?iniciar=' + dono.id + '&animal=' + animal.id)
-                                }}
-                                    className="bg-stone-100 text-stone-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-stone-200 transition-colors text-sm flex items-center gap-2">
-                                    💬 Contactar dono
-                                </button>
+                                {!isDono && (
+                                    <button onClick={() => {
+                                        if (!session) { navigate('/login'); return }
+                                        if (dono) navigate('/mensagens?iniciar=' + dono.id + '&animal=' + animal.id)
+                                    }}
+                                        className="bg-stone-100 text-stone-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-stone-200 transition-colors text-sm flex items-center gap-2">
+                                        💬 Contactar dono
+                                    </button>
+                                )}
+                                {isDono && animal.estado !== 'encontrado' && (
+                                    <button onClick={() => setMostrarModalEncontrado(true)}
+                                        className="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition-colors text-sm flex items-center gap-2">
+                                        ✓ Marcar como encontrado
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -235,7 +257,7 @@ export default function AnimalPerfil() {
                     {[
                         { id: 'perfil', label: '🐾 Perfil' },
                         { id: 'avistamentos', label: `👁 Avistamentos (${avistamentos.length})` },
-                        { id: 'chat', label: `💬 Mensagens (${mensagens.length})` },
+
                     ].map(t => (
                         <button key={t.id} onClick={() => setTab(t.id as Tab)}
                             className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tab === t.id ? 'border-green-600 text-green-700' : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -514,6 +536,54 @@ export default function AnimalPerfil() {
                     </div>
                 )}
             </div>
+
+            {/* Modal marcar como encontrado */}
+            {mostrarModalEncontrado && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+                        <h2 className="font-bold text-stone-900 text-lg mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+                            🎉 {animal.nome} foi encontrado!
+                        </h2>
+                        <p className="text-stone-500 text-sm mb-5">Conta-nos como correu para ajudar outros donos.</p>
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-semibold text-stone-500">Como foi encontrado?</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {[
+                                        ['pelo_site', '🐾 Pelo PetGuardian'],
+                                        ['redes_sociais', '📱 Redes sociais'],
+                                        ['encontrado_pessoalmente', '🚶 Pessoalmente'],
+                                        ['outra', '💡 Outra forma'],
+                                    ].map(([val, label]) => (
+                                        <button key={val} type="button" onClick={() => setFormaEncontrado(val)}
+                                            className={`py-2.5 px-3 rounded-xl text-sm font-semibold border-2 transition-colors text-left ${formaEncontrado === val ? 'border-green-600 bg-green-50 text-green-700' : 'border-stone-200 text-stone-600'
+                                                }`}>{label}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-sm font-semibold text-stone-500">A quantos km do local de desaparecimento? (opcional)</label>
+                                <div className="flex items-center gap-2">
+                                    <input type="number" value={distanciaEncontrado} onChange={e => setDistanciaEncontrado(e.target.value)}
+                                        placeholder="Ex: 2.5" min="0" step="0.1"
+                                        className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                                    <span className="text-stone-500 text-sm font-medium">km</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 mt-2">
+                                <button type="button" onClick={() => setMostrarModalEncontrado(false)}
+                                    className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 text-sm">
+                                    Cancelar
+                                </button>
+                                <button type="button" onClick={handleMarcarEncontrado} disabled={marcandoEncontrado}
+                                    className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 disabled:opacity-60 text-sm">
+                                    {marcandoEncontrado ? 'A guardar...' : '✓ Confirmar'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

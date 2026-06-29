@@ -28,6 +28,8 @@ export default function RegistarAnimal() {
     const [descricao, setDescricao] = useState('')
     const [lat, setLat] = useState<number | null>(null)
     const [lng, setLng] = useState<number | null>(null)
+    const [morada, setMorada] = useState('')
+    const [geocodingLoading, setGeocodingLoading] = useState(false)
     const [fotos, setFotos] = useState<File[]>([])
     const [fotosPreviews, setFotosPreviews] = useState<string[]>([])
     const [loading, setLoading] = useState(false)
@@ -72,6 +74,28 @@ export default function RegistarAnimal() {
         if (!nome && !cor) return
         localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ nome, especie, raca, cor, descricao, lat, lng }))
     }, [nome, especie, raca, cor, descricao, lat, lng])
+
+    const pesquisarMorada = async () => {
+        if (!morada.trim()) return
+        setGeocodingLoading(true)
+        try {
+            const res = await fetch(
+                'https://nominatim.openstreetmap.org/search?format=json&q=' +
+                encodeURIComponent(morada + ', Portugal') + '&limit=1'
+            )
+            const data = await res.json()
+            if (data && data.length > 0) {
+                setLat(parseFloat(data[0].lat))
+                setLng(parseFloat(data[0].lon))
+                mostrarToast('Localização encontrada: ' + data[0].display_name.split(',').slice(0, 2).join(','), 'sucesso')
+            } else {
+                mostrarToast('Morada não encontrada. Tenta ser mais específico ou clica no mapa.', 'erro')
+            }
+        } catch {
+            mostrarToast('Erro ao pesquisar morada.', 'erro')
+        }
+        setGeocodingLoading(false)
+    }
 
     const handleGPS = () => {
         if (!navigator.geolocation) { mostrarToast('GPS não disponível', 'erro'); return }
@@ -266,6 +290,21 @@ export default function RegistarAnimal() {
                             <>
                                 <h2 className="font-bold text-stone-900 mb-5">Onde desapareceu?</h2>
                                 <div className="flex flex-col gap-4">
+                                    <div className="flex gap-2">
+                                        <input value={morada} onChange={e => setMorada(e.target.value)}
+                                            placeholder="Ex: Rua das Flores, Lisboa"
+                                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), pesquisarMorada())}
+                                            className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                                        <button type="button" onClick={pesquisarMorada} disabled={geocodingLoading}
+                                            className="bg-green-600 text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-green-700 disabled:opacity-60 transition-colors whitespace-nowrap">
+                                            {geocodingLoading ? '...' : '🔍 Pesquisar'}
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center gap-3 text-xs text-stone-400">
+                                        <div className="flex-1 h-px bg-stone-200"></div>
+                                        <span>ou</span>
+                                        <div className="flex-1 h-px bg-stone-200"></div>
+                                    </div>
                                     <button type="button" onClick={handleGPS}
                                         className="w-full bg-stone-100 text-stone-700 py-3 rounded-xl text-sm font-semibold hover:bg-stone-200 transition-colors">
                                         📍 Usar GPS automático

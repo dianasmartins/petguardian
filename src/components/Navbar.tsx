@@ -109,14 +109,7 @@ export default function Navbar({ session }: Props) {
                     <Link to="/mapa" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/mapa')}`}>Mapa</Link>
                     <Link to="/identificar" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/identificar')}`}>Identificar por IA</Link>
                     <Link to="/estatisticas" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/estatisticas')}`}>Estatísticas</Link>
-                    {session && (
-                        <Link to="/mensagens" className={`relative px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/mensagens')}`}>
-                            💬 Mensagens
-                            {mensagensNaoLidas > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>
-                            )}
-                        </Link>
-                    )}
+
                     {session && (
                         <Link to="/ocorrencias" className={`relative px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/ocorrencias')}`}>
                             As minhas ocorrências

@@ -3,14 +3,34 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Animal } from '../types'
 
+interface Review {
+    id: string
+    nome: string
+    texto: string
+    estrelas: number
+    created_at: string
+}
+
 export default function Home() {
     const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
     const [recentes, setRecentes] = useState<Animal[]>([])
     const [session, setSession] = useState<any>(null)
+    const [reviews, setReviews] = useState<Review[]>([])
+    const [mostrarFormReview, setMostrarFormReview] = useState(false)
+    const [reviewTexto, setReviewTexto] = useState('')
+    const [reviewEstrelas, setReviewEstrelas] = useState(5)
+    const [reviewNome, setReviewNome] = useState('')
+    const [enviandoReview, setEnviandoReview] = useState(false)
     const navigate = useNavigate()
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => setSession(session))
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setSession(session)
+            if (session?.user) {
+                supabase.from('profiles').select('nome').eq('id', session.user.id).single()
+                    .then(({ data }) => { if (data?.nome) setReviewNome(data.nome) })
+            }
+        })
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
         return () => subscription.unsubscribe()
     }, [])
@@ -19,19 +39,40 @@ export default function Home() {
         const fetchData = async () => {
             const { data } = await supabase.from('animais').select('*').order('created_at', { ascending: false })
             if (data) {
-                setRecentes(data.slice(0, 4))
+                setRecentes(data.filter(a => a.estado === 'desaparecido').slice(0, 4))
                 setStats({
                     total: data.length,
                     encontrados: data.filter(a => a.estado === 'encontrado').length,
                     desaparecidos: data.filter(a => a.estado === 'desaparecido').length,
                 })
             }
+            const { data: revs } = await supabase
+                .from('reviews')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(6)
+            setReviews(revs || [])
         }
         fetchData()
     }, [])
 
-    const handleRegistarAnimal = () => {
-        navigate(session ? '/registar-animal' : '/login')
+    const handleRegistarAnimal = () => navigate(session ? '/registar-animal' : '/login')
+
+    const enviarReview = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!reviewTexto.trim() || !reviewNome.trim()) return
+        setEnviandoReview(true)
+        await supabase.from('reviews').insert({
+            nome: reviewNome.trim(),
+            texto: reviewTexto.trim(),
+            estrelas: reviewEstrelas,
+            user_id: session?.user?.id || null
+        })
+        const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(6)
+        setReviews(data || [])
+        setReviewTexto('')
+        setMostrarFormReview(false)
+        setEnviandoReview(false)
     }
 
     const estadoBadge = (estado: string) => {
@@ -45,7 +86,6 @@ export default function Home() {
 
             {/* HERO */}
             <section className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-24 px-4 overflow-hidden">
-                {/* Decoração de fundo */}
                 <div className="absolute inset-0 pointer-events-none">
                     <div className="absolute top-10 right-10 w-64 h-64 bg-green-200 rounded-full opacity-20 blur-3xl"></div>
                     <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-300 rounded-full opacity-20 blur-3xl"></div>
@@ -66,12 +106,10 @@ export default function Home() {
                             className="bg-green-600 text-white px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-700 transition-all shadow-lg shadow-green-200 hover:shadow-green-300 hover:-translate-y-0.5">
                             Registar animal desaparecido
                         </button>
-                        <Link to="/mapa"
-                            className="bg-white text-green-700 border-2 border-green-600 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-50 transition-all">
+                        <Link to="/mapa" className="bg-white text-green-700 border-2 border-green-600 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-50 transition-all">
                             Ver mapa ao vivo
                         </Link>
-                        <Link to="/identificar"
-                            className="bg-stone-100 text-stone-700 px-8 py-4 rounded-2xl font-semibold hover:bg-stone-200 transition-all">
+                        <Link to="/identificar" className="bg-stone-100 text-stone-700 px-8 py-4 rounded-2xl font-semibold hover:bg-stone-200 transition-all">
                             Encontrei um animal 🔍
                         </Link>
                     </div>
@@ -89,8 +127,8 @@ export default function Home() {
                 <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4 text-center">
                     {[
                         { value: stats.total, label: 'Animais registados', sub: 'na plataforma' },
-                        { value: stats.encontrados, label: 'Reunidos com família', sub: 'casos resolvidos' },
-                        { value: stats.desaparecidos, label: 'À procura agora', sub: 'precisam de ajuda' },
+                        { value: stats.encontrados, label: 'Reunidos com a família', sub: 'casos resolvidos' },
+                        { value: stats.desaparecidos, label: 'Perdidos', sub: 'precisam de ajuda' },
                     ].map(stat => (
                         <div key={stat.label}>
                             <div className="text-4xl font-black text-white" style={{ fontFamily: 'Georgia, serif' }}>{stat.value}</div>
@@ -117,9 +155,7 @@ export default function Home() {
                         ].map(item => (
                             <div key={item.num} className={`p-8 rounded-3xl border-2 ${item.cor} hover:shadow-lg transition-all`}>
                                 <div className="flex items-center gap-3 mb-5">
-                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-green-100">
-                                        {item.icon}
-                                    </div>
+                                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-green-100">{item.icon}</div>
                                     <span className="text-4xl font-black text-green-200" style={{ fontFamily: 'Georgia, serif' }}>{item.num}</span>
                                 </div>
                                 <h3 className="font-bold text-stone-900 text-lg mb-3">{item.title}</h3>
@@ -139,11 +175,11 @@ export default function Home() {
                     </div>
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
                         {[
-                            { icon: '🗺️', title: 'Mapa em tempo real', desc: 'Marcadores GPS atualizados instantaneamente via WebSockets. Modo daltónico incluído.' },
-                            { icon: '🤖', title: 'Identificação por IA', desc: 'Google Gemini analisa fotos e compara com animais desaparecidos automaticamente.' },
-                            { icon: '💬', title: 'Chat com o dono', desc: 'Comunicação direta entre voluntários e donos no perfil de cada animal.' },
-                            { icon: '📤', title: 'Partilha automática', desc: 'Gera imagens para Instagram, mensagens WhatsApp e links para Facebook.' },
-                            { icon: '🔔', title: 'Notificações live', desc: 'Badge em tempo real na navbar quando chegam avistamentos novos.' },
+                            { icon: '🗺️', title: 'Mapa em tempo real', desc: 'Marcadores GPS atualizados instantaneamente via WebSockets. Modo daltónico e filtro por distrito incluídos.' },
+                            { icon: '🤖', title: 'Identificação por IA', desc: 'Google Gemini analisa fotos e compara com animais desaparecidos com scoring estruturado.' },
+                            { icon: '💬', title: 'Mensagens privadas', desc: 'Troca mensagens directamente com o dono do animal ou com voluntários.' },
+                            { icon: '📤', title: 'Partilha automática', desc: 'Gera imagens para Instagram, mensagens WhatsApp e cartaz A4 com QR Code imprimível.' },
+                            { icon: '🔔', title: 'Notificações live', desc: 'Badge em tempo real na navbar e notificações push do browser.' },
                             { icon: '🛡️', title: 'Seguro e privado', desc: 'Row Level Security, JWT, RGPD compliant. Os teus dados são teus.' },
                         ].map(feat => (
                             <div key={feat.title} className="bg-white rounded-2xl p-6 border border-stone-200 hover:border-green-300 hover:shadow-md transition-all">
@@ -165,9 +201,7 @@ export default function Home() {
                                 <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-200">Últimas ocorrências</span>
                                 <h2 className="text-4xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Precisam de ajuda</h2>
                             </div>
-                            <Link to="/animais" className="text-green-600 font-semibold hover:underline flex items-center gap-1">
-                                Ver todos <span>→</span>
-                            </Link>
+                            <Link to="/animais" className="text-green-700 font-semibold hover:underline flex items-center gap-1">Ver todos →</Link>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
                             {recentes.map(animal => (
@@ -182,9 +216,7 @@ export default function Home() {
                                     </div>
                                     <div className="p-4">
                                         <div className="font-bold text-stone-900 mb-1">{animal.nome}</div>
-                                        <div className="text-xs text-stone-400">
-                                            {animal.especie === 'cao' ? 'Cão' : animal.especie === 'gato' ? 'Gato' : 'Outro'} · {animal.cor}
-                                        </div>
+                                        <div className="text-xs text-stone-400">{animal.especie === 'cao' ? 'Cão' : animal.especie === 'gato' ? 'Gato' : 'Outro'} · {animal.cor}</div>
                                     </div>
                                 </Link>
                             ))}
@@ -193,21 +225,113 @@ export default function Home() {
                 </section>
             )}
 
+            {/* REVIEWS */}
+            <section className="py-24 px-4 bg-stone-50">
+                <div className="max-w-5xl mx-auto">
+                    <div className="text-center mb-12">
+                        <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-200">Testemunhos</span>
+                        <h2 className="text-4xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>O que dizem os utilizadores</h2>
+                        <p className="text-stone-500 mt-3">Famílias que reuniram os seus animais com a ajuda do PetGuardian</p>
+                    </div>
+
+                    {reviews.length > 0 && (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+                            {reviews.map(review => (
+                                <div key={review.id} className="bg-white rounded-2xl p-6 border border-stone-200 hover:border-green-200 hover:shadow-md transition-all">
+                                    <div className="flex items-center gap-1 mb-3">
+                                        {[...Array(5)].map((_, i) => (
+                                            <span key={i} className={i < review.estrelas ? 'text-amber-400' : 'text-stone-200'}>★</span>
+                                        ))}
+                                    </div>
+                                    <p className="text-stone-600 text-sm leading-relaxed mb-4">"{review.texto}"</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm">
+                                            {review.nome[0].toUpperCase()}
+                                        </div>
+                                        <span className="font-semibold text-stone-900 text-sm">{review.nome}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {reviews.length === 0 && (
+                        <div className="text-center py-10 mb-10">
+                            <div className="text-5xl mb-4">💬</div>
+                            <p className="text-stone-400">Ainda não há testemunhos. Sê o primeiro!</p>
+                        </div>
+                    )}
+
+                    {/* Formulário de review */}
+                    {session && !mostrarFormReview && (
+                        <div className="text-center">
+                            <button onClick={() => setMostrarFormReview(true)}
+                                className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">
+                                ✍️ Deixar um testemunho
+                            </button>
+                        </div>
+                    )}
+
+                    {session && mostrarFormReview && (
+                        <form onSubmit={enviarReview} className="bg-white rounded-2xl border border-green-200 p-6 max-w-lg mx-auto">
+                            <h3 className="font-bold text-stone-900 mb-4">O teu testemunho</h3>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-sm font-semibold text-stone-500">Nome</label>
+                                    <input value={reviewNome} onChange={e => setReviewNome(e.target.value)} required
+                                        className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm" />
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-sm font-semibold text-stone-500">Classificação</label>
+                                    <div className="flex gap-1">
+                                        {[1, 2, 3, 4, 5].map(n => (
+                                            <button key={n} type="button" onClick={() => setReviewEstrelas(n)}
+                                                className={`text-2xl transition-transform hover:scale-110 ${n <= reviewEstrelas ? 'text-amber-400' : 'text-stone-200'}`}>
+                                                ★
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                    <label className="text-sm font-semibold text-stone-500">A tua experiência</label>
+                                    <textarea value={reviewTexto} onChange={e => setReviewTexto(e.target.value)} rows={3} required
+                                        placeholder="Como o PetGuardian te ajudou?"
+                                        className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm resize-none" />
+                                </div>
+                                <div className="flex gap-3">
+                                    <button type="button" onClick={() => setMostrarFormReview(false)}
+                                        className="flex-1 border-2 border-stone-200 text-stone-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-stone-50">
+                                        Cancelar
+                                    </button>
+                                    <button type="submit" disabled={enviandoReview}
+                                        className="flex-1 bg-green-600 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-green-700 disabled:opacity-60">
+                                        {enviandoReview ? 'A enviar...' : 'Publicar'}
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    )}
+
+                    {!session && (
+                        <div className="text-center">
+                            <p className="text-stone-400 text-sm mb-3">Faz login para deixar um testemunho</p>
+                            <Link to="/login" className="text-green-700 font-semibold hover:underline text-sm">Entrar →</Link>
+                        </div>
+                    )}
+                </div>
+            </section>
+
             {/* CTA */}
             <section className="py-24 px-4 bg-gradient-to-br from-green-600 to-emerald-700">
                 <div className="max-w-2xl mx-auto text-center">
                     <div className="text-5xl mb-6">🐾</div>
-                    <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-                        Ajuda a reunir mais famílias
-                    </h2>
+                    <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>Ajuda a reunir mais famílias</h2>
                     <p className="text-green-100 text-lg mb-10">O PetGuardian é gratuito, sem anúncios e funciona em qualquer dispositivo.</p>
                     <div className="flex flex-wrap gap-4 justify-center">
-                        <Link to="/registo"
-                            className="bg-white text-green-700 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-50 transition-all shadow-lg">
+                        <Link to="/registo" className="bg-white text-green-700 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-50 transition-all shadow-lg">
                             Criar conta gratuita
                         </Link>
-                        <Link to="/animais"
-                            className="bg-green-700 text-white border-2 border-green-400 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-800 transition-all">
+                        <Link to="/animais" className="bg-green-700 text-white border-2 border-green-400 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-800 transition-all">
                             Ver animais desaparecidos
                         </Link>
                     </div>
@@ -222,7 +346,7 @@ export default function Home() {
                         <div className="text-stone-500 text-xs mt-1">Plataforma portuguesa de localização de animais</div>
                     </div>
                     <div className="flex gap-8">
-                        {[['/', 'Início'], ['/animais', 'Animais'], ['/mapa', 'Mapa'], ['/identificar', 'IA']].map(([to, label]) => (
+                        {[['/', 'Início'], ['/animais', 'Animais'], ['/mapa', 'Mapa'], ['/identificar', 'IA'], ['/estatisticas', 'Estatísticas']].map(([to, label]) => (
                             <Link key={to} to={to} className="text-stone-400 hover:text-green-400 text-sm transition-colors">{label}</Link>
                         ))}
                     </div>
