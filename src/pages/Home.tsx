@@ -16,7 +16,6 @@ const VERDE_CLARO = '#f7fee7'
 const VERDE_BORDA = '#d9f99d'
 const LARANJA = '#ea580c'
 const LARANJA_ESCURO = '#c2410c'
-const LARANJA_CLARO = '#fff7ed'
 
 export default function Home() {
   const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
