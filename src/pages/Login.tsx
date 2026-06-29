@@ -103,10 +103,7 @@ export default function Login() {
           Não tens conta?{' '}
           <Link to="/registo" className="text-lime-800 font-semibold hover:underline">Regista-te gratuitamente</Link>
         </p>
-
-        <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-amber-700 text-xs text-center">
-          ⚠️ Login com Google/GitHub requer activação em Supabase → Authentication → Providers
-        </div>
+        
       </div>
     </div>
   )
