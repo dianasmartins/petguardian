@@ -324,18 +324,61 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-stone-900 py-12 px-4">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <span className="text-green-400 font-bold text-xl" style={{ fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</span>
-            <div className="text-stone-500 text-xs mt-1">Plataforma portuguesa de localização de animais</div>
+      <footer className="bg-stone-950 pt-16 pb-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 pb-12 border-b border-stone-800">
+
+            {/* Logo e descrição */}
+            <div className="col-span-2 md:col-span-1">
+              <span className="text-green-400 font-bold text-2xl block mb-3" style={{ fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</span>
+              <p className="text-stone-400 text-sm leading-relaxed mb-4">
+                Plataforma portuguesa gratuita para localizar animais de estimação desaparecidos. Em tempo real, com IA.
+              </p>
+              <div className="text-stone-500 text-xs">Projeto Final de Licenciatura<br />GSC · Atlântica · 2026</div>
+            </div>
+
+            {/* Plataforma */}
+            <div>
+              <div className="text-stone-300 font-semibold text-sm mb-4 uppercase tracking-wider">Plataforma</div>
+              <div className="flex flex-col gap-2.5">
+                {[['/', 'Início'], ['/animais', 'Ver animais'], ['/mapa', 'Mapa interativo'], ['/identificar', 'Identificar por IA'], ['/estatisticas', 'Estatísticas']].map(([to, label]) => (
+                  <Link key={to} to={to} className="text-stone-400 hover:text-green-400 text-sm transition-colors">{label}</Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Recursos */}
+            <div>
+              <div className="text-stone-300 font-semibold text-sm mb-4 uppercase tracking-wider">Recursos</div>
+              <div className="flex flex-col gap-2.5">
+                {[['/como-funciona', 'Como funciona'], ['/registo', 'Criar conta gratuita'], ['/login', 'Entrar'], ['/ocorrencias', 'As minhas ocorrências'], ['/mensagens', 'Mensagens']].map(([to, label]) => (
+                  <Link key={to} to={to} className="text-stone-400 hover:text-green-400 text-sm transition-colors">{label}</Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Contacto / Info */}
+            <div>
+              <div className="text-stone-300 font-semibold text-sm mb-4 uppercase tracking-wider">Informação</div>
+              <div className="flex flex-col gap-2.5 text-stone-400 text-sm">
+                <span>100% gratuito</span>
+                <span>Sem anúncios</span>
+                <span>RGPD compliant</span>
+                <span>Apenas maiores de 18</span>
+                <span className="text-green-500 font-medium mt-1">🇵🇹 Made in Portugal</span>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-6 justify-center">
-            {[['/', 'Início'], ['/animais', 'Animais'], ['/mapa', 'Mapa'], ['/identificar', 'IA'], ['/estatisticas', 'Estatísticas']].map(([to, label]) => (
-              <Link key={to} to={to} className="text-stone-400 hover:text-green-400 text-sm transition-colors">{label}</Link>
-            ))}
+
+          {/* Bottom */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-xs text-stone-500">
+            <span>© 2026 PetGuardian · Diana Soares Martins · Atlântica</span>
+            <div className="flex gap-6">
+              <Link to="/como-funciona" className="hover:text-stone-300 transition-colors">Como funciona</Link>
+              <Link to="/estatisticas" className="hover:text-stone-300 transition-colors">Estatísticas</Link>
+              <Link to="/mapa" className="hover:text-stone-300 transition-colors">Mapa</Link>
+            </div>
           </div>
-          <div className="text-stone-500 text-xs text-center">Diana Soares Martins<br />GSC · Atlântica · 2026</div>
         </div>
       </footer>
 

@@ -112,6 +112,7 @@ export default function Navbar({ session }: Props) {
           <Link to="/animais" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/animais')}`}>Animais</Link>
           <Link to="/mapa" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/mapa')}`}>Mapa</Link>
           <Link to="/identificar" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/identificar')}`}>Identificar por IA</Link>
+          <Link to="/como-funciona" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/como-funciona')}`}>Como funciona</Link>
           <Link to="/estatisticas" className={`px-3 py-2 rounded-xl text-sm transition-colors ${isActive('/estatisticas')}`}>Estatísticas</Link>
 
           {session && (
