@@ -244,10 +244,8 @@ export default function AnimalPerfil() {
                       }
                     </div>
                     <div className="flex-1">
-                      <div className="font-bold text-stone-900">{dono.nome}</div>
-                      {dono.telemovel && !isDono && (
-                        <div className="text-sm text-stone-500 mt-0.5">📱 {dono.telemovel}</div>
-                      )}
+                      <div className="font-bold text-stone-900">{dono.nome.split(' ')[0]}</div>
+
                       {isDono && <div className="text-xs text-green-700 font-medium mt-1">Este é o teu animal</div>}
                     </div>
                   </div>
