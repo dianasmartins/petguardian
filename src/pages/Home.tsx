@@ -71,14 +71,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
 
-      {/* HERO ANIMADO */}
-      <section className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-24 px-4 overflow-hidden min-h-[560px] flex items-center">
-        {/* Decoração blur */}
+      {/* HERO */}
+      <section className="relative bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 py-24 px-4 overflow-hidden">
         <div className="absolute top-10 right-10 w-72 h-72 bg-green-200 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
         <div className="absolute bottom-0 left-0 w-56 h-56 bg-emerald-300 rounded-full opacity-20 blur-3xl pointer-events-none"></div>
 
-        <div className="max-w-6xl mx-auto w-full grid md:grid-cols-2 gap-12 items-center relative z-10">
-          {/* Texto */}
+        <div className="max-w-6xl mx-auto w-full grid md:grid-cols-2 gap-16 items-center relative z-10">
+          {/* Texto esquerda */}
           <div>
             <div className="inline-flex items-center gap-2 bg-green-100 text-green-800 text-xs font-bold px-4 py-1.5 rounded-full border border-green-200 mb-8">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
@@ -89,10 +88,10 @@ export default function Home() {
               <span className="text-green-600">companheiro</span><br />
               perdido
             </h1>
-            <p className="text-lg text-stone-500 mb-10 leading-relaxed">
-              Mapa em tempo real · Identificação por IA · Comunidade portuguesa
+            <p className="text-lg text-stone-500 mb-10 leading-relaxed max-w-md">
+              Mapa em tempo real · Identificação por IA · Comunidade portuguesa gratuita
             </p>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 mb-6">
               <button onClick={handleRegistarAnimal}
                 className="bg-green-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-700 transition-all shadow-lg shadow-green-200 hover:-translate-y-0.5">
                 Registar animal
@@ -101,46 +100,65 @@ export default function Home() {
                 Ver mapa ao vivo
               </Link>
             </div>
+            <Link to="/identificar" className="text-stone-500 text-sm hover:text-green-700 transition-colors">
+              Encontrei um animal perdido 🔍
+            </Link>
             {!session && (
-              <p className="text-stone-400 text-sm mt-4">
+              <p className="text-stone-400 text-sm mt-3">
                 <Link to="/registo" className="text-green-600 hover:underline font-medium">Criar conta gratuita</Link> — apenas maiores de 18 anos
               </p>
             )}
           </div>
 
-          {/* Lado direito — patas animadas + cartões flutuantes */}
-          <div className="relative h-72 md:h-96 flex items-center justify-center">
-            {/* Patas */}
-            {[
-              { left: '10%', top: '55%', delay: '0s' },
-              { left: '25%', top: '35%', delay: '0.5s' },
-              { left: '42%', top: '50%', delay: '1s' },
-              { left: '58%', top: '30%', delay: '1.5s' },
-              { left: '72%', top: '45%', delay: '2s' },
-            ].map((p, i) => (
-              <span key={i} className="absolute text-3xl opacity-0 animate-bounce"
-                style={{ left: p.left, top: p.top, animationDelay: p.delay, animationDuration: '2s',
-                  animation: `pawFade 3s ${p.delay} infinite` }}>🐾</span>
-            ))}
-
-            {/* Cão */}
-            <div className="text-8xl absolute bottom-4 right-8" style={{ animation: 'dogWag 2s ease-in-out infinite' }}>🐕</div>
-
-            {/* Cartões flutuantes */}
-            <div className="absolute top-4 right-0 bg-white rounded-2xl shadow-lg border border-stone-100 px-4 py-3 flex items-center gap-2.5 text-sm font-semibold"
-              style={{ animation: 'float 3s ease-in-out infinite' }}>
-              <span className="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse flex-shrink-0"></span>
-              Duke — Perdido agora
+          {/* Direita — cartões flutuantes de status */}
+          <div className="relative hidden md:flex flex-col gap-4 items-end">
+            {/* Cartão de alerta perdido */}
+            <div className="w-full max-w-xs bg-white rounded-2xl shadow-lg border border-stone-100 p-4 flex items-center gap-3"
+              style={{ animation: 'float 4s ease-in-out infinite' }}>
+              <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl flex-shrink-0">🐕</div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                  <span className="text-xs font-bold text-red-600 uppercase tracking-wide">Perdido agora</span>
+                </div>
+                <div className="font-bold text-stone-900 text-sm">Duke — Corgi</div>
+                <div className="text-xs text-stone-400">Lisboa · há 2 horas</div>
+              </div>
             </div>
-            <div className="absolute top-24 right-8 bg-white rounded-2xl shadow-lg border border-stone-100 px-4 py-3 flex items-center gap-2.5 text-sm font-semibold"
-              style={{ animation: 'float 3s ease-in-out infinite', animationDelay: '1s' }}>
-              <span className="w-2.5 h-2.5 bg-amber-400 rounded-full flex-shrink-0"></span>
-              Mimi — Avistada hoje
+
+            {/* Cartão de avistamento */}
+            <div className="w-full max-w-xs bg-white rounded-2xl shadow-lg border border-stone-100 p-4 flex items-center gap-3"
+              style={{ animation: 'float 4s ease-in-out infinite', animationDelay: '1.3s' }}>
+              <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-2xl flex-shrink-0">🐈</div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="w-2 h-2 bg-amber-400 rounded-full"></span>
+                  <span className="text-xs font-bold text-amber-600 uppercase tracking-wide">Avistada</span>
+                </div>
+                <div className="font-bold text-stone-900 text-sm">Mimi — Persa</div>
+                <div className="text-xs text-stone-400">Porto · há 45 min</div>
+              </div>
             </div>
-            <div className="absolute top-44 right-2 bg-white rounded-2xl shadow-lg border border-stone-100 px-4 py-3 flex items-center gap-2.5 text-sm font-semibold"
-              style={{ animation: 'float 3s ease-in-out infinite', animationDelay: '2s' }}>
-              <span className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0"></span>
-              Rex — Encontrado! 🎉
+
+            {/* Cartão de sucesso */}
+            <div className="w-full max-w-xs bg-white rounded-2xl shadow-lg border border-green-200 p-4 flex items-center gap-3"
+              style={{ animation: 'float 4s ease-in-out infinite', animationDelay: '2.6s' }}>
+              <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-2xl flex-shrink-0">🐶</div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                  <span className="text-xs font-bold text-green-600 uppercase tracking-wide">Reunido! 🎉</span>
+                </div>
+                <div className="font-bold text-stone-900 text-sm">Rex — Labrador</div>
+                <div className="text-xs text-stone-400">Braga · encontrado hoje</div>
+              </div>
+            </div>
+
+            {/* Patas decorativas */}
+            <div className="absolute -left-8 top-1/2 -translate-y-1/2 flex flex-col gap-6 opacity-20">
+              {['🐾','🐾','🐾','🐾'].map((p,i) => (
+                <span key={i} className="text-2xl" style={{ transform: `rotate(${[-15,15,-15,15][i]}deg)`, animationDelay: i * 0.3 + 's' }}>{p}</span>
+              ))}
             </div>
           </div>
         </div>
@@ -148,14 +166,14 @@ export default function Home() {
 
       {/* STATS BAR */}
       <section className="bg-green-600 py-8 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-4 gap-0 text-center divide-x divide-green-500">
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-0 text-center divide-x divide-green-500">
           {[
             { value: stats.desaparecidos, label: 'Perdidos' },
             { value: stats.encontrados, label: 'Reunidos com a família' },
             { value: stats.total, label: 'Animais registados' },
             { value: '87%', label: 'Taxa de sucesso' },
           ].map(stat => (
-            <div key={stat.label} className="px-4">
+            <div key={stat.label} className="px-4 py-2">
               <div className="text-3xl font-black text-white" style={{ fontFamily: 'Georgia, serif' }}>{stat.value}</div>
               <div className="text-green-200 text-xs mt-1">{stat.label}</div>
             </div>
@@ -163,26 +181,22 @@ export default function Home() {
         </div>
       </section>
 
-      {/* BOX INFORMATIVA — Como o PetGuardian ajuda */}
+      {/* BOX INFORMATIVA */}
       <section className="py-16 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="bg-gradient-to-br from-green-600 to-emerald-700 rounded-3xl p-8 md:p-12">
             <div className="text-center mb-10">
-              <span className="inline-block bg-green-500 text-green-100 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-400">
-                Como o PetGuardian ajuda
-              </span>
-              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>
-                Tudo para reunir o teu animal
-              </h2>
+              <span className="inline-block bg-green-500 text-green-100 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-400">Como o PetGuardian ajuda</span>
+              <h2 className="text-3xl font-bold text-white" style={{ fontFamily: 'Georgia, serif' }}>Tudo para reunir o teu animal</h2>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               {[
-                { icon: '🗺️', text: 'Mapa em tempo real com todos os animais desaparecidos de Portugal visível por toda a comunidade' },
-                { icon: '🤖', text: 'Identificação por IA — analisa a foto do animal encontrado e compara com os desaparecidos' },
+                { icon: '🗺️', text: 'Mapa em tempo real com todos os animais desaparecidos de Portugal — visível por toda a comunidade instantaneamente' },
+                { icon: '🤖', text: 'Identificação por IA — analisa a foto do animal encontrado e compara com os desaparecidos registados' },
                 { icon: '📋', text: 'Regista o teu animal na base de dados portuguesa de animais perdidos, actualizada em tempo real' },
                 { icon: '🖨️', text: 'Gera um cartaz A4 com QR Code para imprimir e afixar na zona do desaparecimento' },
-                { icon: '📤', text: 'Partilha automática para WhatsApp, Facebook e Instagram para aumentar o alcance' },
-                { icon: '🎉', text: 'Junta-te a centenas de famílias portuguesas que já reuniram os seus animais com o PetGuardian' },
+                { icon: '📤', text: 'Partilha automática para WhatsApp, Facebook e Instagram para aumentar o alcance da pesquisa' },
+                { icon: '🎉', text: 'Junta-te a centenas de famílias portuguesas que já reuniram os seus animais com a ajuda do PetGuardian' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-4 bg-white bg-opacity-10 rounded-2xl p-4">
                   <span className="text-2xl flex-shrink-0">{item.icon}</span>
@@ -220,17 +234,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ÚLTIMAS OCORRÊNCIAS */}
-      {recentes.length > 0 && (
-        <section className="py-20 px-4 bg-white">
-          <div className="max-w-5xl mx-auto">
-            <div className="flex items-end justify-between mb-10">
-              <div>
-                <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-200">Últimas ocorrências</span>
-                <h2 className="text-4xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Precisam de ajuda</h2>
-              </div>
-              <Link to="/animais" className="text-green-700 font-semibold hover:underline">Ver todos →</Link>
+      {/* PREVIEW LISTAGEM */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-end justify-between mb-10">
+            <div>
+              <span className="inline-block bg-green-100 text-green-700 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider mb-4 border border-green-200">Últimas ocorrências</span>
+              <h2 className="text-4xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Precisam de ajuda</h2>
             </div>
+            <Link to="/animais" className="text-green-700 font-semibold hover:underline flex items-center gap-1">Ver todos →</Link>
+          </div>
+
+          {recentes.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
               {recentes.map(animal => (
                 <Link key={animal.id} to={`/animais/${animal.id}`}
@@ -251,9 +266,72 @@ export default function Home() {
                 </Link>
               ))}
             </div>
+          ) : (
+            <div className="text-center py-12 text-stone-400">
+              <div className="text-5xl mb-4">🐾</div>
+              <p>Ainda não há animais registados.</p>
+              <button onClick={handleRegistarAnimal} className="mt-4 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors text-sm">Registar o primeiro</button>
+            </div>
+          )}
+
+          {/* Preview do mapa */}
+          <div className="mt-12 bg-stone-50 rounded-3xl overflow-hidden border-2 border-stone-100">
+            <div className="p-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>Mapa interativo em tempo real</h3>
+                <p className="text-stone-500 text-sm mt-1">Filtros por estado, espécie e distrito · Modo daltónico · Alerta de proximidade</p>
+              </div>
+              <Link to="/mapa" className="bg-green-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-green-700 transition-colors text-sm flex-shrink-0">
+                Abrir mapa →
+              </Link>
+            </div>
+            {/* Mockup visual do mapa */}
+            <div className="relative h-56 bg-gradient-to-br from-green-100 via-emerald-50 to-teal-100 overflow-hidden">
+              {/* Estradas simuladas */}
+              <div className="absolute inset-0 opacity-30">
+                <div className="absolute top-1/3 left-0 right-0 h-px bg-stone-400"></div>
+                <div className="absolute top-2/3 left-0 right-0 h-px bg-stone-400"></div>
+                <div className="absolute left-1/4 top-0 bottom-0 w-px bg-stone-400"></div>
+                <div className="absolute left-2/3 top-0 bottom-0 w-px bg-stone-400"></div>
+                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-stone-300"></div>
+              </div>
+
+              {/* Marcadores animados */}
+              {[
+                { left: '20%', top: '40%', cor: 'bg-red-500', delay: '0s', nome: 'Duke' },
+                { left: '45%', top: '25%', cor: 'bg-amber-400', delay: '0.5s', nome: 'Mimi' },
+                { left: '65%', top: '55%', cor: 'bg-green-600', delay: '1s', nome: 'Rex' },
+                { left: '35%', top: '65%', cor: 'bg-red-500', delay: '1.5s', nome: 'Luna' },
+                { left: '75%', top: '30%', cor: 'bg-red-500', delay: '2s', nome: 'Bobi' },
+              ].map((m, i) => (
+                <div key={i} className="absolute flex flex-col items-center"
+                  style={{ left: m.left, top: m.top, animation: `markerPop 0.5s ${m.delay} both` }}>
+                  <div className={`w-8 h-8 ${m.cor} rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-xs font-bold`}>
+                    {m.nome[0]}
+                  </div>
+                  <div className="bg-white text-stone-700 text-xs font-semibold px-2 py-0.5 rounded-full border border-stone-200 mt-1 shadow-sm whitespace-nowrap">
+                    {m.nome}
+                  </div>
+                </div>
+              ))}
+
+              {/* Filtros sobrepostos */}
+              <div className="absolute top-3 left-3 right-3 flex gap-2">
+                <div className="bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 shadow-sm">Todos os estados</div>
+                <div className="bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 shadow-sm">Todas as espécies</div>
+                <div className="bg-white rounded-lg px-3 py-1.5 text-xs font-medium text-stone-600 border border-stone-200 shadow-sm">Distrito</div>
+              </div>
+
+              {/* Legenda */}
+              <div className="absolute bottom-3 left-3 bg-white rounded-xl px-3 py-2 flex items-center gap-3 text-xs border border-stone-200 shadow-sm">
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-red-500 rounded-full inline-block"></span>Perdido</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-amber-400 rounded-full inline-block"></span>Avistado</span>
+                <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 bg-green-600 rounded-full inline-block"></span>Encontrado</span>
+              </div>
+            </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* REVIEWS */}
       <section className="py-20 px-4 bg-stone-50">
@@ -266,11 +344,7 @@ export default function Home() {
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
               {reviews.map(review => (
                 <div key={review.id} className="bg-white rounded-2xl p-6 border border-stone-200 hover:border-green-200 hover:shadow-md transition-all">
-                  <div className="flex items-center gap-1 mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <span key={i} className={i < review.estrelas ? 'text-amber-400 text-lg' : 'text-stone-200 text-lg'}>★</span>
-                    ))}
-                  </div>
+                  <div className="flex items-center gap-1 mb-3">{[...Array(5)].map((_, i) => <span key={i} className={i < review.estrelas ? 'text-amber-400 text-lg' : 'text-stone-200 text-lg'}>★</span>)}</div>
                   <p className="text-stone-600 text-sm leading-relaxed mb-4">"{review.texto}"</p>
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700 font-bold text-sm">{review.nome[0].toUpperCase()}</div>
@@ -282,9 +356,7 @@ export default function Home() {
           )}
           {reviews.length === 0 && <div className="text-center py-10 mb-10"><div className="text-5xl mb-4">💬</div><p className="text-stone-400">Ainda não há testemunhos. Sê o primeiro!</p></div>}
           {session && !mostrarFormReview && (
-            <div className="text-center">
-              <button onClick={() => setMostrarFormReview(true)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">✍️ Deixar um testemunho</button>
-            </div>
+            <div className="text-center"><button onClick={() => setMostrarFormReview(true)} className="bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors">✍️ Deixar um testemunho</button></div>
           )}
           {session && mostrarFormReview && (
             <form onSubmit={enviarReview} className="bg-white rounded-2xl border border-green-200 p-6 max-w-lg mx-auto">
@@ -296,9 +368,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-sm font-semibold text-stone-500">Classificação</label>
-                  <div className="flex gap-1">{[1,2,3,4,5].map(n => (
-                    <button key={n} type="button" onClick={() => setReviewEstrelas(n)} className={`text-2xl transition-transform hover:scale-110 ${n <= reviewEstrelas ? 'text-amber-400' : 'text-stone-200'}`}>★</button>
-                  ))}</div>
+                  <div className="flex gap-1">{[1,2,3,4,5].map(n => <button key={n} type="button" onClick={() => setReviewEstrelas(n)} className={`text-2xl transition-transform hover:scale-110 ${n <= reviewEstrelas ? 'text-amber-400' : 'text-stone-200'}`}>★</button>)}</div>
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-sm font-semibold text-stone-500">A tua experiência</label>
@@ -335,7 +405,7 @@ export default function Home() {
             <span className="text-green-400 font-bold text-xl" style={{ fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</span>
             <div className="text-stone-500 text-xs mt-1">Plataforma portuguesa de localização de animais</div>
           </div>
-          <div className="flex gap-8">
+          <div className="flex flex-wrap gap-6 justify-center">
             {[['/', 'Início'], ['/animais', 'Animais'], ['/mapa', 'Mapa'], ['/identificar', 'IA'], ['/estatisticas', 'Estatísticas']].map(([to, label]) => (
               <Link key={to} to={to} className="text-stone-400 hover:text-green-400 text-sm transition-colors">{label}</Link>
             ))}
@@ -344,11 +414,9 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* CSS para animações */}
       <style>{`
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes dogWag { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
-        @keyframes pawFade { 0%,100%{opacity:0;transform:scale(0.5)} 30%,70%{opacity:0.5;transform:scale(1)} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        @keyframes markerPop { from{transform:scale(0) translateY(8px);opacity:0} to{transform:scale(1) translateY(0);opacity:1} }
       `}</style>
     </div>
   )
