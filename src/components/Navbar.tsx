@@ -10,7 +10,7 @@ const LAST_VISIT_KEY = 'pg-last-ocorrencias-visit'
 
 interface DropdownItem { to: string; label: string; icon: string; desc?: string }
 
-function NavDropdown({ label, items, isActive }: { label: string; items: DropdownItem[]; isActive: (p: string) => string }) {
+function NavDropdown({ label, items }: { label: string; items: DropdownItem[] }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -140,7 +140,7 @@ export default function Navbar({ session }: Props) {
         <div className="hidden md:flex items-center gap-1">
           <Link to="/" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/')}`}>Início</Link>
 
-          <NavDropdown label="Animais" isActive={isActive} items={[
+          <NavDropdown label="Animais" items={[
             { to: '/animais', icon: '🔍', label: 'Animais perdidos', desc: 'Todos os animais desaparecidos' },
             { to: '/animais-encontrados', icon: '🐾', label: 'Encontrei um animal', desc: 'Reportar animal encontrado na rua' },
             { to: '/identificar', icon: '🤖', label: 'Identificar por IA', desc: 'Descobre de quem é com IA' },
@@ -148,7 +148,7 @@ export default function Navbar({ session }: Props) {
 
           <Link to="/mapa" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/mapa')}`}>Mapa</Link>
 
-          <NavDropdown label="Comunidade" isActive={isActive} items={[
+          <NavDropdown label="Comunidade" items={[
             { to: '/familias-felizes', icon: '🎉', label: 'Famílias Felizes', desc: 'Histórias de reencontros' },
             { to: '/estatisticas', icon: '📊', label: 'Estatísticas', desc: 'Dados em tempo real' },
             { to: '/como-funciona', icon: '❓', label: 'Como funciona', desc: 'Guia completo da plataforma' },
