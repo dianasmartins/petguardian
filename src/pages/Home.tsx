@@ -100,7 +100,6 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Lado direito — espaço visual */}
           <div className="hidden md:block" />
         </div>
       </section>
