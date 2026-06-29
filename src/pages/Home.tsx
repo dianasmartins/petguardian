@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import type { Animal } from '../types'
 
 interface Review {
   id: string
@@ -13,7 +12,6 @@ interface Review {
 
 export default function Home() {
   const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
-  const [recentes, setRecentes] = useState<Animal[]>([])
   const [session, setSession] = useState<any>(null)
   const [reviews, setReviews] = useState<Review[]>([])
   const [mostrarFormReview, setMostrarFormReview] = useState(false)
@@ -42,7 +40,6 @@ export default function Home() {
     const fetchData = async () => {
       const { data } = await supabase.from('animais').select('*').order('created_at', { ascending: false })
       if (data) {
-        setRecentes(data.filter(a => a.estado === 'desaparecido').slice(0, 4))
         setStats({ total: data.length, encontrados: data.filter(a => a.estado === 'encontrado').length, desaparecidos: data.filter(a => a.estado === 'desaparecido').length })
       }
       const { data: revs } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(6)
@@ -72,12 +69,6 @@ export default function Home() {
     setReviewTexto('')
     setMostrarFormReview(false)
     setEnviandoReview(false)
-  }
-
-  const estadoBadge = (estado: string) => {
-    if (estado === 'desaparecido') return <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-1 rounded-full">Desaparecido</span>
-    if (estado === 'avistado') return <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-1 rounded-full">Avistado</span>
-    return <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-1 rounded-full">Encontrado</span>
   }
 
   return (
@@ -231,9 +222,9 @@ export default function Home() {
                 { icon: '📤', text: 'Partilha automática para WhatsApp, Facebook e Instagram para aumentar o alcance da pesquisa' },
                 { icon: '🎉', text: 'Junta-te a centenas de famílias portuguesas que já reuniram os seus animais com a ajuda do PetGuardian' },
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-4 bg-white bg-opacity-10 rounded-2xl p-4">
+                <div key={i} className="flex items-start gap-4 rounded-2xl p-4 border border-white border-opacity-30">
                   <span className="text-2xl flex-shrink-0">{item.icon}</span>
-                  <p className="text-green-100 text-sm leading-relaxed">{item.text}</p>
+                  <p className="text-white text-sm leading-relaxed">{item.text}</p>
                 </div>
               ))}
             </div>
