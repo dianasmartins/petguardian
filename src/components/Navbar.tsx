@@ -29,7 +29,7 @@ function NavDropdown({ label, items }: { label: string; items: DropdownItem[] })
         className={`px-4 py-2.5 rounded-xl text-base transition-colors flex items-center gap-1 ${active ? 'text-lime-800 bg-lime-50 font-semibold' : 'text-stone-600 hover:text-lime-800 hover:bg-lime-50'}`}>
         {label}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-          <polyline points="6 9 12 15 18 9" />
+          <polyline points="6 9 12 15 18 9"/>
         </svg>
       </button>
       {open && (
@@ -149,7 +149,8 @@ export default function Navbar({ session }: Props) {
           <Link to="/mapa" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/mapa')}`}>Mapa</Link>
 
           <NavDropdown label="Comunidade" items={[
-            { to: '/familias-felizes', icon: '🎉', label: 'Famílias Felizes', desc: 'Histórias de reencontros' },
+            { to: '/familias-felizes', icon: '🎉', label: 'Famílias Felizes', desc: 'Casos de reencontro com sucesso' },
+            { to: '/testemunhos', icon: '💬', label: 'Testemunhos', desc: 'O que dizem as famílias' },
             { to: '/estatisticas', icon: '📊', label: 'Estatísticas', desc: 'Dados em tempo real' },
             { to: '/como-funciona', icon: '❓', label: 'Como funciona', desc: 'Guia completo da plataforma' },
           ]} />
@@ -181,8 +182,8 @@ export default function Navbar({ session }: Props) {
                 <button onClick={() => setBellOpen(!bellOpen)}
                   className="relative w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 hover:bg-lime-50 hover:text-lime-800 transition-colors">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                   </svg>
                   {novosAvistamentos > 0 && (
                     <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
