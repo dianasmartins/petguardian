@@ -29,7 +29,6 @@ export default function Ocorrencias() {
   const [confirmarArquivar, setConfirmarArquivar] = useState(false)
   const [editandoDescricao, setEditandoDescricao] = useState(false)
   const [novaDescricao, setNovaDescricao] = useState('')
-  const [novoEstado, setNovoEstado] = useState('')
   const { mostrarToast } = useToast()
 
   useEffect(() => {

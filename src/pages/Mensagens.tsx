@@ -31,7 +31,6 @@ export default function Mensagens() {
   const [novaMensagem, setNovaMensagem] = useState('')
   const [session, setSession] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [enviando, setEnviando] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
