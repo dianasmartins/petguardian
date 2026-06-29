@@ -16,7 +16,6 @@ const VERDE_CLARO = '#f7fee7'
 const VERDE_BORDA = '#d9f99d'
 const LARANJA = '#ea580c'
 const LARANJA_ESCURO = '#c2410c'
-const LARANJA_CLARO = '#fff7ed'
 
 export default function Home() {
   const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
@@ -169,7 +168,7 @@ export default function Home() {
 
       {/* STATS */}
       <section style={{ background: VERDE_ESCURO }}>
-        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x" style={{ divideColor: '#4d7c0f' }}>
+        <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 divide-x divide-[#4d7c0f]">
           {[
             { value: stats.desaparecidos, label: 'Perdidos agora' },
             { value: stats.encontrados, label: 'Reunidos com a família' },
