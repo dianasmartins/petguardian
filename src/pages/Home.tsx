@@ -15,7 +15,6 @@ const VERDE_ESCURO = '#365314'
 const VERDE_CLARO = '#f7fee7'
 const VERDE_BORDA = '#d9f99d'
 const LARANJA = '#ea580c'
-const LARANJA_ESCURO = '#c2410c'
 
 export default function Home() {
   const [stats, setStats] = useState({ total: 0, encontrados: 0, desaparecidos: 0 })
@@ -308,37 +307,26 @@ export default function Home() {
       </section>
 
       {/* CTA — só para não autenticados */}
-      {!session && <section className="relative overflow-hidden" style={{ minHeight: 420 }}>
-        {/* Imagem de fundo */}
-        <img
-          src="/hero-illustration.png"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-          style={{ filter: 'brightness(0.22) saturate(0.8)' }}
-        />
-        {/* Overlay laranja subtil */}
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, rgba(234,88,12,.85) 0%, rgba(101,163,13,.75) 100%)' }}></div>
-        {/* Conteúdo */}
-        <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-24">
+      {!session && (
+        <section className="py-24 px-6 text-center" style={{ background: VERDE_ESCURO }}>
           <div className="text-5xl mb-6">🐾</div>
           <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>
             Ajuda a reunir mais famílias
           </h2>
-          <p className="text-lg mb-10" style={{ color: 'rgba(255,255,255,.85)' }}>
+          <p className="text-lg mb-10" style={{ color: 'rgba(255,255,255,.7)' }}>
             O PetGuardian é gratuito, sem anúncios e funciona em qualquer dispositivo.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link to="/registo" className="px-10 py-4 rounded-2xl font-bold text-lg transition-all"
-              style={{ background: VERDE_CLARO, color: LARANJA_ESCURO }}>
+              style={{ background: LARANJA, color: 'white' }}>
               Criar conta gratuita
             </Link>
             <Link to="/animais" className="px-10 py-4 rounded-2xl font-bold text-lg border-2 border-white text-white transition-all">
               Ver animais desaparecidos
             </Link>
           </div>
-        </div>
-      </section>}
+        </section>
+      )}
 
     </div>
   )
