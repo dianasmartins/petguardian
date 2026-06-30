@@ -29,6 +29,8 @@ import TermosServico from './pages/TermosServico'
 import SobreNos from './pages/SobreNos'
 import RedefinirPassword from './pages/RedefinirPassword'
 import Mensagens from './pages/Mensagens'
+import Footer from './components/Footer'
+import ScrollToTop from './components/ScrollToTop'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -55,6 +57,7 @@ export default function App() {
   return (
     <ToastProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Navbar session={session} />
         <CookieBanner />
         <Routes>
@@ -84,6 +87,7 @@ export default function App() {
           <Route path="/mensagens" element={session ? <Mensagens /> : <Navigate to="/login" />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        <Footer />
       </BrowserRouter>
     </ToastProvider>
   )
