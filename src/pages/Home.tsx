@@ -92,7 +92,7 @@ export default function Home() {
               </button>
               <Link to="/mapa" className="px-9 py-4 rounded-xl font-bold text-lg border-2 transition-all"
                 style={{ color: VERDE_ESCURO, borderColor: VERDE, background: 'white' }}>
-                Ver mapa ao vivo
+                Mapa de Ocorrências
               </Link>
             </div>
             <Link to="/identificar" className="text-sm transition-colors hover:underline" style={{ color: '#4d7c0f' }}>
@@ -344,28 +344,25 @@ export default function Home() {
       <footer style={{ background: VERDE_ESCURO }}>
         <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="flex flex-col md:flex-row items-start justify-between gap-10 pb-10" style={{ borderBottom: '1px solid rgba(255,255,255,.1)' }}>
-            {/* Logo + descrição */}
+            {/* Logo */}
             <div className="max-w-xs">
-              <div className="text-2xl font-bold mb-3" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</div>
-              <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,.45)' }}>
-                Plataforma portuguesa gratuita para localizar animais de estimação desaparecidos. Mapa em tempo real, IA de identificação e comunidade de voluntários.
-              </p>
+              <div className="text-2xl font-bold" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>🐾 PetGuardian</div>
             </div>
             {/* Links */}
             <div className="flex flex-wrap gap-x-12 gap-y-3">
               {[
-                ['/como-funciona', 'How It Works'],
-                ['/familias-felizes', 'About Us'],
-                ['/animais', 'Frequently Asked Questions'],
-                ['/definicoes', 'Privacy Policy'],
-                ['/como-funciona', 'Terms of Service'],
+                ['/como-funciona', 'Como Funciona'],
+                ['/sobre-nos', 'Sobre Nós'],
+                ['/faq', 'Perguntas Frequentes'],
+                ['/privacidade', 'Política de Privacidade'],
+                ['/termos', 'Termos de Serviço'],
               ].map(([to, label]) => (
                 <Link key={label} to={to} className="text-sm hover:underline block" style={{ color: 'rgba(255,255,255,.5)' }}>{label}</Link>
               ))}
             </div>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8">
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,.2)' }}>© 2026 PetGuardian · Diana Soares Martins · Atlântica · 🇵🇹 Made in Portugal</span>
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,.2)' }}>© 2026 PetGuardian · Diana Soares Martins · Atlântica</span>
             <span className="text-xs" style={{ color: 'rgba(255,255,255,.2)' }}>Projeto Final de Licenciatura · GSC</span>
           </div>
         </div>

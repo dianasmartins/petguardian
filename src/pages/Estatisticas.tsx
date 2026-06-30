@@ -214,7 +214,7 @@ export default function Estatisticas() {
               Criar conta gratuita
             </Link>
             <Link to="/mapa" className="bg-lime-800 text-white border-2 border-green-400 px-6 py-3 rounded-xl font-semibold hover:bg-green-800 transition-colors">
-              Ver mapa ao vivo
+              Ver mapa de ocorrências
             </Link>
           </div>
         </div>

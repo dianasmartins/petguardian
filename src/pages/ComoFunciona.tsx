@@ -197,7 +197,7 @@ export default function ComoFunciona() {
         <p className="text-lime-100 text-lg mb-10">Cria a tua conta gratuita e publica o primeiro alerta em menos de 2 minutos.</p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link to="/registo" className="bg-white text-lime-800 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-lime-50 transition-all shadow-lg">Criar conta gratuita</Link>
-          <Link to="/mapa" className="bg-lime-800 text-white border-2 border-green-400 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-800 transition-all">Ver mapa ao vivo</Link>
+          <Link to="/mapa" className="bg-lime-800 text-white border-2 border-green-400 px-10 py-4 rounded-2xl font-bold text-lg hover:bg-green-800 transition-all">Ver mapa de ocorrências</Link>
         </div>
       </section>
     </div>
