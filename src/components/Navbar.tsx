@@ -249,6 +249,11 @@ export default function Navbar({ session }: Props) {
                   className="relative w-10 h-10 rounded-full overflow-hidden bg-lime-700 flex items-center justify-center text-white text-sm font-bold hover:bg-lime-800 transition-colors">
                   {fotoPerfil ? <img src={fotoPerfil} alt="perfil" className="w-full h-full object-cover" /> : initials}
                 </button>
+                {(novosAvistamentos + mensagensNaoLidas) > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white pointer-events-none">
+                    {(novosAvistamentos + mensagensNaoLidas) > 9 ? '9+' : novosAvistamentos + mensagensNaoLidas}
+                  </span>
+                )}
                 {profileOpen && (
                   <div className="absolute right-0 top-12 w-56 bg-white border border-stone-200 rounded-2xl shadow-xl py-2 z-50">
                     <div className="px-4 py-3 border-b border-stone-100">
