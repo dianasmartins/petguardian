@@ -12,8 +12,6 @@ const PERIODOS = [
   { label: 'Todos', dias: 0 },
 ]
 
-const DISTRITOS = ['Todos','Aveiro','Beja','Braga','Bragança','Castelo Branco','Coimbra','Évora','Faro','Guarda','Leiria','Lisboa','Portalegre','Porto','Santarém','Setúbal','Viana do Castelo','Vila Real','Viseu']
-
 function iconeEspecie(especie: string) {
   switch (especie) {
     case 'gato': return '🐈'
@@ -33,7 +31,6 @@ export default function Animais() {
   const [filtroEstado, setFiltroEstado] = useState('desaparecido')
   const [filtroEspecie, setFiltroEspecie] = useState('todos')
   const [filtroPeriodo, setFiltroPeriodo] = useState(0)
-  const [filtroDistrito, setFiltroDistrito] = useState('Todos')
   const [filtroDistancia, setFiltroDistancia] = useState(0)
   const [userLat, setUserLat] = useState<number | null>(null)
   const [userLng, setUserLng] = useState<number | null>(null)
@@ -78,8 +75,8 @@ export default function Animais() {
         const R = 6371
         const dLat = (a.latitude - userLat) * Math.PI / 180
         const dLon = (a.longitude - userLng) * Math.PI / 180
-        const x = Math.sin(dLat/2)**2 + Math.cos(userLat*Math.PI/180)*Math.cos(a.latitude*Math.PI/180)*Math.sin(dLon/2)**2
-        return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x)) <= filtroDistancia
+        const x = Math.sin(dLat / 2) ** 2 + Math.cos(userLat * Math.PI / 180) * Math.cos(a.latitude * Math.PI / 180) * Math.sin(dLon / 2) ** 2
+        return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x)) <= filtroDistancia
       })
     }
 
@@ -89,7 +86,7 @@ export default function Animais() {
     else if (sortBy === 'nome') res.sort((a, b) => a.nome.localeCompare(b.nome))
 
     setFiltrados(res)
-  }, [animais, filtroEstado, filtroEspecie, filtroPeriodo, filtroDistrito, filtroDistancia, userLat, userLng, sortBy, busca])
+  }, [animais, filtroEstado, filtroEspecie, filtroPeriodo, filtroDistancia, userLat, userLng, sortBy, busca])
 
   const handleGPS = () => {
     navigator.geolocation.getCurrentPosition(pos => {
