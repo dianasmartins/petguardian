@@ -139,11 +139,10 @@ export default function Admin() {
             { id: 'animais', label: '🐾 Animais' },
           ].map(tab => (
             <button key={tab.id} onClick={() => setTabActiva(tab.id as any)}
-              className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${
-                tabActiva === tab.id
+              className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${tabActiva === tab.id
                   ? 'border-lime-700 text-lime-800'
                   : 'border-transparent text-stone-500 hover:text-stone-800'
-              }`}>
+                }`}>
               {tab.label}
             </button>
           ))}
@@ -193,11 +192,10 @@ export default function Admin() {
                         <td className="px-6 py-3 font-medium">{animal.nome}</td>
                         <td className="px-6 py-3 text-stone-500">{nomeEspecie(animal.especie)}</td>
                         <td className="px-6 py-3">
-                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                            animal.estado === 'desaparecido' ? 'bg-red-100 text-red-700' :
-                            animal.estado === 'encontrado' ? 'bg-lime-100 text-lime-800' :
-                            'bg-amber-100 text-amber-700'
-                          }`}>{animal.estado}</span>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${animal.estado === 'desaparecido' ? 'bg-red-100 text-red-700' :
+                              animal.estado === 'encontrado' ? 'bg-lime-100 text-lime-800' :
+                                'bg-amber-100 text-amber-700'
+                            }`}>{animal.estado}</span>
                         </td>
                         <td className="px-6 py-3 text-stone-400">{new Date(animal.created_at).toLocaleDateString('pt-PT')}</td>
                       </tr>
@@ -293,11 +291,10 @@ export default function Admin() {
                         {nomeEspecie(animal.especie)}
                       </td>
                       <td className="px-6 py-3">
-                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                          animal.estado === 'desaparecido' ? 'bg-red-100 text-red-700' :
-                          animal.estado === 'encontrado' ? 'bg-lime-100 text-lime-800' :
-                          'bg-amber-100 text-amber-700'
-                        }`}>{animal.estado}</span>
+                        <span className={`text-xs font-semibold px-2 py-1 rounded-full ${animal.estado === 'desaparecido' ? 'bg-red-100 text-red-700' :
+                            animal.estado === 'encontrado' ? 'bg-lime-100 text-lime-800' :
+                              'bg-amber-100 text-amber-700'
+                          }`}>{animal.estado}</span>
                       </td>
                       <td className="px-6 py-3 text-stone-400">{new Date(animal.created_at).toLocaleDateString('pt-PT')}</td>
                       <td className="px-6 py-3">
