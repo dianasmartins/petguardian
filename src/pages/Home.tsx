@@ -112,7 +112,7 @@ export default function Home() {
       </section>
 
       {/* STATS */}
-      <section style={{ background: VERDE_ESCURO }}>
+      <section className="mt-2" style={{ background: VERDE_ESCURO }}>
         <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4">
           {[
             { value: stats.desaparecidos, label: 'Perdidos agora' },
@@ -120,7 +120,7 @@ export default function Home() {
             { value: stats.total, label: 'Animais registados' },
             { value: '87%', label: 'Taxa de sucesso' },
           ].map(s => (
-            <div key={s.label} className="text-center py-6 px-4">
+            <div key={s.label} className="text-center py-10 px-4">
               <div className="text-4xl font-black" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>{s.value}</div>
               <div className="text-sm mt-1.5" style={{ color: '#86efac' }}>{s.label}</div>
             </div>
@@ -129,7 +129,7 @@ export default function Home() {
       </section>
 
       {/* COMO FUNCIONA + FUNCIONALIDADES */}
-      <section className="pt-28 pb-10 px-8" style={{ background: 'white' }}>
+      <section className="pt-28 pb-4 px-8" style={{ background: 'white' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
@@ -223,7 +223,7 @@ export default function Home() {
       </section>
 
       {/* REVIEWS */}
-      <section className="pt-10 pb-28 px-8" style={{ background: 'white' }}>
+      <section className="pt-4 pb-28 px-8" style={{ background: 'white' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
