@@ -126,19 +126,21 @@ export default function AnimaisEncontrados() {
       .select('id, nome, especie, raca, cor, foto_url, caracteristicas_ia')
       .eq('estado', 'desaparecido')
 
-    const scored: AnimalMatch[] = (animais || []).map((a: any) => {
-      let score = 0
-      if (caracteristicas && a.caracteristicas_ia) {
-        if (a.caracteristicas_ia.especie?.toLowerCase() === caracteristicas.especie?.toLowerCase()) score += 40
-        if (a.caracteristicas_ia.cor_principal?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 25
-        if (a.cor?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 15
-        if (a.caracteristicas_ia.raca_estimada?.toLowerCase().includes(caracteristicas.raca_estimada?.toLowerCase())) score += 20
-      } else if (caracteristicas) {
-        if (a.especie === caracteristicas.especie) score += 30
-        if (a.cor?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 20
-      }
-      return { id: a.id, nome: a.nome, especie: a.especie, raca: a.raca, cor: a.cor, foto_url: a.foto_url, score }
-    }).filter((a: AnimalMatch) => a.score >= 30).sort((a: AnimalMatch, b: AnimalMatch) => b.score - a.score).slice(0, 4)
+    const scored: AnimalMatch[] = (animais || [])
+      .filter((a: any) => a.especie?.toLowerCase() === caracteristicas?.especie?.toLowerCase())
+      .map((a: any) => {
+        let score = 0
+        if (caracteristicas && a.caracteristicas_ia) {
+          score += 40 // espécie já confirmada igual pelo filter acima
+          if (a.caracteristicas_ia.cor_principal?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 25
+          if (a.cor?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 15
+          if (a.caracteristicas_ia.raca_estimada?.toLowerCase().includes(caracteristicas.raca_estimada?.toLowerCase())) score += 20
+        } else if (caracteristicas) {
+          score += 30 // espécie já confirmada igual pelo filter acima
+          if (a.cor?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 20
+        }
+        return { id: a.id, nome: a.nome, especie: a.especie, raca: a.raca, cor: a.cor, foto_url: a.foto_url, score }
+      }).filter((a: AnimalMatch) => a.score >= 30).sort((a: AnimalMatch, b: AnimalMatch) => b.score - a.score).slice(0, 4)
 
     setMatches(scored)
     if (caracteristicas) setCor(caracteristicas.cor_principal || '')
@@ -232,15 +234,16 @@ export default function AnimaisEncontrados() {
             { n: 1, label: 'Identificar com IA', passo: 'ia' },
             { n: 2, label: 'Ver correspondências', passo: 'resultados' },
             { n: 3, label: 'Registar se necessário', passo: 'formulario' },
-          ].map((s) => {
+          ].map((s, i) => {
             const passos = ['ia', 'resultados', 'formulario', 'sucesso']
             const atual = passos.indexOf(passo)
             const este = passos.indexOf(s.passo)
             const done = atual > este
             const active = atual === este
             return (
-              <div key={s.n} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${active ? 'border-lime-600 text-lime-800' : done ? 'border-lime-400 text-lime-600' : 'border-stone-200 text-stone-400'
-                }`}>
+              <div key={s.n} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${
+                active ? 'border-lime-600 text-lime-800' : done ? 'border-lime-400 text-lime-600' : 'border-stone-200 text-stone-400'
+              }`}>
                 {done ? '✓ ' : ''}{s.label}
               </div>
             )
@@ -315,7 +318,7 @@ export default function AnimaisEncontrados() {
                 </div>
                 {resultadoIA.caracteristicas_distintivas?.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {resultadoIA.caracteristicas_distintivas.map((c, i) => (
+                    {resultadoIA.caracteristicas_distintivas.map((c) => (
                       <span key={i} className="text-xs px-3 py-1 rounded-full" style={{ background: '#f7fee7', color: '#365314', border: '1px solid #d9f99d' }}>{c}</span>
                     ))}
                   </div>
@@ -444,10 +447,10 @@ export default function AnimaisEncontrados() {
                 {fotoPreview
                   ? <div className="relative"><img src={fotoPreview} className="w-full h-40 object-cover rounded-xl" /><button type="button" onClick={() => { setFoto(null); setFotoPreview(null) }} className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full text-xs font-bold">✕</button></div>
                   : <label className="border-2 border-dashed rounded-xl p-5 text-center cursor-pointer hover:bg-lime-50 transition-colors flex items-center gap-3 justify-center" style={{ borderColor: '#d9f99d' }}>
-                    <span className="text-2xl">📷</span>
-                    <span className="text-sm" style={{ color: '#4d7c0f' }}>Adicionar {fotoIAPreview ? 'outra ' : ''}foto</span>
-                    <input ref={fileFotoRef} type="file" accept="image/*" onChange={handleFotoFormulario} className="hidden" />
-                  </label>
+                      <span className="text-2xl">📷</span>
+                      <span className="text-sm" style={{ color: '#4d7c0f' }}>Adicionar {fotoIAPreview ? 'outra ' : ''}foto</span>
+                      <input ref={fileFotoRef} type="file" accept="image/*" onChange={handleFotoFormulario} className="hidden" />
+                    </label>
                 }
               </div>
 
