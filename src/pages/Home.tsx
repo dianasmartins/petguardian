@@ -66,8 +66,15 @@ export default function Home() {
     <div className="min-h-screen" style={{ background: VERDE_CLARO }}>
 
       {/* HERO */}
-      <section style={{ background: VERDE_CLARO }}>
-        <div className="max-w-7xl mx-auto px-8 py-24 grid md:grid-cols-2 gap-12 items-center">
+      <section className="relative overflow-hidden" style={{ background: VERDE_CLARO }}>
+        <img
+          src="/hero-bg.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-top pointer-events-none select-none"
+          style={{ opacity: 0.18, mixBlendMode: 'multiply' }}
+        />
+        <div className="max-w-7xl mx-auto px-8 py-24 grid md:grid-cols-2 gap-12 items-center relative z-10">
 
           {/* Esquerda */}
           <div>
@@ -95,7 +102,7 @@ export default function Home() {
                 Mapa de Ocorrências
               </Link>
             </div>
-            <Link to="/identificar" className="text-sm transition-colors hover:underline" style={{ color: '#4d7c0f' }}>
+            <Link to="/animais-encontrados" className="text-sm transition-colors hover:underline" style={{ color: '#4d7c0f' }}>
               Encontrei um animal perdido →
             </Link>
           </div>
@@ -122,7 +129,7 @@ export default function Home() {
       </section>
 
       {/* COMO FUNCIONA + FUNCIONALIDADES */}
-      <section className="py-28 px-8" style={{ background: 'white' }}>
+      <section className="pt-28 pb-10 px-8" style={{ background: 'white' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14">
             <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
@@ -216,7 +223,7 @@ export default function Home() {
       </section>
 
       {/* REVIEWS */}
-      <section className="py-28 px-8" style={{ background: 'white' }}>
+      <section className="pt-10 pb-28 px-8" style={{ background: 'white' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
@@ -271,7 +278,7 @@ export default function Home() {
                 <div>
                   <label className="text-sm font-semibold mb-1.5 block" style={{ color: VERDE_ESCURO }}>Classificação</label>
                   <div className="flex gap-1">
-                    {[1,2,3,4,5].map(n => (
+                    {[1, 2, 3, 4, 5].map(n => (
                       <button key={n} type="button" onClick={() => setReviewEstrelas(n)}
                         className="text-2xl transition-transform hover:scale-110"
                         style={{ color: n <= reviewEstrelas ? '#f59e0b' : '#e5e7eb' }}>★</button>

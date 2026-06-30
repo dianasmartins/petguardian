@@ -143,7 +143,6 @@ export default function Navbar({ session }: Props) {
           <NavDropdown label="Animais" items={[
             { to: '/animais', icon: '🔍', label: 'Animais perdidos', desc: 'Todos os animais desaparecidos' },
             { to: '/animais-encontrados', icon: '🐾', label: 'Encontrei um animal', desc: 'Reportar animal encontrado na rua' },
-            { to: '/identificar', icon: '🤖', label: 'Identificar por IA', desc: 'Descobre de quem é com IA' },
           ]} />
 
           <Link to="/mapa" className={`px-4 py-2.5 rounded-xl text-base transition-colors ${isActive('/mapa')}`}>Mapa</Link>
@@ -320,7 +319,6 @@ export default function Navbar({ session }: Props) {
             ['/', '🏠 Início'],
             ['/animais', '🔍 Animais perdidos'],
             ['/animais-encontrados', '🐾 Encontrei um animal'],
-            ['/identificar', '🤖 Identificar por IA'],
             ['/mapa', '🗺️ Mapa'],
             ['/familias-felizes', '🎉 Famílias Felizes'],
             ['/como-funciona', '❓ Como funciona'],
