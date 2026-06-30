@@ -67,7 +67,7 @@ export default function Home() {
       {/* HERO */}
       <section className="relative overflow-hidden" style={{ background: VERDE_CLARO }}>
         <img
-          src="/hero-illustration.png"
+          src="/hero-bg.png"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
