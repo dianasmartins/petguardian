@@ -71,6 +71,12 @@ export default function SubmeterAvistamento() {
             return
         }
 
+        // Actualizar estado do animal para "avistado" (só se ainda não estiver encontrado)
+        const { data: animalActual } = await supabase.from('animais').select('estado').eq('id', animalId).single()
+        if (animalActual && animalActual.estado !== 'encontrado') {
+            await supabase.from('animais').update({ estado: 'avistado' }).eq('id', animalId)
+        }
+
         // Upload de fotos adicionais
         if (fotos.length > 1) {
             for (let i = 1; i < fotos.length; i++) {
@@ -89,8 +95,8 @@ export default function SubmeterAvistamento() {
     }
 
     if (sucesso) return (
-        <div className="min-h-screen bg-green-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center border border-green-100">
+        <div className="min-h-screen bg-lime-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-lg p-8 w-full max-w-md text-center border border-lime-100">
                 <div className="text-6xl mb-4">🐾</div>
                 <h2 className="text-2xl font-bold text-stone-900 mb-3" style={{ fontFamily: 'Georgia, serif' }}>
                     Avistamento submetido!
@@ -98,7 +104,7 @@ export default function SubmeterAvistamento() {
                 <p className="text-stone-500 mb-2">O dono do animal foi notificado em tempo real.</p>
                 <p className="text-stone-400 text-sm mb-8">Obrigada por ajudares a reunir esta família! 💛</p>
                 <div className="flex gap-3">
-                    <Link to="/mapa" className="flex-1 bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors text-center text-sm">
+                    <Link to="/mapa" className="flex-1 bg-lime-700 text-white py-3 rounded-xl font-semibold hover:bg-lime-800 transition-colors text-center text-sm">
                         Ver no mapa
                     </Link>
                     <Link to="/animais" className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 transition-colors text-center text-sm">
@@ -113,7 +119,7 @@ export default function SubmeterAvistamento() {
         <div className="min-h-screen bg-stone-50">
             <div className="max-w-5xl mx-auto px-4 py-10">
                 <div className="mb-8">
-                    <Link to="/mapa" className="text-green-700 text-sm hover:underline">← Voltar ao mapa</Link>
+                    <Link to="/mapa" className="text-lime-800 text-sm hover:underline">← Voltar ao mapa</Link>
                     <h1 className="text-3xl font-bold text-stone-900 mt-3" style={{ fontFamily: 'Georgia, serif' }}>
                         Reportar avistamento
                     </h1>
@@ -133,7 +139,7 @@ export default function SubmeterAvistamento() {
                                 📍 GPS automático
                             </button>
                             {lat && lng && (
-                                <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-2 text-green-700 text-sm mt-1">
+                                <div className="bg-lime-50 border border-lime-200 rounded-xl px-4 py-2 text-lime-800 text-sm mt-1">
                                     ✓ {lat.toFixed(5)}°N, {lng.toFixed(5)}°W
                                 </div>
                             )}
@@ -144,7 +150,7 @@ export default function SubmeterAvistamento() {
                             <label className="text-sm font-semibold text-stone-500">Descrição do avistamento</label>
                             <textarea value={descricao} onChange={e => setDescricao(e.target.value)} rows={4}
                                 placeholder="Ex: Vi o animal junto ao parque, estava calmo e sozinho..."
-                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-green-500 focus:outline-none text-sm resize-none" />
+                                className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm resize-none" />
                         </div>
 
                         <MultiplasFotos
@@ -156,7 +162,7 @@ export default function SubmeterAvistamento() {
                         />
 
                         <button type="submit" disabled={loading || !lat || !lng}
-                            className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors disabled:opacity-60">
+                            className="w-full bg-lime-700 text-white py-3 rounded-xl font-semibold hover:bg-lime-800 transition-colors disabled:opacity-60">
                             {loading ? 'A submeter...' : '🐾 Submeter avistamento'}
                         </button>
 
@@ -180,7 +186,7 @@ export default function SubmeterAvistamento() {
                             </MapContainer>
                         </div>
                         {lat && lng && (
-                            <div className="px-5 py-3 bg-green-50 border-t border-green-100 text-green-700 text-sm">
+                            <div className="px-5 py-3 bg-lime-50 border-t border-lime-100 text-lime-800 text-sm">
                                 ✓ Local marcado: {lat.toFixed(4)}°N, {lng.toFixed(4)}°W
                             </div>
                         )}
