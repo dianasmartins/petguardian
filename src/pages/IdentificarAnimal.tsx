@@ -16,7 +16,7 @@ interface ResultadoIA {
 }
 
 export default function IdentificarAnimal() {
-  const [session, setSession] = useState<any>(null)
+  const [, setSession] = useState<any>(null)
   const [verificandoSessao, setVerificandoSessao] = useState(true)
   const [foto, setFoto] = useState<File | null>(null)
   const [fotoPreview, setFotoPreview] = useState<string | null>(null)
@@ -181,10 +181,44 @@ export default function IdentificarAnimal() {
             })
           }
         )
+
+        if (!response.ok) {
+          const errBody = await response.text()
+          console.error('Gemini API erro HTTP', response.status, errBody)
+          setErro(`Erro na API Gemini (${response.status}). Verifica a chave VITE_GEMINI_API_KEY no Vercel.`)
+          setAnalisando(false)
+          return
+        }
+
         const data = await response.json()
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}'
+        console.log('Resposta Gemini completa:', data)
+
+        // Verificar se o conteúdo foi bloqueado por filtros de segurança
+        const finishReason = data.candidates?.[0]?.finishReason
+        if (finishReason && finishReason !== 'STOP') {
+          console.error('Gemini bloqueou a resposta:', finishReason, data.candidates?.[0]?.safetyRatings)
+          setErro('A IA não conseguiu processar esta imagem (motivo: ' + finishReason + '). Tenta outra foto.')
+          setAnalisando(false)
+          return
+        }
+
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+        if (!text) {
+          console.error('Gemini não devolveu texto. Resposta completa:', JSON.stringify(data))
+          setErro('A IA não devolveu resultado. Verifica a consola (F12) para detalhes técnicos.')
+          setAnalisando(false)
+          return
+        }
+
         const clean = text.replace(/```json|```/g, '').trim()
-        resultadoIA = JSON.parse(clean)
+        try {
+          resultadoIA = JSON.parse(clean)
+        } catch (parseErr) {
+          console.error('Erro ao interpretar JSON da IA. Texto recebido:', text)
+          setErro('A IA devolveu uma resposta inesperada. Tenta novamente.')
+          setAnalisando(false)
+          return
+        }
       } else {
         await new Promise(r => setTimeout(r, 1500))
         resultadoIA = {
@@ -196,6 +230,7 @@ export default function IdentificarAnimal() {
           caracteristicas_distintivas: ['pelo curto', 'orelhas pontiagudas', 'focinho comprido'],
           confianca: 0.87
         }
+        mostrarToast('Modo demo activo — resultado simulado, não real', 'info')
       }
 
       if ((resultadoIA as any).erro) {
@@ -206,11 +241,15 @@ export default function IdentificarAnimal() {
 
       setResultado(resultadoIA)
 
-      const { data: animais } = await supabase
+      const { data: animais, error: dbError } = await supabase
         .from('animais')
         .select('*')
         .neq('estado', 'encontrado')
         .order('created_at', { ascending: false })
+
+      if (dbError) {
+        console.error('Erro ao buscar animais:', dbError)
+      }
 
       if (animais) {
         const scored = animais
@@ -222,8 +261,9 @@ export default function IdentificarAnimal() {
       }
 
       mostrarToast('Análise concluída!', 'sucesso')
-    } catch {
-      setErro('Erro ao analisar a fotografia. Tenta novamente.')
+    } catch (err) {
+      console.error('Erro inesperado na análise:', err)
+      setErro('Erro ao analisar a fotografia: ' + (err instanceof Error ? err.message : 'erro desconhecido') + '. Verifica a consola (F12).')
     }
     setAnalisando(false)
   }
