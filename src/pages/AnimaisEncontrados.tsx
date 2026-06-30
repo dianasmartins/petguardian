@@ -121,7 +121,7 @@ export default function AnimaisEncontrados() {
           reader.readAsDataURL(fotoIA)
         })
         const prompt = 'Analisa esta imagem de um animal de estimação. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional. Estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}'
-        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_KEY, {
+        const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: fotoIA.type, data: base64 } }] }] })
@@ -280,9 +280,8 @@ export default function AnimaisEncontrados() {
             const done = atual > este
             const active = atual === este
             return (
-              <div key={s.n} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${
-                active ? 'border-lime-600 text-lime-800' : done ? 'border-lime-400 text-lime-600' : 'border-stone-200 text-stone-400'
-              }`}>
+              <div key={s.n} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${active ? 'border-lime-600 text-lime-800' : done ? 'border-lime-400 text-lime-600' : 'border-stone-200 text-stone-400'
+                }`}>
                 {done ? '✓ ' : ''}{s.label}
               </div>
             )
@@ -489,10 +488,10 @@ export default function AnimaisEncontrados() {
                 {fotoPreview
                   ? <div className="relative"><img src={fotoPreview} className="w-full h-40 object-cover rounded-xl" /><button type="button" onClick={() => { setFoto(null); setFotoPreview(null) }} className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full text-xs font-bold">✕</button></div>
                   : <label className="border-2 border-dashed rounded-xl p-5 text-center cursor-pointer hover:bg-lime-50 transition-colors flex items-center gap-3 justify-center" style={{ borderColor: '#d9f99d' }}>
-                      <span className="text-2xl">📷</span>
-                      <span className="text-sm" style={{ color: '#4d7c0f' }}>Adicionar {fotoIAPreview ? 'outra ' : ''}foto</span>
-                      <input ref={fileFotoRef} type="file" accept="image/*" onChange={handleFotoFormulario} className="hidden" />
-                    </label>
+                    <span className="text-2xl">📷</span>
+                    <span className="text-sm" style={{ color: '#4d7c0f' }}>Adicionar {fotoIAPreview ? 'outra ' : ''}foto</span>
+                    <input ref={fileFotoRef} type="file" accept="image/*" onChange={handleFotoFormulario} className="hidden" />
+                  </label>
                 }
               </div>
 

@@ -99,7 +99,7 @@ export default function RegistarAnimal() {
       if (data && data.length > 0) {
         setLat(parseFloat(data[0].lat))
         setLng(parseFloat(data[0].lon))
-        mostrarToast('Localização encontrada: ' + data[0].display_name.split(',').slice(0,2).join(','), 'sucesso')
+        mostrarToast('Localização encontrada: ' + data[0].display_name.split(',').slice(0, 2).join(','), 'sucesso')
       } else {
         mostrarToast('Morada não encontrada. Tenta ser mais específico ou clica no mapa.', 'erro')
       }
@@ -130,7 +130,7 @@ export default function RegistarAnimal() {
         reader.readAsDataURL(file)
       })
       const prompt = 'Analisa esta imagem de um animal de estimação. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. Estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}.'
-      const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + GEMINI_KEY
+      const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GEMINI_KEY
       const response = await fetch(geminiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -240,11 +240,10 @@ export default function RegistarAnimal() {
         {/* Steps */}
         <div className="flex gap-0 mb-8">
           {['Dados', 'Localização', 'Fotos'].map((label, i) => (
-            <div key={i} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${
-              step === i + 1 ? 'border-lime-700 text-lime-800'
-              : step > i + 1 ? 'border-emerald-500 text-emerald-600'
-              : 'border-stone-200 text-stone-400'
-            }`}>
+            <div key={i} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${step === i + 1 ? 'border-lime-700 text-lime-800'
+                : step > i + 1 ? 'border-emerald-500 text-emerald-600'
+                  : 'border-stone-200 text-stone-400'
+              }`}>
               {step > i + 1 ? '✓ ' : ''}{label}
             </div>
           ))}
@@ -270,9 +269,8 @@ export default function RegistarAnimal() {
                         ['coelho', '🐰 Coelho'], ['roedor', '🐹 Roedor'], ['outro', '🐾 Outro'],
                       ].map(([val, label]) => (
                         <button key={val} type="button" onClick={() => setEspecie(val)}
-                          className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${
-                            especie === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
-                          }`}>{label}</button>
+                          className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${especie === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
+                            }`}>{label}</button>
                       ))}
                     </div>
                   </div>
