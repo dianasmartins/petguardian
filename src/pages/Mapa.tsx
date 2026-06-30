@@ -102,13 +102,13 @@ export default function Mapa() {
     return () => { supabase.removeChannel(channel) }
   }, [])
 
-  const DISTRITOS = ['Aveiro','Beja','Braga','Bragança','Castelo Branco','Coimbra','Évora','Faro','Guarda','Leiria','Lisboa','Portalegre','Porto','Santarém','Setúbal','Viana do Castelo','Vila Real','Viseu','Açores','Madeira']
+  const DISTRITOS = ['Aveiro', 'Beja', 'Braga', 'Bragança', 'Castelo Branco', 'Coimbra', 'Évora', 'Faro', 'Guarda', 'Leiria', 'Lisboa', 'Portalegre', 'Porto', 'Santarém', 'Setúbal', 'Viana do Castelo', 'Vila Real', 'Viseu', 'Açores', 'Madeira']
 
   const filtrados = animais.filter(a => {
     if (filtroEstado && a.estado !== filtroEstado) return false
     if (filtroEspecie && a.especie !== filtroEspecie) return false
     if (filtroDistrito && !(a.descricao || '').toLowerCase().includes(filtroDistrito.toLowerCase()) &&
-        !(a.nome || '').toLowerCase().includes(filtroDistrito.toLowerCase())) {
+      !(a.nome || '').toLowerCase().includes(filtroDistrito.toLowerCase())) {
       // Filtra por proximidade geográfica aproximada por distrito
       const centros: Record<string, [number, number]> = {
         'Lisboa': [38.72, -9.14], 'Porto': [41.15, -8.61], 'Braga': [41.54, -8.43],
@@ -193,9 +193,8 @@ export default function Mapa() {
             setDaltonico(!daltonico)
             mostrarToast(daltonico ? 'Modo daltónico desativado' : 'Modo daltónico ativado ♿', 'info')
           }}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-colors ${
-            daltonico ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-stone-200 text-stone-500 hover:border-stone-300'
-          }`}
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-colors ${daltonico ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-stone-200 text-stone-500 hover:border-stone-300'
+            }`}
         >
           👁 Modo daltónico
         </button>
@@ -241,14 +240,22 @@ export default function Mapa() {
                     <div className="text-xs text-stone-400 mt-2 mb-3">
                       {new Date(animal.created_at).toLocaleDateString('pt-PT')}
                     </div>
-                    {animal.estado !== 'encontrado' && (
+                    <div className="flex flex-col gap-1.5">
                       <Link
-                        to={`/avistamento/${animal.id}`}
-                        className="block w-full text-center bg-lime-700 text-white py-2 px-3 rounded-lg text-xs font-semibold hover:bg-lime-800 transition-colors"
+                        to={`/animais/${animal.id}`}
+                        className="block w-full text-center bg-white border-2 border-lime-700 text-lime-800 py-2 px-3 rounded-lg text-xs font-semibold hover:bg-lime-50 transition-colors"
                       >
-                        👁 Reportar avistamento
+                        🐾 Ver ficha do animal
                       </Link>
-                    )}
+                      {animal.estado !== 'encontrado' && (
+                        <Link
+                          to={`/avistamento/${animal.id}`}
+                          className="block w-full text-center bg-lime-700 text-white py-2 px-3 rounded-lg text-xs font-semibold hover:bg-lime-800 transition-colors"
+                        >
+                          👁 Reportar avistamento
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </Popup>
               </Marker>
@@ -260,17 +267,21 @@ export default function Mapa() {
           <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {filtrados.map(animal => (
               <div key={animal.id} className="bg-white rounded-2xl overflow-hidden border border-stone-200 hover:shadow-md transition-shadow">
-                <div className="h-36 bg-lime-50 flex items-center justify-center text-5xl overflow-hidden">
-                  {animal.foto_url
-                    ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
-                    : iconeEspecie(animal.especie)}
-                </div>
-                <div className="p-3">
-                  <div className="flex items-start justify-between gap-1 mb-1">
-                    <span className="font-bold text-sm text-stone-900">{animal.nome}</span>
-                    {estadoBadge(animal.estado)}
+                <Link to={`/animais/${animal.id}`} className="block">
+                  <div className="h-36 bg-lime-50 flex items-center justify-center text-5xl overflow-hidden">
+                    {animal.foto_url
+                      ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
+                      : iconeEspecie(animal.especie)}
                   </div>
-                  <div className="text-xs text-stone-400 mb-2">{animal.cor}</div>
+                  <div className="px-3 pt-3">
+                    <div className="flex items-start justify-between gap-1 mb-1">
+                      <span className="font-bold text-sm text-stone-900">{animal.nome}</span>
+                      {estadoBadge(animal.estado)}
+                    </div>
+                    <div className="text-xs text-stone-400 mb-2">{animal.cor}</div>
+                  </div>
+                </Link>
+                <div className="px-3 pb-3">
                   {animal.estado !== 'encontrado' && (
                     <Link to={`/avistamento/${animal.id}`}
                       className="block w-full text-center bg-lime-700 text-white py-1.5 rounded-lg text-xs font-semibold hover:bg-lime-800 transition-colors">

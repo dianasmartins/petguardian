@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
@@ -16,6 +16,8 @@ interface ResultadoIA {
 }
 
 export default function IdentificarAnimal() {
+  const [session, setSession] = useState<any>(null)
+  const [verificandoSessao, setVerificandoSessao] = useState(true)
   const [foto, setFoto] = useState<File | null>(null)
   const [fotoPreview, setFotoPreview] = useState<string | null>(null)
   const [analisando, setAnalisando] = useState(false)
@@ -26,6 +28,17 @@ export default function IdentificarAnimal() {
   const navigate = useNavigate()
   const { mostrarToast } = useToast()
   const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+      if (!session) {
+        navigate('/registo')
+      } else {
+        setVerificandoSessao(false)
+      }
+    })
+  }, [])
 
   const handleFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -159,10 +172,12 @@ export default function IdentificarAnimal() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              contents: [{ parts: [
-                { text: prompt },
-                { inline_data: { mime_type: foto.type, data: base64 } }
-              ]}]
+              contents: [{
+                parts: [
+                  { text: prompt },
+                  { inline_data: { mime_type: foto.type, data: base64 } }
+                ]
+              }]
             })
           }
         )
@@ -233,6 +248,15 @@ export default function IdentificarAnimal() {
   const handleReportarAvistamento = (animalId: string) => {
     navigate(`/avistamento/${animalId}`)
   }
+
+  if (verificandoSessao) return (
+    <div className="min-h-screen flex items-center justify-center bg-stone-50">
+      <div className="text-center">
+        <div className="text-4xl mb-3">🐾</div>
+        <div className="text-sm font-semibold text-lime-800">A verificar sessão...</div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-stone-50">
@@ -328,9 +352,8 @@ export default function IdentificarAnimal() {
                     {sugestoes.map(({ animal, score }, i) => {
                       const { label, cor } = labelScore(score)
                       return (
-                        <div key={animal.id} className={`border-2 rounded-2xl overflow-hidden transition-all ${
-                          i === 0 && score >= 60 ? 'border-orange-400' : 'border-stone-200'
-                        }`}>
+                        <div key={animal.id} className={`border-2 rounded-2xl overflow-hidden transition-all ${i === 0 && score >= 60 ? 'border-orange-400' : 'border-stone-200'
+                          }`}>
                           {/* Header do cartão */}
                           <div className="p-4 flex gap-3">
                             <div className="w-16 h-16 rounded-xl bg-lime-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
@@ -355,16 +378,14 @@ export default function IdentificarAnimal() {
                           {/* Barra de score */}
                           <div className="px-4 pb-2">
                             <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
-                              <div className={`h-full rounded-full transition-all ${
-                                score >= 70 ? 'bg-lime-500' : score >= 40 ? 'bg-amber-400' : 'bg-stone-300'
-                              }`} style={{ width: `${score}%` }} />
+                              <div className={`h-full rounded-full transition-all ${score >= 70 ? 'bg-lime-500' : score >= 40 ? 'bg-amber-400' : 'bg-stone-300'
+                                }`} style={{ width: `${score}%` }} />
                             </div>
                           </div>
 
                           {/* Ações de follow-up */}
-                          <div className={`px-4 py-3 border-t flex flex-wrap gap-2 ${
-                            i === 0 && score >= 60 ? 'bg-lime-50 border-lime-200' : 'bg-stone-50 border-stone-200'
-                          }`}>
+                          <div className={`px-4 py-3 border-t flex flex-wrap gap-2 ${i === 0 && score >= 60 ? 'bg-lime-50 border-lime-200' : 'bg-stone-50 border-stone-200'
+                            }`}>
                             {score >= 60 && (
                               <div className="w-full text-xs font-semibold text-lime-900 mb-1">
                                 🎯 Correspondência provável — toma uma ação:
