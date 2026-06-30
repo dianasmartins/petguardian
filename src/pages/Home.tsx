@@ -140,18 +140,16 @@ export default function Home() {
               Três passos para reunir a tua família
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
+          <div className="grid md:grid-cols-3 gap-10 mb-20">
             {[
-              { icon: '📝', num: '01', title: 'Regista o animal', desc: 'Foto, dados e GPS. Aparece no mapa em segundos para toda a comunidade ver.' },
-              { icon: '🗺️', num: '02', title: 'Comunidade ajuda', desc: 'Voluntários reportam avistamentos com foto e localização. Recebes notificação em tempo real.' },
-              { icon: '🤝', num: '03', title: 'Reencontro', desc: 'Acompanha a linha do tempo e marca como encontrado quando reunires o teu animal.' },
+              { num: '01', title: 'Regista o animal', desc: 'Foto, dados e GPS. Aparece no mapa em segundos.' },
+              { num: '02', title: 'Comunidade ajuda', desc: 'Voluntários reportam avistamentos. Recebes notificação em tempo real.' },
+              { num: '03', title: 'Reencontro', desc: 'Acompanha a linha do tempo e marca como encontrado.' },
             ].map(item => (
-              <div key={item.num} className="p-10 rounded-3xl border-2 relative overflow-hidden"
-                style={{ background: VERDE_CLARO, borderColor: VERDE_BORDA }}>
-                <div className="absolute top-2 right-4 text-6xl font-black" style={{ color: '#ecfccb', fontFamily: 'Georgia, serif' }}>{item.num}</div>
-                <div className="text-3xl mb-4">{item.icon}</div>
-                <h3 className="font-bold text-xl mb-3" style={{ color: VERDE_ESCURO }}>{item.title}</h3>
-                <p className="text-base leading-relaxed" style={{ color: '#4d7c0f' }}>{item.desc}</p>
+              <div key={item.num} className="pb-6" style={{ borderBottom: `2px solid ${VERDE_BORDA}` }}>
+                <div className="text-5xl font-black mb-3" style={{ color: VERDE, fontFamily: 'Georgia, serif' }}>{item.num}</div>
+                <h3 className="font-bold text-lg mb-2" style={{ color: VERDE_ESCURO }}>{item.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: '#6b7280' }}>{item.desc}</p>
               </div>
             ))}
           </div>
