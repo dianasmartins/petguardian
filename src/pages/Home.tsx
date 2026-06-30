@@ -155,6 +155,15 @@ export default function Home() {
           </div>
 
           {/* Cards que rodam ao clicar */}
+          <div className="text-center mb-10">
+            <div className="inline-block text-xs font-bold px-4 py-1.5 rounded-full mb-4 uppercase tracking-wider"
+              style={{ background: '#ecfccb', color: VERDE_ESCURO, border: `1px solid ${VERDE_BORDA}` }}>
+              O que nos distingue
+            </div>
+            <h2 className="text-4xl font-bold" style={{ color: VERDE_ESCURO, fontFamily: 'Georgia, serif' }}>
+              Tudo o que precisas, num só lugar
+            </h2>
+          </div>
           <style>{`
             .flip-card { perspective: 1000px; cursor: pointer; }
             .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(.4,0,.2,1); transform-style: preserve-3d; }
@@ -311,28 +320,6 @@ export default function Home() {
           )}
         </div>
       </section>
-
-      {/* CTA — só para não autenticados */}
-      {!session && (
-        <section className="py-24 px-6 text-center" style={{ background: VERDE_ESCURO }}>
-          <div className="text-5xl mb-6">🐾</div>
-          <h2 className="text-4xl font-bold text-white mb-4" style={{ fontFamily: 'Georgia, serif' }}>
-            Ajuda a reunir mais famílias
-          </h2>
-          <p className="text-lg mb-10" style={{ color: 'rgba(255,255,255,.7)' }}>
-            O PetGuardian é gratuito, sem anúncios e funciona em qualquer dispositivo.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/registo" className="px-10 py-4 rounded-2xl font-bold text-lg transition-all"
-              style={{ background: LARANJA, color: 'white' }}>
-              Criar conta gratuita
-            </Link>
-            <Link to="/animais" className="px-10 py-4 rounded-2xl font-bold text-lg border-2 border-white text-white transition-all">
-              Ver animais desaparecidos
-            </Link>
-          </div>
-        </section>
-      )}
 
     </div>
   )
