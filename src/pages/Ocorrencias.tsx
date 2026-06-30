@@ -102,17 +102,6 @@ export default function Ocorrencias() {
     mostrarToast('Descrição actualizada!', 'sucesso')
   }
 
-  const mudarEstado = async (estado: string) => {
-    if (!selecionada) return
-    await supabase.from('animais').update({ estado }).eq('id', selecionada.animal_id)
-    if (estado === 'encontrado') {
-      await supabase.from('ocorrencias').update({ estado: 'resolvida', resolvida_at: new Date().toISOString() }).eq('id', selecionada.id)
-    }
-    await fetchTudo()
-    setSelecionada(prev => prev ? { ...prev, estado: estado as any } : null)
-    mostrarToast('Estado actualizado!', 'sucesso')
-  }
-
   const marcarResolvida = async (ocorrenciaId: string, animalId: string) => {
     setAtualizando(true)
     await supabase.from('ocorrencias').update({
@@ -371,19 +360,6 @@ export default function Ocorrencias() {
                     <div className="bg-white rounded-2xl border border-stone-200 p-5">
                       <h3 className="font-bold text-stone-900 mb-4">✏️ Editar ocorrência</h3>
                       <div className="flex flex-col gap-4">
-                        {/* Mudar estado */}
-                        <div>
-                          <label className="text-sm font-semibold text-stone-500 mb-1.5 block">Estado do animal</label>
-                          <select
-                            value={(selecionada.animais as any)?.estado || 'desaparecido'}
-                            onChange={e => mudarEstado(e.target.value)}
-                            className="w-full px-4 py-2.5 border-2 border-stone-200 rounded-xl text-sm focus:outline-none focus:border-lime-600 bg-white"
-                          >
-                            <option value="desaparecido">⚠ Desaparecido</option>
-                            <option value="avistado">👁 Avistado</option>
-                            <option value="encontrado">✓ Encontrado</option>
-                          </select>
-                        </div>
                         {/* Editar descrição */}
                         <div>
                           <div className="flex items-center justify-between mb-1.5">

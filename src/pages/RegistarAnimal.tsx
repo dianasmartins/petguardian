@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
@@ -15,6 +15,16 @@ L.Icon.Default.mergeOptions({
 
 function MapClick({ onMapClick }: { onMapClick: (lat: number, lng: number) => void }) {
   useMapEvents({ click: (e) => onMapClick(e.latlng.lat, e.latlng.lng) })
+  return null
+}
+
+function MapCenter({ lat, lng }: { lat: number | null; lng: number | null }) {
+  const map = useMap()
+  useEffect(() => {
+    if (lat && lng) {
+      map.flyTo([lat, lng], 15, { duration: 1 })
+    }
+  }, [lat, lng])
   return null
 }
 
@@ -372,20 +382,32 @@ export default function RegistarAnimal() {
           {/* Mini mapa */}
           <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
             <div className="px-5 py-4 border-b border-stone-100">
-              <h3 className="font-bold text-stone-900">Clica no mapa para marcar a localização</h3>
-              <p className="text-xs text-stone-400 mt-1">Podes afinar o ponto com zoom</p>
+              <h3 className="font-bold text-stone-900">📍 Confirma a localização exacta</h3>
+              <p className="text-xs text-stone-400 mt-1">
+                {lat && lng ? 'O marcador mostra o ponto exacto — arrasta o mapa ou clica para ajustar' : 'Usa o GPS, escreve a morada ou clica no mapa para marcar'}
+              </p>
             </div>
-            <div className="h-96">
+            <div className="h-96 relative">
               <MapContainer center={[39.5, -8.0]} zoom={6} style={{ height: '100%', width: '100%' }}>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
                 <MapClick onMapClick={(lt, ln) => { setLat(lt); setLng(ln) }} />
+                <MapCenter lat={lat} lng={lng} />
                 {lat && lng && <Marker position={[lat, lng]} />}
               </MapContainer>
+              {lat && lng && (
+                <div className="absolute top-3 right-3 bg-white rounded-xl shadow-md px-3 py-2 text-xs font-semibold text-lime-800 border border-lime-200">
+                  ✓ Localização marcada
+                </div>
+              )}
             </div>
             {lat && lng && (
-              <div className="px-5 py-3 bg-lime-50 border-t border-lime-100 text-lime-800 text-sm">
-                ✓ {lat.toFixed(4)}°N, {lng.toFixed(4)}°W
+              <div className="px-5 py-3 bg-lime-50 border-t border-lime-100 text-lime-800 text-sm flex items-center justify-between">
+                <span>✓ {lat.toFixed(5)}°N, {lng.toFixed(5)}°W</span>
+                <button type="button" onClick={() => { setLat(null); setLng(null) }}
+                  className="text-xs text-lime-700 hover:underline font-semibold">
+                  Limpar e marcar novamente
+                </button>
               </div>
             )}
           </div>
