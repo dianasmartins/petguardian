@@ -241,9 +241,8 @@ export default function AnimaisEncontrados() {
             const done = atual > este
             const active = atual === este
             return (
-              <div key={s.n} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${
-                active ? 'border-lime-600 text-lime-800' : done ? 'border-lime-400 text-lime-600' : 'border-stone-200 text-stone-400'
-              }`}>
+              <div key={s.n} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${active ? 'border-lime-600 text-lime-800' : done ? 'border-lime-400 text-lime-600' : 'border-stone-200 text-stone-400'
+                }`}>
                 {done ? '✓ ' : ''}{s.label}
               </div>
             )
@@ -318,7 +317,7 @@ export default function AnimaisEncontrados() {
                 </div>
                 {resultadoIA.caracteristicas_distintivas?.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {resultadoIA.caracteristicas_distintivas.map((c) => (
+                    {resultadoIA.caracteristicas_distintivas.map((c, i) => (
                       <span key={i} className="text-xs px-3 py-1 rounded-full" style={{ background: '#f7fee7', color: '#365314', border: '1px solid #d9f99d' }}>{c}</span>
                     ))}
                   </div>
@@ -447,10 +446,10 @@ export default function AnimaisEncontrados() {
                 {fotoPreview
                   ? <div className="relative"><img src={fotoPreview} className="w-full h-40 object-cover rounded-xl" /><button type="button" onClick={() => { setFoto(null); setFotoPreview(null) }} className="absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full text-xs font-bold">✕</button></div>
                   : <label className="border-2 border-dashed rounded-xl p-5 text-center cursor-pointer hover:bg-lime-50 transition-colors flex items-center gap-3 justify-center" style={{ borderColor: '#d9f99d' }}>
-                      <span className="text-2xl">📷</span>
-                      <span className="text-sm" style={{ color: '#4d7c0f' }}>Adicionar {fotoIAPreview ? 'outra ' : ''}foto</span>
-                      <input ref={fileFotoRef} type="file" accept="image/*" onChange={handleFotoFormulario} className="hidden" />
-                    </label>
+                    <span className="text-2xl">📷</span>
+                    <span className="text-sm" style={{ color: '#4d7c0f' }}>Adicionar {fotoIAPreview ? 'outra ' : ''}foto</span>
+                    <input ref={fileFotoRef} type="file" accept="image/*" onChange={handleFotoFormulario} className="hidden" />
+                  </label>
                 }
               </div>
 
