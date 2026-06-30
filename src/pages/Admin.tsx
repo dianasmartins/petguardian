@@ -31,7 +31,7 @@ interface Animal {
 }
 
 // Admin emails autorizados - adiciona o teu email aqui
-const ADMIN_EMAILS = ['diana@gmail.com', 'admin@petguardian.pt']
+const ADMIN_EMAILS = ['dmartins94@gmail.com']
 
 export default function Admin() {
   const [authorized, setAuthorized] = useState(false)
