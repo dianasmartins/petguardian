@@ -65,8 +65,16 @@ export default function Home() {
     <div className="min-h-screen" style={{ background: VERDE_CLARO }}>
 
       {/* HERO */}
-      <section style={{ background: VERDE_CLARO }}>
-        <div className="max-w-7xl mx-auto px-8 py-24 grid md:grid-cols-2 gap-12 items-center">
+      <section className="relative overflow-hidden" style={{ background: VERDE_CLARO }}>
+        <img
+          src="/hero-illustration.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center pointer-events-none select-none"
+          style={{ opacity: 0.35 }}
+        />
+        <div className="absolute inset-0" style={{ background: VERDE_CLARO, opacity: 0.55 }}></div>
+        <div className="max-w-7xl mx-auto px-8 py-24 grid md:grid-cols-2 gap-12 items-center relative z-10">
 
           {/* Esquerda */}
           <div>
