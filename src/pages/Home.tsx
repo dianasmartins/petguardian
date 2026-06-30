@@ -118,7 +118,7 @@ export default function Home() {
             { value: stats.desaparecidos, label: 'Perdidos agora' },
             { value: stats.encontrados, label: 'Reunidos com a família' },
             { value: stats.total, label: 'Animais registados' },
-            { value: '87%', label: 'Taxa de sucesso' },
+            { value: stats.total > 0 ? Math.round((stats.encontrados / stats.total) * 100) + '%' : '0%', label: 'Taxa de sucesso' },
           ].map(s => (
             <div key={s.label} className="text-center py-10 px-4">
               <div className="text-4xl font-black" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>{s.value}</div>

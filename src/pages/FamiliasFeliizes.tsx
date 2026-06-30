@@ -25,6 +25,7 @@ export default function FamiliasFeliizes() {
   const [enviando, setEnviando] = useState(false)
   const [erro, setErro] = useState('')
   const [totalEncontrados, setTotalEncontrados] = useState(0)
+  const [totalAnimais, setTotalAnimais] = useState(0)
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -38,6 +39,8 @@ export default function FamiliasFeliizes() {
     fetchReviews()
     supabase.from('animais').select('id', { count: 'exact' }).eq('estado', 'encontrado')
       .then(({ count }) => setTotalEncontrados(count || 0))
+    supabase.from('animais').select('id', { count: 'exact' })
+      .then(({ count }) => setTotalAnimais(count || 0))
   }, [])
 
   const fetchReviews = async () => {
@@ -117,7 +120,7 @@ export default function FamiliasFeliizes() {
           {[
             { value: totalEncontrados, label: 'Animais encontrados' },
             { value: reviews.length, label: 'Histórias partilhadas' },
-            { value: '87%', label: 'Taxa de sucesso' },
+            { value: totalAnimais > 0 ? Math.round((totalEncontrados / totalAnimais) * 100) + '%' : '0%', label: 'Taxa de sucesso' },
           ].map(s => (
             <div key={s.label} className="text-center px-4">
               <div className="text-4xl font-black" style={{ color: '#d9f99d', fontFamily: 'Georgia, serif' }}>{s.value}</div>
