@@ -13,7 +13,7 @@ interface Stats {
   mediaAvistamentosPorCaso: number
   animaisRecentes: any[]
   animaisEncontrados: any[]
-  porEspecie: { cao: number; gato: number; outro: number }
+  porEspecie: { cao: number; gato: number; ave: number; coelho: number; roedor: number; outro: number }
 }
 
 export default function Estatisticas() {
