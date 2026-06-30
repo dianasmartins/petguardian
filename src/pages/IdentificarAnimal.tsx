@@ -167,7 +167,7 @@ export default function IdentificarAnimal() {
         const base64 = await fileToBase64(foto)
         const prompt = `Analisa esta imagem de um animal. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. O JSON deve ter exatamente esta estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}. Se não conseguires identificar, retorna {"erro": "nao_identificado"}.`
         const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -266,6 +266,26 @@ export default function IdentificarAnimal() {
       setErro('Erro ao analisar a fotografia: ' + (err instanceof Error ? err.message : 'erro desconhecido') + '. Verifica a consola (F12).')
     }
     setAnalisando(false)
+  }
+
+  const diagnosticarModelos = async () => {
+    if (!GEMINI_KEY) {
+      mostrarToast('Sem chave Gemini configurada — não é possível listar modelos.', 'erro')
+      return
+    }
+    try {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${GEMINI_KEY}`)
+      const data = await res.json()
+      const comGenerateContent = (data.models || [])
+        .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+        .map((m: any) => m.name)
+      console.log('Modelos disponíveis para esta chave (suportam generateContent):', comGenerateContent)
+      console.log('Resposta completa do ListModels:', data)
+      mostrarToast(`${comGenerateContent.length} modelos disponíveis — ver consola (F12)`, 'info')
+    } catch (err) {
+      console.error('Erro ao listar modelos:', err)
+      mostrarToast('Erro ao consultar modelos disponíveis.', 'erro')
+    }
   }
 
   const corScore = (score: number) => {
@@ -375,7 +395,12 @@ export default function IdentificarAnimal() {
             )}
 
             {erro && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 text-red-700 text-sm">{erro}</div>
+              <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-4 text-red-700 text-sm flex flex-col gap-2">
+                <span>{erro}</span>
+                <button onClick={diagnosticarModelos} className="text-xs font-semibold text-red-800 hover:underline self-start">
+                  🔍 Ver modelos disponíveis para esta chave (consola F12)
+                </button>
+              </div>
             )}
           </div>
 
