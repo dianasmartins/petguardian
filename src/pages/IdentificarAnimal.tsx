@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import type { Animal } from '../types'
+import { iconeEspecie, nomeEspecie } from '../lib/especies'
 
 interface ResultadoIA {
   especie: string
@@ -52,6 +53,10 @@ export default function IdentificarAnimal() {
       const v = (s || '').toLowerCase()
       if (v.includes('cão') || v.includes('cao') || v.includes('dog')) return 'cao'
       if (v.includes('gato') || v.includes('cat')) return 'gato'
+      if (v.includes('ave') || v.includes('papagaio') || v.includes('periquito') || v.includes('canário') || v.includes('canario') || v.includes('bird') || v.includes('pássaro') || v.includes('passaro')) return 'ave'
+      if (v.includes('coelho') || v.includes('rabbit')) return 'coelho'
+      if (v.includes('hamster') || v.includes('rato') || v.includes('roedor') || v.includes('porquinho')) return 'roedor'
+      if (v.includes('tartaruga') || v.includes('réptil') || v.includes('reptil') || v.includes('lagarto')) return 'reptil'
       return 'outro'
     }
 
@@ -331,7 +336,7 @@ export default function IdentificarAnimal() {
                             <div className="w-16 h-16 rounded-xl bg-lime-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
                               {animal.foto_url
                                 ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover rounded-xl" />
-                                : (animal.especie === 'gato' ? '🐈' : '🐕')}
+                                : iconeEspecie(animal.especie)}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2 mb-1">
@@ -339,7 +344,7 @@ export default function IdentificarAnimal() {
                                 <span className={`text-sm font-black ${corScore(score)}`}>{score}%</span>
                               </div>
                               <div className="text-xs text-stone-400 mb-2">
-                                {animal.especie === 'cao' ? 'Cão' : 'Gato'}{animal.raca && ` · ${animal.raca}`} · {animal.cor}
+                                {nomeEspecie(animal.especie)}{animal.raca && ` · ${animal.raca}`} · {animal.cor}
                               </div>
                               <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${cor}`}>
                                 {label}

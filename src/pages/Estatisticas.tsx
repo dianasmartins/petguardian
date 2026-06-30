@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { iconeEspecie, nomeEspecie } from '../lib/especies'
 
 interface Stats {
   totalAnimais: number
@@ -52,7 +53,10 @@ export default function Estatisticas() {
       porEspecie: {
         cao: animais.filter(a => a.especie === 'cao').length,
         gato: animais.filter(a => a.especie === 'gato').length,
-        outro: animais.filter(a => a.especie === 'outro').length,
+        ave: animais.filter(a => a.especie === 'ave').length,
+        coelho: animais.filter(a => a.especie === 'coelho').length,
+        roedor: animais.filter(a => a.especie === 'roedor').length,
+        outro: animais.filter(a => !['cao', 'gato', 'ave', 'coelho', 'roedor'].includes(a.especie)).length,
       }
     })
     setLoading(false)
@@ -146,6 +150,9 @@ export default function Estatisticas() {
               {[
                 { label: 'Cães', value: stats.porEspecie.cao, emoji: '🐕', cor: 'bg-amber-400' },
                 { label: 'Gatos', value: stats.porEspecie.gato, emoji: '🐈', cor: 'bg-blue-400' },
+                { label: 'Aves', value: stats.porEspecie.ave, emoji: '🦜', cor: 'bg-green-400' },
+                { label: 'Coelhos', value: stats.porEspecie.coelho, emoji: '🐰', cor: 'bg-pink-400' },
+                { label: 'Roedores', value: stats.porEspecie.roedor, emoji: '🐹', cor: 'bg-orange-400' },
                 { label: 'Outros', value: stats.porEspecie.outro, emoji: '🐾', cor: 'bg-purple-400' },
               ].map(esp => {
                 const pct = stats.totalAnimais > 0 ? Math.round((esp.value / stats.totalAnimais) * 100) : 0
@@ -187,10 +194,10 @@ export default function Estatisticas() {
                   <div className="w-20 h-20 mx-auto rounded-2xl overflow-hidden bg-lime-50 flex items-center justify-center text-4xl mb-3 border-2 border-lime-200 group-hover:border-green-400 transition-colors">
                     {animal.foto_url
                       ? <img src={animal.foto_url} alt={animal.nome} className="w-full h-full object-cover" />
-                      : (animal.especie === 'gato' ? '🐈' : '🐕')}
+                      : iconeEspecie(animal.especie)}
                   </div>
                   <div className="font-bold text-stone-900 text-sm">{animal.nome}</div>
-                  <div className="text-xs text-stone-400">{animal.especie === 'cao' ? 'Cão' : 'Gato'}</div>
+                  <div className="text-xs text-stone-400">{nomeEspecie(animal.especie)}</div>
                   <div className="mt-1">
                     <span className="text-xs bg-lime-100 text-lime-800 px-2 py-0.5 rounded-full font-semibold border border-lime-200">✓ Encontrado</span>
                   </div>

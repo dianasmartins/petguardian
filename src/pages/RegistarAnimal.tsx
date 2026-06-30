@@ -265,7 +265,10 @@ export default function RegistarAnimal() {
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-semibold text-stone-500">Espécie *</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {[['cao', '🐕 Cão'], ['gato', '🐈 Gato'], ['outro', '🐾 Outro']].map(([val, label]) => (
+                      {[
+                        ['cao', '🐕 Cão'], ['gato', '🐈 Gato'], ['ave', '🦜 Ave'],
+                        ['coelho', '🐰 Coelho'], ['roedor', '🐹 Roedor'], ['outro', '🐾 Outro'],
+                      ].map(([val, label]) => (
                         <button key={val} type="button" onClick={() => setEspecie(val)}
                           className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${
                             especie === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'

@@ -7,6 +7,7 @@ import { SkeletonList, SkeletonTimeline } from '../components/Skeleton'
 import type { Ocorrencia, Avistamento } from '../types'
 import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet'
 import L from 'leaflet'
+import { iconeEspecie, nomeEspecie } from '../lib/especies'
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -128,7 +129,7 @@ export default function Ocorrencias() {
   const partilharWhatsApp = (oc: Ocorrencia) => {
     const animal = oc.animais as any
     if (!animal) return
-    const especie = animal.especie === 'cao' ? 'Cão' : animal.especie === 'gato' ? 'Gato' : 'Animal'
+    const especie = nomeEspecie(animal.especie)
     const texto =
       `🐾 *${animal.nome} DESAPARECIDO!*\n\n` +
       `${especie}${animal.raca ? ` · ${animal.raca}` : ''} · ${animal.cor}\n` +
@@ -269,7 +270,7 @@ export default function Ocorrencias() {
                         <div className="w-12 h-12 rounded-xl bg-lime-50 flex items-center justify-center text-2xl flex-shrink-0 overflow-hidden">
                           {(oc.animais as any)?.foto_url
                             ? <img src={(oc.animais as any).foto_url} alt="" className="w-full h-full object-cover rounded-xl" />
-                            : ((oc.animais as any)?.especie === 'gato' ? '🐈' : '🐕')}
+                            : iconeEspecie((oc.animais as any)?.especie)}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="font-bold text-stone-900 text-sm mb-1">{(oc.animais as any)?.nome}</div>
@@ -298,7 +299,7 @@ export default function Ocorrencias() {
                         <div className="w-16 h-16 rounded-2xl bg-lime-50 flex items-center justify-center text-4xl flex-shrink-0 overflow-hidden">
                           {(selecionada.animais as any)?.foto_url
                             ? <img src={(selecionada.animais as any).foto_url} alt="" className="w-full h-full object-cover rounded-2xl" />
-                            : ((selecionada.animais as any)?.especie === 'gato' ? '🐈' : '🐕')}
+                            : iconeEspecie((selecionada.animais as any)?.especie)}
                         </div>
                         <div className="flex-1">
                           <div className="text-xl font-bold text-stone-900 mb-1" style={{ fontFamily: 'Georgia, serif' }}>
@@ -530,14 +531,14 @@ export default function Ocorrencias() {
                       <div className="w-16 h-16 rounded-2xl bg-lime-50 flex items-center justify-center text-3xl flex-shrink-0 overflow-hidden">
                         {av.animais?.foto_url
                           ? <img src={av.animais.foto_url} alt="" className="w-full h-full object-cover rounded-2xl" />
-                          : (av.animais?.especie === 'gato' ? '🐈' : '🐕')}
+                          : iconeEspecie(av.animais?.especie)}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <div>
                             <div className="font-bold text-stone-900">{av.animais?.nome || 'Animal'}</div>
                             <div className="text-xs text-stone-400 mt-0.5">
-                              {av.animais?.especie === 'cao' ? 'Cão' : av.animais?.especie === 'gato' ? 'Gato' : 'Animal'} · {av.animais?.cor}
+                              {nomeEspecie(av.animais?.especie || '')} · {av.animais?.cor}
                             </div>
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
