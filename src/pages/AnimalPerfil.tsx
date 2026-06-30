@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, Link, useSearchParams, useNavigate } from 'react-router-dom'
-import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
@@ -33,6 +33,30 @@ function iconeAvistamento(num: number) {
   })
 }
 
+function iconeAvistamentoSelecionado(num: number) {
+  return L.divIcon({
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" width="40" height="40">
+      <circle cx="20" cy="20" r="17" fill="#F97316" stroke="white" stroke-width="3"/>
+      <circle cx="20" cy="20" r="17" fill="none" stroke="#F97316" stroke-width="2" opacity="0.4">
+        <animate attributeName="r" from="17" to="22" dur="1s" repeatCount="indefinite" />
+        <animate attributeName="opacity" from="0.5" to="0" dur="1s" repeatCount="indefinite" />
+      </circle>
+      <text x="20" y="26" text-anchor="middle" font-size="16" font-weight="bold" fill="white" font-family="Arial">${num}</text>
+    </svg>`,
+    className: '', iconSize: [40, 40], iconAnchor: [20, 20], popupAnchor: [0, -20],
+  })
+}
+
+function MapFocus({ lat, lng }: { lat: number | null; lng: number | null }) {
+  const map = useMap()
+  useEffect(() => {
+    if (lat && lng) {
+      map.flyTo([lat, lng], 15, { duration: 0.8 })
+    }
+  }, [lat, lng])
+  return null
+}
+
 interface Dono {
   id: string
   nome: string
@@ -51,6 +75,8 @@ export default function AnimalPerfil() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('perfil')
   const [mostrarModalEncontrado, setMostrarModalEncontrado] = useState(false)
+  const [avistamentoSelecionado, setAvistamentoSelecionado] = useState<string | null>(null)
+  const markerRefs = useRef<Record<string, any>>({})
   const [distanciaEncontrado, setDistanciaEncontrado] = useState('')
   const [formaEncontrado, setFormaEncontrado] = useState('pelo_site')
   const [marcandoEncontrado, setMarcandoEncontrado] = useState(false)
@@ -107,9 +133,10 @@ export default function AnimalPerfil() {
     return <span className="bg-lime-100 text-lime-800 text-sm font-bold px-3 py-1.5 rounded-full">✓ Encontrado</span>
   }
 
-  const polylinePoints: [number, number][] = avistamentos
-    .filter(a => a.latitude && a.longitude)
-    .map(a => [a.latitude, a.longitude])
+  const polylinePoints: [number, number][] = [
+    ...(animal.latitude && animal.longitude ? [[animal.latitude, animal.longitude] as [number, number]] : []),
+    ...avistamentos.filter(a => a.latitude && a.longitude).map(a => [a.latitude, a.longitude] as [number, number])
+  ]
 
   const isDono = session?.user?.id === animal.dono_id
 
@@ -197,9 +224,8 @@ export default function AnimalPerfil() {
             { id: 'avistamentos', label: `👁 Avistamentos (${avistamentos.length})` },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id as Tab)}
-              className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${
-                tab === t.id ? 'border-lime-700 text-lime-800' : 'border-transparent text-stone-500 hover:text-stone-800'
-              }`}>
+              className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tab === t.id ? 'border-lime-700 text-lime-800' : 'border-transparent text-stone-500 hover:text-stone-800'
+                }`}>
               {t.label}
             </button>
           ))}
@@ -270,12 +296,12 @@ export default function AnimalPerfil() {
                       const txt = encodeURIComponent('🐾 *' + animal.nome + ' DESAPARECIDO!*\n\n' + nomeEspecie(animal.especie) + (animal.raca ? ' · ' + animal.raca : '') + ' · ' + animal.cor + '\n\nSe o vires:\n🔗 ' + window.location.href)
                       window.open('https://wa.me/?text=' + txt, '_blank')
                     }} className="flex items-center gap-2 bg-lime-500 text-white px-3 py-2 rounded-xl text-xs font-semibold hover:bg-lime-700 transition-colors">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
                       WhatsApp
                     </button>
                     <button onClick={() => window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.href), '_blank')}
                       className="flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-xl text-xs font-semibold hover:bg-blue-700 transition-colors">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
                       Facebook
                     </button>
                     <button onClick={() => { navigator.clipboard.writeText(window.location.href) }}
@@ -328,8 +354,8 @@ export default function AnimalPerfil() {
                 {(animal.latitude || avistamentos.some(a => a.latitude)) && (
                   <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
                     <div className="px-5 py-4 border-b border-stone-100">
-                      <h2 className="font-bold text-stone-900">🗺 Percurso do animal</h2>
-                      <p className="text-xs text-stone-400 mt-0.5">Do local de desaparecimento até ao avistamento mais recente</p>
+                      <h2 className="font-bold text-stone-900">🗺 Trajeto dos avistamentos</h2>
+                      <p className="text-xs text-stone-400 mt-0.5">Clica num avistamento na lista para o destacar no mapa</p>
                     </div>
                     <div className="h-72">
                       <MapContainer
@@ -345,7 +371,13 @@ export default function AnimalPerfil() {
                           </Marker>
                         )}
                         {avistamentos.filter(a => a.latitude && a.longitude).map((av, i) => (
-                          <Marker key={av.id} position={[av.latitude, av.longitude]} icon={iconeAvistamento(i + 1)}>
+                          <Marker
+                            key={av.id}
+                            position={[av.latitude, av.longitude]}
+                            icon={avistamentoSelecionado === av.id ? iconeAvistamentoSelecionado(i + 1) : iconeAvistamento(i + 1)}
+                            ref={(ref) => { if (ref) markerRefs.current[av.id] = ref }}
+                            eventHandlers={{ click: () => setAvistamentoSelecionado(av.id) }}
+                          >
                             <Popup>
                               <div className="text-sm font-semibold text-orange-700">👁 Avistamento #{i + 1}</div>
                               <div className="text-xs text-stone-500 mt-1">{new Date(av.created_at).toLocaleString('pt-PT')}</div>
@@ -354,26 +386,41 @@ export default function AnimalPerfil() {
                           </Marker>
                         ))}
                         {polylinePoints.length > 1 && (
-                          <Polyline positions={polylinePoints} color="#f97316" weight={3} dashArray="8,5" opacity={0.8} />
+                          <Polyline positions={polylinePoints} color="#16a34a" weight={4} opacity={0.85} />
                         )}
+                        {avistamentoSelecionado && (() => {
+                          const av = avistamentos.find(a => a.id === avistamentoSelecionado)
+                          return av && av.latitude && av.longitude ? <MapFocus lat={av.latitude} lng={av.longitude} /> : null
+                        })()}
                       </MapContainer>
                     </div>
                     <div className="px-5 py-3 bg-stone-50 border-t border-stone-100 flex items-center gap-6 text-xs text-stone-500">
                       <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-600 inline-block"></span>Local de desaparecimento</span>
                       <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>Avistamentos</span>
-                      <span className="flex items-center gap-1.5"><span className="text-orange-500 font-bold">▬▬</span>Percurso</span>
+                      <span className="flex items-center gap-1.5"><span className="inline-block w-5 h-0.5 bg-green-600"></span>Trajeto</span>
                     </div>
                   </div>
                 )}
 
                 <div className="flex flex-col gap-4">
                   {avistamentos.map((av, i) => (
-                    <div key={av.id} className="bg-white rounded-2xl border border-stone-200 p-5">
+                    <button
+                      key={av.id}
+                      onClick={() => setAvistamentoSelecionado(av.id)}
+                      className={`bg-white rounded-2xl border p-5 text-left transition-all ${avistamentoSelecionado === av.id ? 'border-orange-400 ring-2 ring-orange-100' : 'border-stone-200 hover:border-orange-200'
+                        }`}
+                    >
                       <div className="flex items-start gap-4">
-                        <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5">{i + 1}</div>
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5 transition-colors ${avistamentoSelecionado === av.id ? 'bg-orange-600' : 'bg-orange-500'
+                          }`}>{i + 1}</div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between gap-2 mb-2">
-                            <div className="font-semibold text-stone-900 text-sm">Avistamento #{i + 1}</div>
+                            <div className="font-semibold text-stone-900 text-sm">
+                              Avistamento #{i + 1}
+                              {av.latitude && av.longitude && (
+                                <span className="ml-2 text-xs font-normal text-orange-600">📍 Ver no mapa</span>
+                              )}
+                            </div>
                             <div className="text-xs text-stone-400">{new Date(av.created_at).toLocaleString('pt-PT')}</div>
                           </div>
                           {av.descricao && <p className="text-sm text-stone-600 mb-3 leading-relaxed">{av.descricao}</p>}
@@ -383,7 +430,7 @@ export default function AnimalPerfil() {
                           )}
                         </div>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
 
@@ -420,9 +467,8 @@ export default function AnimalPerfil() {
                     ['outra', '💡 Outra forma'],
                   ].map(([val, label]) => (
                     <button key={val} type="button" onClick={() => setFormaEncontrado(val)}
-                      className={`py-2.5 px-3 rounded-xl text-sm font-semibold border-2 transition-colors text-left ${
-                        formaEncontrado === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
-                      }`}>{label}</button>
+                      className={`py-2.5 px-3 rounded-xl text-sm font-semibold border-2 transition-colors text-left ${formaEncontrado === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
+                        }`}>{label}</button>
                   ))}
                 </div>
               </div>
