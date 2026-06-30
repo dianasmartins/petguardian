@@ -39,8 +39,21 @@ interface AnimalMatch {
 
 type Passo = 'ia' | 'resultados' | 'formulario' | 'sucesso'
 
+function iconeEspecie(especie: string) {
+  switch (especie) {
+    case 'gato': return '🐈'
+    case 'ave': return '🦜'
+    case 'coelho': return '🐰'
+    case 'roedor': return '🐹'
+    case 'reptil': return '🦎'
+    case 'outro': return '🐾'
+    default: return '🐕'
+  }
+}
+
 export default function AnimaisEncontrados() {
   const [session, setSession] = useState<any>(null)
+  const [verificandoSessao, setVerificandoSessao] = useState(true)
   const [passo, setPasso] = useState<Passo>('ia')
 
   // IA
@@ -70,7 +83,11 @@ export default function AnimaisEncontrados() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      if (!session) navigate('/login')
+      if (!session) {
+        navigate('/registo')
+      } else {
+        setVerificandoSessao(false)
+      }
     })
   }, [])
 
@@ -120,6 +137,19 @@ export default function AnimaisEncontrados() {
 
     setResultadoIA(caracteristicas)
 
+    // Normaliza espécie para garantir que cão/gato/etc nunca correspondem a outras espécies
+    const normalizarEspecie = (s: string) => {
+      const v = (s || '').toLowerCase()
+      if (v.includes('cão') || v.includes('cao') || v.includes('dog')) return 'cao'
+      if (v.includes('gato') || v.includes('cat')) return 'gato'
+      if (v.includes('ave') || v.includes('papagaio') || v.includes('periquito') || v.includes('canário') || v.includes('canario') || v.includes('bird') || v.includes('pássaro') || v.includes('passaro')) return 'ave'
+      if (v.includes('coelho') || v.includes('rabbit')) return 'coelho'
+      if (v.includes('hamster') || v.includes('rato') || v.includes('roedor') || v.includes('porquinho')) return 'roedor'
+      if (v.includes('tartaruga') || v.includes('réptil') || v.includes('reptil') || v.includes('lagarto')) return 'reptil'
+      return 'outro'
+    }
+    const espIANormalizada = normalizarEspecie(caracteristicas?.especie || '')
+
     // Procurar correspondências na base de dados
     const { data: animais } = await supabase
       .from('animais')
@@ -127,7 +157,7 @@ export default function AnimaisEncontrados() {
       .eq('estado', 'desaparecido')
 
     const scored: AnimalMatch[] = (animais || [])
-      .filter((a: any) => a.especie?.toLowerCase() === caracteristicas?.especie?.toLowerCase())
+      .filter((a: any) => normalizarEspecie(a.especie) === espIANormalizada && espIANormalizada !== 'outro')
       .map((a: any) => {
         let score = 0
         if (caracteristicas && a.caracteristicas_ia) {
@@ -144,7 +174,7 @@ export default function AnimaisEncontrados() {
 
     setMatches(scored)
     if (caracteristicas) setCor(caracteristicas.cor_principal || '')
-    if (caracteristicas) setEspecie(caracteristicas.especie === 'gato' ? 'gato' : 'cao')
+    if (caracteristicas) setEspecie(['cao', 'gato', 'ave', 'coelho', 'roedor', 'reptil'].includes(espIANormalizada) ? espIANormalizada : 'outro')
     setPasso('resultados')
     setAnalisando(false)
   }
@@ -196,6 +226,15 @@ export default function AnimaisEncontrados() {
     setPasso('sucesso')
     setLoading(false)
   }
+
+  if (verificandoSessao) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#f7fee7' }}>
+      <div className="text-center">
+        <div className="text-4xl mb-3">🐾</div>
+        <div className="text-sm font-semibold" style={{ color: '#365314' }}>A verificar sessão...</div>
+      </div>
+    </div>
+  )
 
   if (passo === 'sucesso') return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#f7fee7' }}>
@@ -343,7 +382,7 @@ export default function AnimaisEncontrados() {
                       <div className="h-36 bg-lime-50 flex items-center justify-center overflow-hidden">
                         {m.foto_url
                           ? <img src={m.foto_url} alt={m.nome} className="w-full h-full object-cover" />
-                          : <span className="text-4xl">{m.especie === 'gato' ? '🐈' : '🐕'}</span>
+                          : <span className="text-4xl">{iconeEspecie(m.especie)}</span>
                         }
                       </div>
                       <div className="p-3">
@@ -413,7 +452,10 @@ export default function AnimaisEncontrados() {
               <div>
                 <label className="text-sm font-semibold block mb-1.5" style={{ color: '#365314' }}>Espécie *</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {[['cao', '🐕 Cão'], ['gato', '🐈 Gato'], ['outro', '🐾 Outro']].map(([val, label]) => (
+                  {[
+                    ['cao', '🐕 Cão'], ['gato', '🐈 Gato'], ['ave', '🦜 Ave'],
+                    ['coelho', '🐰 Coelho'], ['roedor', '🐹 Roedor'], ['outro', '🐾 Outro'],
+                  ].map(([val, label]) => (
                     <button key={val} type="button" onClick={() => setEspecie(val)}
                       className="py-3 rounded-xl text-sm font-semibold border-2 transition-colors"
                       style={{ borderColor: especie === val ? '#65a30d' : '#d9f99d', background: especie === val ? '#ecfccb' : 'white', color: especie === val ? '#365314' : '#6b7280' }}>
