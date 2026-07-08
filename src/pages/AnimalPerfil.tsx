@@ -62,6 +62,8 @@ interface Dono {
   nome: string
   telemovel: string | null
   foto_url?: string | null
+  created_at?: string | null
+  animaisReunidos?: number
 }
 
 type Tab = 'perfil' | 'avistamentos'
@@ -97,8 +99,13 @@ export default function AnimalPerfil() {
     const { data: animalData } = await supabase.from('animais').select('*').eq('id', id).single()
     if (!animalData) { setLoading(false); return }
     setAnimal(animalData)
-    const { data: donoData } = await supabase.from('profiles').select('id, nome, telemovel, foto_url').eq('id', animalData.dono_id).maybeSingle()
-    setDono(donoData)
+    const { data: donoData } = await supabase.from('profiles').select('id, nome, telemovel, foto_url, created_at').eq('id', animalData.dono_id).maybeSingle()
+    if (donoData) {
+      const { data: animaisDono } = await supabase.from('animais').select('estado').eq('dono_id', animalData.dono_id)
+      setDono({ ...donoData, animaisReunidos: animaisDono?.filter(a => a.estado === 'encontrado').length || 0 })
+    } else {
+      setDono(null)
+    }
     const { data: ocorrenciaData } = await supabase.from('ocorrencias').select('resolvida_at, created_at').eq('animal_id', id).maybeSingle()
     setOcorrencia(ocorrenciaData)
     const { data: avsData } = await supabase.from('avistamentos').select('*').eq('animal_id', id).order('created_at', { ascending: true })
@@ -293,7 +300,18 @@ export default function AnimalPerfil() {
                     </div>
                     <div className="flex-1">
                       <div className="font-bold text-stone-900">{dono.nome.split(' ')[0]}</div>
-
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {dono.created_at && (
+                          <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">
+                            🗓 Membro desde {new Date(dono.created_at).toLocaleDateString('pt-PT', { month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                        {(dono.animaisReunidos || 0) > 0 && (
+                          <span className="text-xs bg-lime-100 text-lime-800 px-2 py-0.5 rounded-full font-semibold">
+                            🏆 {dono.animaisReunidos} reunido{(dono.animaisReunidos || 0) > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
                       {isDono && <div className="text-xs text-lime-800 font-medium mt-1">Este é o teu animal</div>}
                     </div>
                   </div>
