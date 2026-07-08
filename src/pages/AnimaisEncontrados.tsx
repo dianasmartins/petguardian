@@ -62,6 +62,7 @@ export default function AnimaisEncontrados() {
   const [analisando, setAnalisando] = useState(false)
   const [resultadoIA, setResultadoIA] = useState<ResultadoIA | null>(null)
   const [matches, setMatches] = useState<AnimalMatch[]>([])
+  const [sugestoesSemelhantes, setSugestoesSemelhantes] = useState<AnimalMatch[]>([])
   const [erroIA, setErroIA] = useState('')
 
   // Formulário
@@ -156,7 +157,7 @@ export default function AnimaisEncontrados() {
       .select('id, nome, especie, raca, cor, foto_url, caracteristicas_ia')
       .in('estado', ['desaparecido', 'avistado'])
 
-    const scored: AnimalMatch[] = (animais || [])
+    const todasPontuadas = (animais || [])
       .map((a: any) => {
         // Preferir a classificação da IA feita no registo (mais fiável que o campo "especie" escolhido manualmente,
         // já que nem todas as espécies têm opção própria no formulário — ex: répteis eram registados como "Outro")
@@ -179,9 +180,15 @@ export default function AnimaisEncontrados() {
           if (a.cor?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 20
         }
         return { id: a.id, nome: a.nome, especie: a.especie, raca: a.raca, cor: a.cor, foto_url: a.foto_url, score }
-      }).filter((a: AnimalMatch) => a.score >= 25).sort((a: AnimalMatch, b: AnimalMatch) => b.score - a.score).slice(0, 4)
+      }).sort((a: AnimalMatch, b: AnimalMatch) => b.score - a.score)
+
+    const scored = todasPontuadas.filter((a: AnimalMatch) => a.score >= 25).slice(0, 4)
+    // Sugestões mais fracas — não são consideradas correspondências fortes, mas podem ajudar
+    // quando não há nenhuma correspondência clara (ex: fotos de ângulos diferentes, más condições de luz)
+    const semelhantes = todasPontuadas.filter((a: AnimalMatch) => a.score > 0 && a.score < 25).slice(0, 4)
 
     setMatches(scored)
+    setSugestoesSemelhantes(semelhantes)
     if (caracteristicas) setCor(caracteristicas.cor_principal || '')
     if (caracteristicas) setEspecie(['cao', 'gato', 'ave', 'coelho', 'roedor', 'reptil'].includes(espIANormalizada) ? espIANormalizada : 'outro')
     setPasso('resultados')
@@ -420,7 +427,7 @@ export default function AnimaisEncontrados() {
             ) : (
               <div className="bg-white rounded-2xl border p-8 text-center" style={{ borderColor: '#d9f99d' }}>
                 <div className="text-5xl mb-4">🔍</div>
-                <h2 className="text-xl font-bold mb-2" style={{ color: '#365314' }}>Nenhuma correspondência encontrada</h2>
+                <h2 className="text-xl font-bold mb-2" style={{ color: '#365314' }}>Nenhuma correspondência forte encontrada</h2>
                 <p className="text-sm mb-6" style={{ color: '#6b7280' }}>
                   Este animal não parece estar registado na plataforma. Regista-o para que o dono o possa encontrar.
                 </p>
@@ -436,6 +443,38 @@ export default function AnimaisEncontrados() {
                     ← Tentar outra foto
                   </button>
                 </div>
+
+                {sugestoesSemelhantes.length > 0 && (
+                  <div className="mt-8 pt-6 border-t text-left" style={{ borderColor: '#f0fdf4' }}>
+                    <h3 className="font-semibold text-sm mb-1" style={{ color: '#365314' }}>
+                      🤔 Nenhuma é uma correspondência clara, mas estes podem parecer-se
+                    </h3>
+                    <p className="text-xs mb-4" style={{ color: '#6b7280' }}>
+                      Vale a pena confirmar — às vezes o ângulo da foto ou a iluminação mudam a análise da IA.
+                    </p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {sugestoesSemelhantes.map(m => (
+                        <Link key={m.id} to={`/animais/${m.id}`}
+                          className="bg-white rounded-2xl border-2 overflow-hidden hover:shadow-lg transition-all"
+                          style={{ borderColor: '#e7e5e4' }}>
+                          <div className="h-32 bg-lime-50 flex items-center justify-center overflow-hidden">
+                            {m.foto_url
+                              ? <img src={m.foto_url} alt={m.nome} className="w-full h-full object-cover" />
+                              : <span className="text-4xl">{iconeEspecie(m.especie)}</span>
+                            }
+                          </div>
+                          <div className="p-3">
+                            <div className="font-bold text-sm mb-0.5" style={{ color: '#365314' }}>{m.nome}</div>
+                            <div className="text-xs mb-2" style={{ color: '#6b7280' }}>{m.cor}</div>
+                            <div className="text-xs font-bold px-2 py-0.5 rounded-full text-center bg-stone-100 text-stone-500">
+                              {m.score}% semelhança
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
