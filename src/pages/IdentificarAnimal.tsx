@@ -69,19 +69,21 @@ export default function IdentificarAnimal() {
       if (v.includes('ave') || v.includes('papagaio') || v.includes('periquito') || v.includes('canário') || v.includes('canario') || v.includes('bird') || v.includes('pássaro') || v.includes('passaro')) return 'ave'
       if (v.includes('coelho') || v.includes('rabbit')) return 'coelho'
       if (v.includes('hamster') || v.includes('rato') || v.includes('roedor') || v.includes('porquinho')) return 'roedor'
-      if (v.includes('tartaruga') || v.includes('réptil') || v.includes('reptil') || v.includes('lagarto')) return 'reptil'
+      if (v.includes('tartaruga') || v.includes('réptil') || v.includes('reptil') || v.includes('lagarto') || v.includes('cobra') || v.includes('serpente') || v.includes('snake') || v.includes('lizard') || v.includes('turtle')) return 'reptil'
       return 'outro'
     }
 
     const espIAFoto = normalizarEspecie(res.especie)
     const espAnimalRegistado = normalizarEspecie(iaAnimal?.especie || animal.especie)
 
-    // Espécies diferentes nunca podem corresponder — corta logo a zero
-    if (espIAFoto !== espAnimalRegistado) return 0
+    // Só corta a zero se AMBAS as espécies forem reconhecidas e claramente diferentes.
+    // Se alguma for desconhecida ("outro"), deixa continuar a comparar por cor/raça/características.
+    if (espIAFoto !== 'outro' && espAnimalRegistado !== 'outro' && espIAFoto !== espAnimalRegistado) return 0
+    const especieConfirmadaIgual = espIAFoto !== 'outro' && espIAFoto === espAnimalRegistado
 
     // Se o animal tem características IA guardadas — comparação estruturada
     if (iaAnimal && !iaAnimal.modo) {
-      let score = 40 // espécie já confirmada igual acima
+      let score = especieConfirmadaIgual ? 40 : 15
 
       // Cor principal — 25 pontos
       const corIA = (res.cor_principal || '').toLowerCase()
@@ -121,8 +123,8 @@ export default function IdentificarAnimal() {
       return Math.min(Math.round(score), 100)
     }
 
-    // Fallback sem características IA — espécie já confirmada igual acima
-    let score = 35
+    // Fallback sem características IA
+    let score = especieConfirmadaIgual ? 35 : 12
 
     const corIA3 = (res.cor_principal || '').toLowerCase()
     const corAnimal3 = animal.cor.toLowerCase()
@@ -165,7 +167,7 @@ export default function IdentificarAnimal() {
 
       if (GEMINI_KEY) {
         const base64 = await fileToBase64(foto)
-        const prompt = `Analisa esta imagem de um animal. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. O JSON deve ter exatamente esta estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}. Se não conseguires identificar, retorna {"erro": "nao_identificado"}.`
+        const prompt = `Analisa esta imagem de um animal. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. O JSON deve ter exatamente esta estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}. O campo "caracteristicas_distintivas" deve conter APENAS características físicas visíveis e objetivas (ex: padrões, marcas, cicatrizes, formato de orelhas/cauda). NÃO incluas suposições sobre se o animal é doméstico, selvagem, perigoso, venenoso ou sobre a sua origem — o animal é sempre tratado como um possível animal de estimação, seja qual for a espécie. Se não conseguires identificar, retorna {"erro": "nao_identificado"}.`
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
           {

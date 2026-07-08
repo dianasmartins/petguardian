@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import { supabase } from '../lib/supabase'
@@ -56,11 +56,26 @@ export default function Mapa() {
   const [animais, setAnimais] = useState<Animal[]>([])
   const [filtroEstado, setFiltroEstado] = useState('')
   const [filtroEspecie, setFiltroEspecie] = useState('')
-  const [vista, setVista] = useState<'mapa' | 'lista'>('mapa')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [vista, setVistaState] = useState<'mapa' | 'lista'>(searchParams.get('vista') === 'lista' ? 'lista' : 'mapa')
   const [alertaProximidade, setAlertaProximidade] = useState<number | null>(null)
   const [daltonico, setDaltonico] = useState(false)
   const [filtroDistrito, setFiltroDistrito] = useState('')
   const { mostrarToast } = useToast()
+
+  const mudarVista = (nova: 'mapa' | 'lista') => {
+    setVistaState(nova)
+    const params = new URLSearchParams(searchParams)
+    if (nova === 'lista') params.set('vista', 'lista')
+    else params.delete('vista')
+    setSearchParams(params)
+  }
+
+  useEffect(() => {
+    const v = searchParams.get('vista') === 'lista' ? 'lista' : 'mapa'
+    setVistaState(v)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   useEffect(() => {
     const fetch = async () => {
@@ -200,11 +215,11 @@ export default function Mapa() {
         </button>
 
         <div className="ml-auto flex border-2 border-stone-200 rounded-xl overflow-hidden">
-          <button onClick={() => setVista('mapa')}
+          <button onClick={() => mudarVista('mapa')}
             className={`px-4 py-2 text-sm font-semibold transition-colors ${vista === 'mapa' ? 'bg-lime-700 text-white' : 'text-stone-600 hover:bg-stone-50'}`}>
             🗺 Mapa
           </button>
-          <button onClick={() => setVista('lista')}
+          <button onClick={() => mudarVista('lista')}
             className={`px-4 py-2 text-sm font-semibold transition-colors ${vista === 'lista' ? 'bg-lime-700 text-white' : 'text-stone-600 hover:bg-stone-50'}`}>
             📋 Lista
           </button>

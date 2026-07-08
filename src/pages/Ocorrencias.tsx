@@ -84,6 +84,15 @@ export default function Ocorrencias() {
   const [edRemoverFoto, setEdRemoverFoto] = useState(false)
   const edFotoInputRef = useRef<HTMLInputElement>(null)
 
+  // Fotos adicionais do animal
+  const [fotosAdicionais, setFotosAdicionais] = useState<{ id: string; foto_url: string }[]>([])
+  const [edFotosRemovidas, setEdFotosRemovidas] = useState<string[]>([])
+  const [edFotosNovas, setEdFotosNovas] = useState<File[]>([])
+  const [edFotosNovasPreviews, setEdFotosNovasPreviews] = useState<string[]>([])
+  const [comprimindoFotosExtra, setComprimindoFotosExtra] = useState(false)
+  const edFotosNovasInputRef = useRef<HTMLInputElement>(null)
+  const MAX_FOTOS_ADICIONAIS = 5
+
   useEffect(() => {
     fetchTudo()
     // Pede permissão para notificações push
@@ -95,6 +104,7 @@ export default function Ocorrencias() {
   useEffect(() => {
     if (!selecionada) return
     fetchAvistamentos(selecionada.animal_id)
+    fetchFotosAdicionais(selecionada.animal_id)
     setConfirmarArquivar(false)
     setMostrarModalEstado(false)
     setNovoEstadoSelecionado(null)
@@ -114,6 +124,15 @@ export default function Ocorrencias() {
 
     return () => { supabase.removeChannel(channel) }
   }, [selecionada?.id])
+
+  const fetchFotosAdicionais = async (animalId: string) => {
+    const { data } = await supabase
+      .from('animal_fotos')
+      .select('id, foto_url')
+      .eq('animal_id', animalId)
+      .order('ordem', { ascending: true })
+    setFotosAdicionais(data || [])
+  }
 
   const fetchTudo = async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -161,6 +180,9 @@ export default function Ocorrencias() {
     setEdFotoFile(null)
     setEdFotoPreview(null)
     setEdRemoverFoto(false)
+    setEdFotosRemovidas([])
+    setEdFotosNovas([])
+    setEdFotosNovasPreviews([])
     setEditandoAnimal(true)
   }
 
@@ -169,6 +191,47 @@ export default function Ocorrencias() {
     setEdFotoFile(null)
     setEdFotoPreview(null)
     setEdRemoverFoto(false)
+    setEdFotosRemovidas([])
+    setEdFotosNovas([])
+    setEdFotosNovasPreviews([])
+  }
+
+  const fotosExistentesVisiveis = fotosAdicionais.filter(f => !edFotosRemovidas.includes(f.id))
+  const totalFotosAdicionais = fotosExistentesVisiveis.length + edFotosNovas.length
+
+  const handleAdicionarFotosExtra = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    const disponiveis = MAX_FOTOS_ADICIONAIS - totalFotosAdicionais
+    if (disponiveis <= 0) return
+    const selecionadas = files.slice(0, disponiveis)
+    setComprimindoFotosExtra(true)
+
+    const novasFotos: File[] = []
+    const novosPreviews: string[] = []
+    for (const file of selecionadas) {
+      try {
+        const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1200, useWebWorker: true })
+        novasFotos.push(compressed)
+        novosPreviews.push(URL.createObjectURL(compressed))
+      } catch {
+        novasFotos.push(file)
+        novosPreviews.push(URL.createObjectURL(file))
+      }
+    }
+    setEdFotosNovas(prev => [...prev, ...novasFotos])
+    setEdFotosNovasPreviews(prev => [...prev, ...novosPreviews])
+    setComprimindoFotosExtra(false)
+    if (edFotosNovasInputRef.current) edFotosNovasInputRef.current.value = ''
+  }
+
+  const removerFotoExistente = (id: string) => {
+    setEdFotosRemovidas(prev => [...prev, id])
+  }
+
+  const removerFotoNova = (index: number) => {
+    setEdFotosNovas(prev => prev.filter((_, i) => i !== index))
+    setEdFotosNovasPreviews(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleEdFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,7 +257,8 @@ export default function Ocorrencias() {
 
   const uploadFotoAnimal = async (file: File, animalId: string): Promise<string | null> => {
     const ext = file.name.split('.').pop()
-    const path = 'animais/' + animalId + '-' + Date.now() + '.' + ext
+    const sufixo = Date.now() + '-' + Math.random().toString(36).slice(2, 7)
+    const path = 'animais/' + animalId + '-' + sufixo + '.' + ext
     const { error } = await supabase.storage.from('fotos').upload(path, file)
     if (error) return null
     return supabase.storage.from('fotos').getPublicUrl(path).data.publicUrl
@@ -232,6 +296,23 @@ export default function Ocorrencias() {
       return
     }
 
+    // Remover fotos adicionais marcadas para remoção
+    for (const fotoId of edFotosRemovidas) {
+      await supabase.from('animal_fotos').delete().eq('id', fotoId)
+    }
+
+    // Adicionar novas fotos adicionais
+    if (edFotosNovas.length > 0) {
+      const ordemBase = fotosExistentesVisiveis.length
+      for (let i = 0; i < edFotosNovas.length; i++) {
+        const url = await uploadFotoAnimal(edFotosNovas[i], selecionada.animal_id)
+        if (url) {
+          await supabase.from('animal_fotos').insert({ animal_id: selecionada.animal_id, foto_url: url, ordem: ordemBase + i + 1 })
+        }
+      }
+    }
+
+    await fetchFotosAdicionais(selecionada.animal_id)
     await fetchTudo()
     setSelecionada(prev => prev ? { ...prev, animais: { ...(prev.animais as any), ...atualizacao } } as any : null)
     cancelarEdicaoAnimal()
@@ -522,11 +603,23 @@ export default function Ocorrencias() {
                       </div>
 
                       {!editandoAnimal ? (
-                        <div>
-                          <label className="text-sm font-semibold text-stone-500">Descrição do animal</label>
-                          <p className="text-sm text-stone-500 bg-stone-50 rounded-xl px-4 py-3 mt-1.5">
-                            {(selecionada.animais as any)?.descricao || 'Sem descrição. Clica em "Editar informações do animal" para adicionar.'}
-                          </p>
+                        <div className="flex flex-col gap-4">
+                          <div>
+                            <label className="text-sm font-semibold text-stone-500">Descrição do animal</label>
+                            <p className="text-sm text-stone-500 bg-stone-50 rounded-xl px-4 py-3 mt-1.5">
+                              {(selecionada.animais as any)?.descricao || 'Sem descrição. Clica em "Editar informações" para adicionar.'}
+                            </p>
+                          </div>
+                          {fotosAdicionais.length > 0 && (
+                            <div>
+                              <label className="text-sm font-semibold text-stone-500 mb-1.5 block">Fotos adicionais</label>
+                              <div className="grid grid-cols-4 gap-2">
+                                {fotosAdicionais.map(foto => (
+                                  <img key={foto.id} src={foto.foto_url} alt="" className="w-full aspect-square object-cover rounded-xl border-2 border-stone-200" />
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="flex flex-col gap-4">
@@ -556,6 +649,44 @@ export default function Ocorrencias() {
                               </div>
                               <input ref={edFotoInputRef} type="file" accept="image/*" onChange={handleEdFotoChange} className="hidden" />
                             </div>
+                          </div>
+
+                          {/* Fotos adicionais */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <label className="text-sm font-semibold text-stone-500">Fotos adicionais</label>
+                              <span className="text-xs text-stone-400">{totalFotosAdicionais}/{MAX_FOTOS_ADICIONAIS}</span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                              {fotosExistentesVisiveis.map(foto => (
+                                <div key={foto.id} className="relative group aspect-square">
+                                  <img src={foto.foto_url} alt="" className="w-full h-full object-cover rounded-xl border-2 border-stone-200" />
+                                  <button type="button" onClick={() => removerFotoExistente(foto.id)}
+                                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                              {edFotosNovasPreviews.map((preview, i) => (
+                                <div key={'nova-' + i} className="relative group aspect-square">
+                                  <img src={preview} alt="" className="w-full h-full object-cover rounded-xl border-2 border-lime-300" />
+                                  <button type="button" onClick={() => removerFotoNova(i)}
+                                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600">
+                                    ✕
+                                  </button>
+                                  <span className="absolute bottom-1 left-1 bg-lime-600 text-white text-[10px] px-1 py-0.5 rounded-full font-semibold">Nova</span>
+                                </div>
+                              ))}
+                              {totalFotosAdicionais < MAX_FOTOS_ADICIONAIS && (
+                                <button type="button" onClick={() => edFotosNovasInputRef.current?.click()}
+                                  disabled={comprimindoFotosExtra}
+                                  className="aspect-square border-2 border-dashed border-stone-300 rounded-xl flex flex-col items-center justify-center text-stone-400 hover:border-lime-400 hover:bg-lime-50 hover:text-lime-700 transition-colors disabled:opacity-50">
+                                  <span className="text-xl">+</span>
+                                  <span className="text-[10px] mt-0.5">{comprimindoFotosExtra ? '...' : 'Adicionar'}</span>
+                                </button>
+                              )}
+                            </div>
+                            <input ref={edFotosNovasInputRef} type="file" accept="image/*" multiple onChange={handleAdicionarFotosExtra} className="hidden" />
                           </div>
 
                           {/* Nome e espécie */}

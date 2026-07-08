@@ -5,6 +5,7 @@ import L from 'leaflet'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import MultiplasFotos from '../components/MultiplasFotos'
+import { OPCOES_ESPECIE } from '../lib/especies'
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -129,7 +130,7 @@ export default function RegistarAnimal() {
         reader.onerror = reject
         reader.readAsDataURL(file)
       })
-      const prompt = 'Analisa esta imagem de um animal de estimação. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. Estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}.'
+      const prompt = 'Analisa esta imagem de um animal de estimação. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional, sem markdown, sem backticks. Estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "cores_secundarias": [string], "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}. O campo "caracteristicas_distintivas" deve conter APENAS características físicas visíveis e objetivas (ex: padrões, marcas, cicatrizes, formato de orelhas/cauda). NÃO incluas suposições sobre se o animal é doméstico, selvagem, perigoso, venenoso ou sobre a sua origem — o animal é sempre tratado como um possível animal de estimação, seja qual for a espécie.'
       const geminiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_KEY
       const response = await fetch(geminiUrl, {
         method: 'POST',
@@ -241,8 +242,8 @@ export default function RegistarAnimal() {
         <div className="flex gap-0 mb-8">
           {['Dados', 'Localização', 'Fotos'].map((label, i) => (
             <div key={i} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${step === i + 1 ? 'border-lime-700 text-lime-800'
-                : step > i + 1 ? 'border-emerald-500 text-emerald-600'
-                  : 'border-stone-200 text-stone-400'
+              : step > i + 1 ? 'border-emerald-500 text-emerald-600'
+                : 'border-stone-200 text-stone-400'
               }`}>
               {step > i + 1 ? '✓ ' : ''}{label}
             </div>
@@ -264,10 +265,7 @@ export default function RegistarAnimal() {
                   <div className="flex flex-col gap-1">
                     <label className="text-sm font-semibold text-stone-500">Espécie *</label>
                     <div className="grid grid-cols-3 gap-2">
-                      {[
-                        ['cao', '🐕 Cão'], ['gato', '🐈 Gato'], ['ave', '🦜 Ave'],
-                        ['coelho', '🐰 Coelho'], ['roedor', '🐹 Roedor'], ['outro', '🐾 Outro'],
-                      ].map(([val, label]) => (
+                      {OPCOES_ESPECIE.map(([val, label]) => (
                         <button key={val} type="button" onClick={() => setEspecie(val)}
                           className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${especie === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
                             }`}>{label}</button>

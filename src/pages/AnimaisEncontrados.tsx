@@ -120,7 +120,7 @@ export default function AnimaisEncontrados() {
           reader.onerror = reject
           reader.readAsDataURL(fotoIA)
         })
-        const prompt = 'Analisa esta imagem de um animal de estimação. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional. Estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}'
+        const prompt = 'Analisa esta imagem de um animal de estimação. Responde EXCLUSIVAMENTE em JSON válido, sem texto adicional. Estrutura: {"especie": string, "raca_estimada": string, "cor_principal": string, "tamanho": "pequeno" ou "medio" ou "grande", "caracteristicas_distintivas": [string], "confianca": number entre 0 e 1}. O campo "caracteristicas_distintivas" deve conter APENAS características físicas visíveis e objetivas (ex: padrões, marcas, cicatrizes, formato de orelhas/cauda). NÃO incluas suposições sobre se o animal é doméstico, selvagem, perigoso, venenoso ou sobre a sua origem — o animal é sempre tratado como um possível animal de estimação, seja qual for a espécie.'
         const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + GEMINI_KEY, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -145,7 +145,7 @@ export default function AnimaisEncontrados() {
       if (v.includes('ave') || v.includes('papagaio') || v.includes('periquito') || v.includes('canário') || v.includes('canario') || v.includes('bird') || v.includes('pássaro') || v.includes('passaro')) return 'ave'
       if (v.includes('coelho') || v.includes('rabbit')) return 'coelho'
       if (v.includes('hamster') || v.includes('rato') || v.includes('roedor') || v.includes('porquinho')) return 'roedor'
-      if (v.includes('tartaruga') || v.includes('réptil') || v.includes('reptil') || v.includes('lagarto')) return 'reptil'
+      if (v.includes('tartaruga') || v.includes('réptil') || v.includes('reptil') || v.includes('lagarto') || v.includes('cobra') || v.includes('serpente') || v.includes('snake') || v.includes('lizard') || v.includes('turtle')) return 'reptil'
       return 'outro'
     }
     const espIANormalizada = normalizarEspecie(caracteristicas?.especie || '')
@@ -157,20 +157,29 @@ export default function AnimaisEncontrados() {
       .in('estado', ['desaparecido', 'avistado'])
 
     const scored: AnimalMatch[] = (animais || [])
-      .filter((a: any) => normalizarEspecie(a.especie) === espIANormalizada && espIANormalizada !== 'outro')
       .map((a: any) => {
+        // Preferir a classificação da IA feita no registo (mais fiável que o campo "especie" escolhido manualmente,
+        // já que nem todas as espécies têm opção própria no formulário — ex: répteis eram registados como "Outro")
+        const especieAnimalNormalizada = normalizarEspecie(a.caracteristicas_ia?.especie || a.especie)
+        const especieConfirmadaIgual = espIANormalizada !== 'outro' && especieAnimalNormalizada === espIANormalizada
+        // Se as espécies reconhecidas forem claramente diferentes, não é correspondência
+        const especiesIncompativeis = espIANormalizada !== 'outro' && especieAnimalNormalizada !== 'outro' && especieAnimalNormalizada !== espIANormalizada
+        return { a, especieConfirmadaIgual, especiesIncompativeis }
+      })
+      .filter(({ especiesIncompativeis }) => !especiesIncompativeis)
+      .map(({ a, especieConfirmadaIgual }) => {
         let score = 0
         if (caracteristicas && a.caracteristicas_ia) {
-          score += 40 // espécie já confirmada igual pelo filter acima
+          score += especieConfirmadaIgual ? 40 : 15
           if (a.caracteristicas_ia.cor_principal?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 25
           if (a.cor?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 15
           if (a.caracteristicas_ia.raca_estimada?.toLowerCase().includes(caracteristicas.raca_estimada?.toLowerCase())) score += 20
         } else if (caracteristicas) {
-          score += 30 // espécie já confirmada igual pelo filter acima
+          score += especieConfirmadaIgual ? 30 : 10
           if (a.cor?.toLowerCase().includes(caracteristicas.cor_principal?.toLowerCase())) score += 20
         }
         return { id: a.id, nome: a.nome, especie: a.especie, raca: a.raca, cor: a.cor, foto_url: a.foto_url, score }
-      }).filter((a: AnimalMatch) => a.score >= 30).sort((a: AnimalMatch, b: AnimalMatch) => b.score - a.score).slice(0, 4)
+      }).filter((a: AnimalMatch) => a.score >= 25).sort((a: AnimalMatch, b: AnimalMatch) => b.score - a.score).slice(0, 4)
 
     setMatches(scored)
     if (caracteristicas) setCor(caracteristicas.cor_principal || '')
