@@ -211,11 +211,11 @@ export default function Mensagens() {
           )}
         </div>
 
-        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden" style={{ height: '70vh' }}>
-          <div className="grid grid-cols-3 h-full">
+        <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden h-[75vh] md:h-[70vh]">
+          <div className="grid grid-cols-1 md:grid-cols-3 h-full">
 
             {/* Lista de conversas */}
-            <div className="border-r border-stone-200 flex flex-col">
+            <div className={`border-r border-stone-200 flex-col ${selecionada ? 'hidden md:flex' : 'flex'}`}>
               <div className="px-4 py-3 border-b border-stone-100 bg-stone-50">
                 <div className="text-sm font-semibold text-stone-600">
                   {conversas.length} conversa{conversas.length !== 1 ? 's' : ''}
@@ -265,26 +265,30 @@ export default function Mensagens() {
             </div>
 
             {/* Área de chat */}
-            <div className="col-span-2 flex flex-col">
+            <div className={`md:col-span-2 flex-col min-w-0 ${selecionada ? 'flex' : 'hidden md:flex'}`}>
               {selecionada ? (
                 <>
                   {/* Header */}
-                  <div className="px-5 py-4 border-b border-stone-200 bg-stone-50 flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-lime-700 flex items-center justify-center text-white font-bold text-sm">
+                  <div className="px-3 md:px-5 py-4 border-b border-stone-200 bg-stone-50 flex items-center gap-3">
+                    <button onClick={() => setSelecionada(null)}
+                      className="md:hidden p-1.5 -ml-1 rounded-lg text-stone-500 hover:bg-stone-200 transition-colors flex-shrink-0">
+                      ←
+                    </button>
+                    <div className="w-9 h-9 rounded-full bg-lime-700 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                       {(selecionada.outro_user?.nome || 'U')[0].toUpperCase()}
                     </div>
-                    <div>
-                      <div className="font-semibold text-stone-900 text-sm">
+                    <div className="min-w-0">
+                      <div className="font-semibold text-stone-900 text-sm truncate">
                         {selecionada.outro_user?.nome || 'Utilizador'}
                       </div>
                       {selecionada.animal && (
-                        <div className="text-xs text-lime-800">Sobre: {selecionada.animal.nome}</div>
+                        <div className="text-xs text-lime-800 truncate">Sobre: {selecionada.animal.nome}</div>
                       )}
                     </div>
                   </div>
 
                   {/* Mensagens */}
-                  <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-3 bg-stone-50">
+                  <div className="flex-1 overflow-y-auto p-3 md:p-5 flex flex-col gap-3 bg-stone-50">
                     {mensagens.length === 0 ? (
                       <div className="flex-1 flex flex-col items-center justify-center text-center gap-3">
                         <div className="text-4xl">👋</div>
@@ -295,10 +299,10 @@ export default function Mensagens() {
                         const isMinha = msg.sender_id === session?.user?.id
                         return (
                           <div key={msg.id} className={`flex gap-2 ${isMinha ? 'flex-row-reverse' : ''}`}>
-                            <div className={`max-w-sm flex flex-col gap-1 ${isMinha ? 'items-end' : 'items-start'}`}>
-                              <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMinha
-                                  ? 'bg-lime-700 text-white rounded-tr-sm'
-                                  : 'bg-white text-stone-800 border border-stone-200 rounded-tl-sm'
+                            <div className={`max-w-[80%] md:max-w-sm flex flex-col gap-1 ${isMinha ? 'items-end' : 'items-start'}`}>
+                              <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words ${isMinha
+                                ? 'bg-lime-700 text-white rounded-tr-sm'
+                                : 'bg-white text-stone-800 border border-stone-200 rounded-tl-sm'
                                 }`}>
                                 {msg.conteudo}
                               </div>
@@ -315,17 +319,17 @@ export default function Mensagens() {
                   </div>
 
                   {/* Input */}
-                  <div className="p-4 border-t border-stone-200 bg-white">
-                    <form onSubmit={enviarMensagem} className="flex gap-3">
+                  <div className="p-3 md:p-4 border-t border-stone-200 bg-white">
+                    <form onSubmit={enviarMensagem} className="flex gap-2 md:gap-3">
                       <input
                         type="text"
                         value={novaMensagem}
                         onChange={e => setNovaMensagem(e.target.value)}
                         placeholder="Escreve uma mensagem..."
-                        className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-2xl focus:border-lime-600 focus:outline-none text-sm"
+                        className="flex-1 min-w-0 px-4 py-3 border-2 border-stone-200 rounded-2xl focus:border-lime-600 focus:outline-none text-sm"
                       />
                       <button type="submit" disabled={!novaMensagem.trim()}
-                        className="bg-lime-700 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-lime-800 disabled:opacity-60 transition-colors">
+                        className="flex-shrink-0 bg-lime-700 text-white w-12 h-12 md:w-auto md:px-5 md:py-3 rounded-2xl font-semibold hover:bg-lime-800 disabled:opacity-60 transition-colors">
                         →
                       </button>
                     </form>

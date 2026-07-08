@@ -64,6 +64,7 @@ export default function Ocorrencias() {
   const [loadingAvistamentos, setLoadingAvistamentos] = useState(false)
   const [atualizando, setAtualizando] = useState(false)
   const [confirmarArquivar, setConfirmarArquivar] = useState(false)
+  const [confirmarReverter, setConfirmarReverter] = useState(false)
   const [avistamentoSelecionado, setAvistamentoSelecionado] = useState<string | null>(null)
   const { mostrarToast } = useToast()
 
@@ -93,6 +94,7 @@ export default function Ocorrencias() {
     if (!selecionada) return
     fetchAvistamentos(selecionada.animal_id)
     setConfirmarArquivar(false)
+    setConfirmarReverter(false)
 
     const channel = supabase
       .channel('avistamentos-' + selecionada.animal_id)
@@ -243,6 +245,23 @@ export default function Ocorrencias() {
     await fetchTudo()
     setSelecionada(prev => prev ? { ...prev, estado: 'resolvida' } : null)
     mostrarToast('Ocorrência marcada como resolvida! 🎉', 'sucesso')
+    setAtualizando(false)
+  }
+
+  const reverterResolvida = async (ocorrenciaId: string, animalId: string) => {
+    if (!confirmarReverter) { setConfirmarReverter(true); return }
+    setAtualizando(true)
+    const temAvistamentos = (selecionada?.total_avistamentos || 0) > 0
+    const novoEstadoOcorrencia = temAvistamentos ? 'com_avistamentos' : 'aberta'
+    const novoEstadoAnimal = temAvistamentos ? 'avistado' : 'desaparecido'
+    await supabase.from('ocorrencias').update({
+      estado: novoEstadoOcorrencia, resolvida_at: null
+    }).eq('id', ocorrenciaId)
+    await supabase.from('animais').update({ estado: novoEstadoAnimal }).eq('id', animalId)
+    await fetchTudo()
+    setSelecionada(prev => prev ? { ...prev, estado: novoEstadoOcorrencia, resolvida_at: null } as any : null)
+    setConfirmarReverter(false)
+    mostrarToast('Ocorrência reaberta — foi retirado o estado de "encontrado".', 'info')
     setAtualizando(false)
   }
 
@@ -449,6 +468,17 @@ export default function Ocorrencias() {
                                 className="bg-lime-700 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-lime-800 disabled:opacity-60 transition-colors">
                                 {atualizando ? 'A atualizar...' : '✓ Marcar como encontrado'}
                               </button>
+                            )}
+                            {selecionada.estado === 'resolvida' && (
+                              <button onClick={() => reverterResolvida(selecionada.id, selecionada.animal_id)}
+                                disabled={atualizando}
+                                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 ${confirmarReverter ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+                                  }`}>
+                                {atualizando ? 'A atualizar...' : confirmarReverter ? 'Confirmar reversão' : '↩ Marquei por engano'}
+                              </button>
+                            )}
+                            {confirmarReverter && (
+                              <button onClick={() => setConfirmarReverter(false)} className="text-sm text-stone-400 hover:text-stone-600 px-2">Cancelar</button>
                             )}
                             {selecionada.estado !== 'resolvida' && selecionada.estado !== 'arquivada' && (
                               <button onClick={() => arquivarOcorrencia(selecionada.id)}

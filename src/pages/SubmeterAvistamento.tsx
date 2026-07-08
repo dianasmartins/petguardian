@@ -77,6 +77,19 @@ export default function SubmeterAvistamento() {
             await supabase.from('animais').update({ estado: 'avistado' }).eq('id', animalId)
         }
 
+        // Actualizar contador de avistamentos e estado da ocorrência
+        const { data: ocorrenciaActual } = await supabase.from('ocorrencias')
+            .select('id, estado, total_avistamentos')
+            .eq('animal_id', animalId)
+            .maybeSingle()
+        if (ocorrenciaActual) {
+            const novoEstadoOcorrencia = ocorrenciaActual.estado === 'aberta' ? 'com_avistamentos' : ocorrenciaActual.estado
+            await supabase.from('ocorrencias').update({
+                total_avistamentos: (ocorrenciaActual.total_avistamentos || 0) + 1,
+                estado: novoEstadoOcorrencia,
+            }).eq('id', ocorrenciaActual.id)
+        }
+
         // Upload de fotos adicionais
         if (fotos.length > 1) {
             for (let i = 1; i < fotos.length; i++) {

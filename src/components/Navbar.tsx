@@ -334,7 +334,11 @@ export default function Navbar({ session }: Props) {
                 <span>📋 Ocorrências</span>
                 {novosAvistamentos > 0 && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{novosAvistamentos > 9 ? '9+' : novosAvistamentos}</span>}
               </Link>
-              <Link to="/mensagens" onClick={() => setMenuOpen(false)} className={`px-3 py-2.5 rounded-xl text-sm ${isActive('/mensagens')}`}>💬 Mensagens</Link>
+              <Link to="/mensagens" onClick={() => setMenuOpen(false)}
+                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm ${isActive('/mensagens')}`}>
+                <span>💬 Mensagens</span>
+                {mensagensNaoLidas > 0 && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>}
+              </Link>
               <Link to="/perfil" onClick={() => setMenuOpen(false)} className={`px-3 py-2.5 rounded-xl text-sm ${isActive('/perfil')}`}>👤 Perfil</Link>
               <Link to="/registar-animal" onClick={() => setMenuOpen(false)} className="text-white px-3 py-3 rounded-xl text-sm font-semibold text-center mt-1" style={{ background: '#ea580c' }}>+ Registar Animal</Link>
               <button onClick={handleLogout} className="text-sm text-red-600 px-3 py-2.5 text-left hover:bg-red-50 rounded-xl">🚪 Terminar sessão</button>

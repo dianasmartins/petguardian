@@ -70,16 +70,18 @@ export default function AnimalPerfil() {
   const { id } = useParams<{ id: string }>()
   const [animal, setAnimal] = useState<Animal | null>(null)
   const [dono, setDono] = useState<Dono | null>(null)
+  const [ocorrencia, setOcorrencia] = useState<{ resolvida_at: string | null; created_at: string } | null>(null)
   const [avistamentos, setAvistamentos] = useState<Avistamento[]>([])
   const [session, setSession] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('perfil')
-  const [mostrarModalEncontrado, setMostrarModalEncontrado] = useState(false)
+  const [mostrarModalEstado, setMostrarModalEstado] = useState(false)
+  const [novoEstadoSelecionado, setNovoEstadoSelecionado] = useState<string | null>(null)
   const [avistamentoSelecionado, setAvistamentoSelecionado] = useState<string | null>(null)
   const markerRefs = useRef<Record<string, any>>({})
   const [distanciaEncontrado, setDistanciaEncontrado] = useState('')
   const [formaEncontrado, setFormaEncontrado] = useState('pelo_site')
-  const [marcandoEncontrado, setMarcandoEncontrado] = useState(false)
+  const [aplicandoEstado, setAplicandoEstado] = useState(false)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { mostrarToast } = useToast()
@@ -97,6 +99,8 @@ export default function AnimalPerfil() {
     setAnimal(animalData)
     const { data: donoData } = await supabase.from('profiles').select('id, nome, telemovel, foto_url').eq('id', animalData.dono_id).maybeSingle()
     setDono(donoData)
+    const { data: ocorrenciaData } = await supabase.from('ocorrencias').select('resolvida_at, created_at').eq('animal_id', id).maybeSingle()
+    setOcorrencia(ocorrenciaData)
     const { data: avsData } = await supabase.from('avistamentos').select('*').eq('animal_id', id).order('created_at', { ascending: true })
     setAvistamentos(avsData || [])
     setLoading(false)
@@ -112,17 +116,31 @@ export default function AnimalPerfil() {
     }
   }
 
-  const handleMarcarEncontrado = async () => {
-    setMarcandoEncontrado(true)
-    await supabase.from('animais').update({ estado: 'encontrado' }).eq('id', animal!.id)
-    await supabase.from('ocorrencias').update({
-      estado: 'resolvida', resolvida_at: new Date().toISOString()
-    }).eq('animal_id', animal!.id)
-    mostrarToast('Animal marcado como encontrado! 🎉', 'sucesso')
-    setMostrarModalEncontrado(false)
-    setMarcandoEncontrado(false)
+  const abrirModalEstado = () => {
+    setNovoEstadoSelecionado(animal?.estado || null)
+    setMostrarModalEstado(true)
+  }
+
+  const aplicarNovoEstado = async () => {
+    if (!animal || !novoEstadoSelecionado || novoEstadoSelecionado === animal.estado) return
+    setAplicandoEstado(true)
+    const agora = new Date().toISOString()
+
+    await supabase.from('animais').update({ estado: novoEstadoSelecionado }).eq('id', animal.id)
+
+    let atualizacaoOcorrencia: Record<string, any>
+    if (novoEstadoSelecionado === 'encontrado') atualizacaoOcorrencia = { estado: 'resolvida', resolvida_at: agora }
+    else if (novoEstadoSelecionado === 'avistado') atualizacaoOcorrencia = { estado: 'com_avistamentos', resolvida_at: null }
+    else atualizacaoOcorrencia = { estado: 'aberta', resolvida_at: null }
+    await supabase.from('ocorrencias').update(atualizacaoOcorrencia).eq('animal_id', animal.id)
+
+    mostrarToast('Estado do animal atualizado!', 'sucesso')
+    setMostrarModalEstado(false)
+    setNovoEstadoSelecionado(null)
+    setAplicandoEstado(false)
     fetchAnimal()
   }
+
 
   if (loading) return <div className="flex items-center justify-center h-96 text-stone-400">A carregar...</div>
   if (!animal) return <div className="flex items-center justify-center h-96 text-stone-400">Animal não encontrado.</div>
@@ -189,8 +207,13 @@ export default function AnimalPerfil() {
                     <p className="text-amber-800 text-sm leading-relaxed italic">"{(animal as any).apelo}"</p>
                   </div>
                 )}
-                <div className="text-xs text-stone-400 mb-5">
-                  📅 Desaparecido desde {new Date(animal.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}
+                <div className="text-xs text-stone-400 mb-5 flex flex-col gap-1">
+                  <span>📅 Desaparecido desde {new Date(animal.created_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  {animal.estado === 'encontrado' && ocorrencia?.resolvida_at && (
+                    <span className="text-lime-700 font-medium">
+                      ✓ Encontrado em {new Date(ocorrencia.resolvida_at).toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -202,10 +225,10 @@ export default function AnimalPerfil() {
                   </Link>
                 )}
 
-                {isDono && animal.estado !== 'encontrado' && (
-                  <button onClick={() => setMostrarModalEncontrado(true)}
-                    className="bg-lime-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-lime-800 transition-colors text-sm">
-                    ✓ Marcar como encontrado
+                {isDono && (
+                  <button onClick={abrirModalEstado}
+                    className="bg-stone-100 text-stone-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-stone-200 transition-colors text-sm">
+                    🔄 Mudar estado
                   </button>
                 )}
                 <button onClick={handleGerarCartaz}
@@ -244,6 +267,9 @@ export default function AnimalPerfil() {
                   { label: 'Cor', value: animal.cor },
                   { label: 'Estado', value: animal.estado },
                   { label: 'Desaparecido desde', value: new Date(animal.created_at).toLocaleDateString('pt-PT') },
+                  ...(animal.estado === 'encontrado' && ocorrencia?.resolvida_at
+                    ? [{ label: 'Encontrado em', value: new Date(ocorrencia.resolvida_at).toLocaleDateString('pt-PT') }]
+                    : []),
                   { label: 'Avistamentos', value: `${avistamentos.length} reportado${avistamentos.length !== 1 ? 's' : ''}` },
                 ].map(item => (
                   <div key={item.label} className="flex justify-between items-center py-2.5 border-b border-stone-100 last:border-0">
@@ -448,45 +474,69 @@ export default function AnimalPerfil() {
         )}
       </div>
 
-      {/* Modal marcar como encontrado */}
-      {mostrarModalEncontrado && (
+      {/* Modal mudar estado do animal */}
+      {mostrarModalEstado && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
             <h2 className="font-bold text-stone-900 text-lg mb-1" style={{ fontFamily: 'Georgia, serif' }}>
-              🎉 {animal.nome} foi encontrado!
+              🔄 Mudar estado de {animal.nome}
             </h2>
-            <p className="text-stone-500 text-sm mb-5">Conta-nos como correu para ajudar outros donos.</p>
+            <p className="text-stone-500 text-sm mb-5">Estado atual: {estadoBadge()}</p>
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-sm font-semibold text-stone-500">Como foi encontrado?</label>
-                <div className="grid grid-cols-2 gap-2">
+                <label className="text-sm font-semibold text-stone-500">Novo estado</label>
+                <div className="flex flex-col gap-2">
                   {[
-                    ['pelo_site', '🐾 Pelo PetGuardian'],
-                    ['redes_sociais', '📱 Redes sociais'],
-                    ['encontrado_pessoalmente', '🚶 Pessoalmente'],
-                    ['outra', '💡 Outra forma'],
+                    ['desaparecido', '⚠ Desaparecido'],
+                    ['avistado', '👁 Avistado'],
+                    ['encontrado', '✓ Encontrado'],
                   ].map(([val, label]) => (
-                    <button key={val} type="button" onClick={() => setFormaEncontrado(val)}
-                      className={`py-2.5 px-3 rounded-xl text-sm font-semibold border-2 transition-colors text-left ${formaEncontrado === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
-                        }`}>{label}</button>
+                    <button key={val} type="button" onClick={() => setNovoEstadoSelecionado(val)}
+                      className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-colors text-left flex items-center justify-between ${novoEstadoSelecionado === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
+                        }`}>
+                      <span>{label}</span>
+                      {animal.estado === val && <span className="text-xs font-normal text-stone-400">atual</span>}
+                    </button>
                   ))}
                 </div>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-semibold text-stone-500">A quantos km do local? (opcional)</label>
-                <div className="flex items-center gap-2">
-                  <input type="number" value={distanciaEncontrado} onChange={e => setDistanciaEncontrado(e.target.value)}
-                    placeholder="Ex: 2.5" min="0" step="0.1"
-                    className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
-                  <span className="text-stone-500 text-sm font-medium">km</span>
-                </div>
-              </div>
+
+              {novoEstadoSelecionado === 'encontrado' && animal.estado !== 'encontrado' && (
+                <>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-semibold text-stone-500">Como foi encontrado? <span className="text-stone-400 font-normal">(opcional)</span></label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        ['pelo_site', '🐾 Pelo PetGuardian'],
+                        ['redes_sociais', '📱 Redes sociais'],
+                        ['encontrado_pessoalmente', '🚶 Pessoalmente'],
+                        ['outra', '💡 Outra forma'],
+                      ].map(([val, label]) => (
+                        <button key={val} type="button" onClick={() => setFormaEncontrado(val)}
+                          className={`py-2.5 px-3 rounded-xl text-sm font-semibold border-2 transition-colors text-left ${formaEncontrado === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
+                            }`}>{label}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-sm font-semibold text-stone-500">A quantos km do local? (opcional)</label>
+                    <div className="flex items-center gap-2">
+                      <input type="number" value={distanciaEncontrado} onChange={e => setDistanciaEncontrado(e.target.value)}
+                        placeholder="Ex: 2.5" min="0" step="0.1"
+                        className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
+                      <span className="text-stone-500 text-sm font-medium">km</span>
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="flex gap-3 mt-2">
-                <button type="button" onClick={() => setMostrarModalEncontrado(false)}
+                <button type="button" onClick={() => { setMostrarModalEstado(false); setNovoEstadoSelecionado(null) }}
                   className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 text-sm">Cancelar</button>
-                <button type="button" onClick={handleMarcarEncontrado} disabled={marcandoEncontrado}
+                <button type="button" onClick={aplicarNovoEstado}
+                  disabled={aplicandoEstado || !novoEstadoSelecionado || novoEstadoSelecionado === animal.estado}
                   className="flex-1 bg-lime-700 text-white py-3 rounded-xl font-semibold hover:bg-lime-800 disabled:opacity-60 text-sm">
-                  {marcandoEncontrado ? 'A guardar...' : '✓ Confirmar'}
+                  {aplicandoEstado ? 'A guardar...' : '✓ Confirmar'}
                 </button>
               </div>
             </div>
