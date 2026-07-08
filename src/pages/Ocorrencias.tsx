@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useToast } from '../components/Toast'
 import { gerarCartazPDF } from '../lib/gerarQRCode'
@@ -7,7 +7,8 @@ import { SkeletonList, SkeletonTimeline } from '../components/Skeleton'
 import type { Ocorrencia, Avistamento } from '../types'
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
-import { iconeEspecie, nomeEspecie } from '../lib/especies'
+import { iconeEspecie, nomeEspecie, OPCOES_ESPECIE } from '../lib/especies'
+import imageCompression from 'browser-image-compression'
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -63,10 +64,22 @@ export default function Ocorrencias() {
   const [loadingAvistamentos, setLoadingAvistamentos] = useState(false)
   const [atualizando, setAtualizando] = useState(false)
   const [confirmarArquivar, setConfirmarArquivar] = useState(false)
-  const [editandoDescricao, setEditandoDescricao] = useState(false)
   const [avistamentoSelecionado, setAvistamentoSelecionado] = useState<string | null>(null)
-  const [novaDescricao, setNovaDescricao] = useState('')
   const { mostrarToast } = useToast()
+
+  // Edição de informações/características do animal
+  const [editandoAnimal, setEditandoAnimal] = useState(false)
+  const [guardandoAnimal, setGuardandoAnimal] = useState(false)
+  const [edNome, setEdNome] = useState('')
+  const [edEspecie, setEdEspecie] = useState('cao')
+  const [edRaca, setEdRaca] = useState('')
+  const [edCor, setEdCor] = useState('')
+  const [edApelo, setEdApelo] = useState('')
+  const [edDescricao, setEdDescricao] = useState('')
+  const [edFotoFile, setEdFotoFile] = useState<File | null>(null)
+  const [edFotoPreview, setEdFotoPreview] = useState<string | null>(null)
+  const [edRemoverFoto, setEdRemoverFoto] = useState(false)
+  const edFotoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchTudo()
@@ -131,12 +144,94 @@ export default function Ocorrencias() {
     setLoadingAvistamentos(false)
   }
 
-  const editarDescricao = async () => {
+  const iniciarEdicaoAnimal = () => {
     if (!selecionada) return
-    await supabase.from('animais').update({ descricao: novaDescricao }).eq('id', selecionada.animal_id)
+    const animal = selecionada.animais as any
+    setEdNome(animal?.nome || '')
+    setEdEspecie(animal?.especie || 'cao')
+    setEdRaca(animal?.raca || '')
+    setEdCor(animal?.cor || '')
+    setEdApelo(animal?.apelo || '')
+    setEdDescricao(animal?.descricao || '')
+    setEdFotoFile(null)
+    setEdFotoPreview(null)
+    setEdRemoverFoto(false)
+    setEditandoAnimal(true)
+  }
+
+  const cancelarEdicaoAnimal = () => {
+    setEditandoAnimal(false)
+    setEdFotoFile(null)
+    setEdFotoPreview(null)
+    setEdRemoverFoto(false)
+  }
+
+  const handleEdFotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    try {
+      const compressed = await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1200, useWebWorker: true })
+      setEdFotoFile(compressed)
+      setEdFotoPreview(URL.createObjectURL(compressed))
+    } catch {
+      setEdFotoFile(file)
+      setEdFotoPreview(URL.createObjectURL(file))
+    }
+    setEdRemoverFoto(false)
+    if (edFotoInputRef.current) edFotoInputRef.current.value = ''
+  }
+
+  const removerFotoAnimal = () => {
+    setEdFotoFile(null)
+    setEdFotoPreview(null)
+    setEdRemoverFoto(true)
+  }
+
+  const uploadFotoAnimal = async (file: File, animalId: string): Promise<string | null> => {
+    const ext = file.name.split('.').pop()
+    const path = 'animais/' + animalId + '-' + Date.now() + '.' + ext
+    const { error } = await supabase.storage.from('fotos').upload(path, file)
+    if (error) return null
+    return supabase.storage.from('fotos').getPublicUrl(path).data.publicUrl
+  }
+
+  const guardarEdicaoAnimal = async () => {
+    if (!selecionada) return
+    if (!edNome.trim() || !edCor.trim()) {
+      mostrarToast('Nome e cor são obrigatórios.', 'erro')
+      return
+    }
+    setGuardandoAnimal(true)
+
+    const atualizacao: Record<string, any> = {
+      nome: edNome.trim(),
+      especie: edEspecie,
+      raca: edRaca.trim() || null,
+      cor: edCor.trim(),
+      apelo: edApelo.trim() || null,
+      descricao: edDescricao,
+    }
+
+    if (edFotoFile) {
+      const url = await uploadFotoAnimal(edFotoFile, selecionada.animal_id)
+      if (url) atualizacao.foto_url = url
+      else mostrarToast('Não foi possível carregar a nova foto, as restantes alterações foram guardadas.', 'info')
+    } else if (edRemoverFoto) {
+      atualizacao.foto_url = null
+    }
+
+    const { error } = await supabase.from('animais').update(atualizacao).eq('id', selecionada.animal_id)
+    if (error) {
+      mostrarToast('Erro ao guardar alterações. Tenta novamente.', 'erro')
+      setGuardandoAnimal(false)
+      return
+    }
+
     await fetchTudo()
-    setEditandoDescricao(false)
-    mostrarToast('Descrição actualizada!', 'sucesso')
+    setSelecionada(prev => prev ? { ...prev, animais: { ...(prev.animais as any), ...atualizacao } } as any : null)
+    cancelarEdicaoAnimal()
+    setGuardandoAnimal(false)
+    mostrarToast('Informações do animal atualizadas!', 'sucesso')
   }
 
   const marcarResolvida = async (ocorrenciaId: string, animalId: string) => {
@@ -256,8 +351,8 @@ export default function Ocorrencias() {
           <button
             onClick={() => { setTabPrincipal('meus-animais'); setSelecionada(null) }}
             className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tabPrincipal === 'meus-animais'
-                ? 'border-lime-700 text-lime-800'
-                : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-lime-700 text-lime-800'
+              : 'border-transparent text-stone-500 hover:text-stone-800'
               }`}
           >
             🐾 Os meus animais
@@ -269,8 +364,8 @@ export default function Ocorrencias() {
           <button
             onClick={() => { setTabPrincipal('meus-avistamentos'); setSelecionada(null) }}
             className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tabPrincipal === 'meus-avistamentos'
-                ? 'border-lime-700 text-lime-800'
-                : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-lime-700 text-lime-800'
+              : 'border-transparent text-stone-500 hover:text-stone-800'
               }`}
           >
             👁 Avistamentos que reportei
@@ -391,48 +486,111 @@ export default function Ocorrencias() {
                       </div>
                     </div>
 
-                    {/* Editar estado e descrição */}
+                    {/* Editar informações e características do animal */}
                     <div className="bg-white rounded-2xl border border-stone-200 p-5">
-                      <h3 className="font-bold text-stone-900 mb-4">✏️ Editar ocorrência</h3>
-                      <div className="flex flex-col gap-4">
-                        {/* Editar descrição */}
-                        <div>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <label className="text-sm font-semibold text-stone-500">Descrição do animal</label>
-                            {!editandoDescricao && (
-                              <button onClick={() => {
-                                setNovaDescricao((selecionada.animais as any)?.descricao || '')
-                                setEditandoDescricao(true)
-                              }} className="text-xs text-lime-700 font-semibold hover:underline">Editar</button>
-                            )}
-                          </div>
-                          {editandoDescricao ? (
-                            <div className="flex flex-col gap-2">
-                              <textarea
-                                value={novaDescricao}
-                                onChange={e => setNovaDescricao(e.target.value)}
-                                rows={3}
-                                className="w-full px-4 py-3 border-2 border-lime-300 rounded-xl text-sm resize-none focus:outline-none focus:border-lime-600"
-                              />
-                              <div className="flex gap-2">
-                                <button onClick={() => setEditandoDescricao(false)}
-                                  className="flex-1 border-2 border-stone-200 text-stone-600 py-2 rounded-xl text-sm font-semibold hover:bg-stone-50">
-                                  Cancelar
-                                </button>
-                                <button onClick={editarDescricao}
-                                  className="flex-1 text-white py-2 rounded-xl text-sm font-semibold"
-                                  style={{ background: '#65a30d' }}>
-                                  Guardar
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-sm text-stone-500 bg-stone-50 rounded-xl px-4 py-3">
-                              {(selecionada.animais as any)?.descricao || 'Sem descrição. Clica em Editar para adicionar.'}
-                            </p>
-                          )}
-                        </div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-stone-900">✏️ Editar ocorrência</h3>
+                        {!editandoAnimal && (
+                          <button onClick={iniciarEdicaoAnimal} className="text-xs text-lime-700 font-semibold hover:underline">
+                            Editar informações do animal
+                          </button>
+                        )}
                       </div>
+
+                      {!editandoAnimal ? (
+                        <div>
+                          <label className="text-sm font-semibold text-stone-500">Descrição do animal</label>
+                          <p className="text-sm text-stone-500 bg-stone-50 rounded-xl px-4 py-3 mt-1.5">
+                            {(selecionada.animais as any)?.descricao || 'Sem descrição. Clica em "Editar informações do animal" para adicionar.'}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-4">
+
+                          {/* Foto do animal */}
+                          <div>
+                            <label className="text-sm font-semibold text-stone-500 mb-1.5 block">Foto do animal</label>
+                            <div className="flex items-center gap-4">
+                              <div className="w-20 h-20 rounded-2xl bg-stone-50 border-2 border-stone-200 flex items-center justify-center text-3xl overflow-hidden flex-shrink-0">
+                                {edFotoPreview
+                                  ? <img src={edFotoPreview} alt="" className="w-full h-full object-cover" />
+                                  : (!edRemoverFoto && (selecionada.animais as any)?.foto_url)
+                                    ? <img src={(selecionada.animais as any).foto_url} alt="" className="w-full h-full object-cover" />
+                                    : iconeEspecie(edEspecie)}
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <button type="button" onClick={() => edFotoInputRef.current?.click()}
+                                  className="bg-stone-100 text-stone-700 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-stone-200 transition-colors">
+                                  {edFotoPreview || (!edRemoverFoto && (selecionada.animais as any)?.foto_url) ? '🔄 Alterar foto' : '📷 Adicionar foto'}
+                                </button>
+                                {(edFotoPreview || (!edRemoverFoto && (selecionada.animais as any)?.foto_url)) && (
+                                  <button type="button" onClick={removerFotoAnimal}
+                                    className="text-red-600 px-4 py-2 rounded-xl text-xs font-semibold hover:bg-red-50 transition-colors border border-red-200">
+                                    ✕ Remover foto
+                                  </button>
+                                )}
+                              </div>
+                              <input ref={edFotoInputRef} type="file" accept="image/*" onChange={handleEdFotoChange} className="hidden" />
+                            </div>
+                          </div>
+
+                          {/* Nome e espécie */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-sm font-semibold text-stone-500">Nome *</label>
+                              <input value={edNome} onChange={e => setEdNome(e.target.value)}
+                                className="w-full px-4 py-2.5 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-sm font-semibold text-stone-500">Cor *</label>
+                              <input value={edCor} onChange={e => setEdCor(e.target.value)}
+                                className="w-full px-4 py-2.5 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-sm font-semibold text-stone-500">Espécie</label>
+                            <div className="grid grid-cols-3 gap-2">
+                              {OPCOES_ESPECIE.map(([val, label]) => (
+                                <button key={val} type="button" onClick={() => setEdEspecie(val)}
+                                  className={`py-2 rounded-xl text-xs font-semibold border-2 transition-colors ${edEspecie === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
+                                    }`}>{label}</button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-sm font-semibold text-stone-500">Raça</label>
+                            <input value={edRaca} onChange={e => setEdRaca(e.target.value)} placeholder="Ex: Labrador"
+                              className="w-full px-4 py-2.5 border-2 border-stone-200 rounded-xl focus:border-lime-600 focus:outline-none text-sm" />
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-sm font-semibold text-stone-500">Descrição</label>
+                            <textarea value={edDescricao} onChange={e => setEdDescricao(e.target.value)} rows={3}
+                              placeholder="Coleira, marcas, comportamento..."
+                              className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl text-sm resize-none focus:outline-none focus:border-lime-600" />
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <label className="text-sm font-semibold text-stone-500">Mensagem de apelo <span className="text-stone-400 font-normal">(opcional)</span></label>
+                            <textarea value={edApelo} onChange={e => setEdApelo(e.target.value)} rows={2}
+                              className="w-full px-4 py-3 border-2 border-stone-200 rounded-xl text-sm resize-none focus:outline-none focus:border-lime-600" />
+                          </div>
+
+                          <div className="flex gap-2">
+                            <button onClick={cancelarEdicaoAnimal} disabled={guardandoAnimal}
+                              className="flex-1 border-2 border-stone-200 text-stone-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-stone-50 disabled:opacity-60">
+                              Cancelar
+                            </button>
+                            <button onClick={guardarEdicaoAnimal} disabled={guardandoAnimal}
+                              className="flex-1 text-white py-2.5 rounded-xl text-sm font-semibold disabled:opacity-60"
+                              style={{ background: '#65a30d' }}>
+                              {guardandoAnimal ? 'A guardar...' : 'Guardar alterações'}
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Partilhar */}
