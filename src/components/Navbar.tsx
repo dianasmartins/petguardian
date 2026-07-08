@@ -7,6 +7,8 @@ interface Props { session: Session | null }
 
 const ADMIN_EMAIL = 'dmartins94@gmail.com'
 const LAST_VISIT_KEY = 'pg-last-ocorrencias-visit'
+export const NOTIF_AVISTAMENTOS_KEY = 'pg-notif-avistamentos'
+export const NOTIF_MENSAGENS_KEY = 'pg-notif-mensagens'
 
 interface DropdownItem { to: string; label: string; icon: string; desc?: string }
 
@@ -83,6 +85,7 @@ export default function Navbar({ session }: Props) {
   }, [location.pathname])
 
   const verificarMensagensNaoLidas = async (userId: string) => {
+    if (localStorage.getItem(NOTIF_MENSAGENS_KEY) === 'false') { setMensagensNaoLidas(0); return }
     const { data: convs } = await supabase.from('conversas').select('id').or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
     if (!convs?.length) return
     const { count } = await supabase.from('mensagens_privadas').select('id', { count: 'exact' })
@@ -92,6 +95,7 @@ export default function Navbar({ session }: Props) {
 
   const verificarNovosAvistamentos = async () => {
     if (!session?.user) return
+    if (localStorage.getItem(NOTIF_AVISTAMENTOS_KEY) === 'false') { setNovosAvistamentos(0); return }
     const lastVisit = localStorage.getItem(LAST_VISIT_KEY)
     const { data: animais } = await supabase.from('animais').select('id').eq('dono_id', session.user.id).neq('estado', 'encontrado')
     if (!animais?.length) return
