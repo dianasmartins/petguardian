@@ -64,7 +64,9 @@ export default function Ocorrencias() {
   const [loadingAvistamentos, setLoadingAvistamentos] = useState(false)
   const [atualizando, setAtualizando] = useState(false)
   const [confirmarArquivar, setConfirmarArquivar] = useState(false)
-  const [confirmarReverter, setConfirmarReverter] = useState(false)
+  const [mostrarModalEstado, setMostrarModalEstado] = useState(false)
+  const [novoEstadoSelecionado, setNovoEstadoSelecionado] = useState<string | null>(null)
+  const [aplicandoEstado, setAplicandoEstado] = useState(false)
   const [avistamentoSelecionado, setAvistamentoSelecionado] = useState<string | null>(null)
   const { mostrarToast } = useToast()
 
@@ -94,7 +96,8 @@ export default function Ocorrencias() {
     if (!selecionada) return
     fetchAvistamentos(selecionada.animal_id)
     setConfirmarArquivar(false)
-    setConfirmarReverter(false)
+    setMostrarModalEstado(false)
+    setNovoEstadoSelecionado(null)
 
     const channel = supabase
       .channel('avistamentos-' + selecionada.animal_id)
@@ -236,33 +239,36 @@ export default function Ocorrencias() {
     mostrarToast('Informações do animal atualizadas!', 'sucesso')
   }
 
-  const marcarResolvida = async (ocorrenciaId: string, animalId: string) => {
-    setAtualizando(true)
-    await supabase.from('ocorrencias').update({
-      estado: 'resolvida', resolvida_at: new Date().toISOString()
-    }).eq('id', ocorrenciaId)
-    await supabase.from('animais').update({ estado: 'encontrado' }).eq('id', animalId)
-    await fetchTudo()
-    setSelecionada(prev => prev ? { ...prev, estado: 'resolvida' } : null)
-    mostrarToast('Ocorrência marcada como resolvida! 🎉', 'sucesso')
-    setAtualizando(false)
+  const abrirModalEstado = () => {
+    if (!selecionada) return
+    setNovoEstadoSelecionado((selecionada.animais as any)?.estado || null)
+    setMostrarModalEstado(true)
   }
 
-  const reverterResolvida = async (ocorrenciaId: string, animalId: string) => {
-    if (!confirmarReverter) { setConfirmarReverter(true); return }
-    setAtualizando(true)
-    const temAvistamentos = (selecionada?.total_avistamentos || 0) > 0
-    const novoEstadoOcorrencia = temAvistamentos ? 'com_avistamentos' : 'aberta'
-    const novoEstadoAnimal = temAvistamentos ? 'avistado' : 'desaparecido'
-    await supabase.from('ocorrencias').update({
-      estado: novoEstadoOcorrencia, resolvida_at: null
-    }).eq('id', ocorrenciaId)
-    await supabase.from('animais').update({ estado: novoEstadoAnimal }).eq('id', animalId)
+  const aplicarNovoEstado = async () => {
+    if (!selecionada) return
+    const animal = selecionada.animais as any
+    if (!novoEstadoSelecionado || novoEstadoSelecionado === animal?.estado) return
+    setAplicandoEstado(true)
+    const agora = new Date().toISOString()
+
+    await supabase.from('animais').update({ estado: novoEstadoSelecionado }).eq('id', selecionada.animal_id)
+
+    let atualizacaoOcorrencia: Record<string, any>
+    if (novoEstadoSelecionado === 'encontrado') atualizacaoOcorrencia = { estado: 'resolvida', resolvida_at: agora }
+    else if (novoEstadoSelecionado === 'avistado') atualizacaoOcorrencia = { estado: 'com_avistamentos', resolvida_at: null }
+    else atualizacaoOcorrencia = { estado: 'aberta', resolvida_at: null }
+    await supabase.from('ocorrencias').update(atualizacaoOcorrencia).eq('id', selecionada.id)
+
     await fetchTudo()
-    setSelecionada(prev => prev ? { ...prev, estado: novoEstadoOcorrencia, resolvida_at: null } as any : null)
-    setConfirmarReverter(false)
-    mostrarToast('Ocorrência reaberta — foi retirado o estado de "encontrado".', 'info')
-    setAtualizando(false)
+    setSelecionada(prev => prev ? {
+      ...prev, ...atualizacaoOcorrencia,
+      animais: { ...(prev.animais as any), estado: novoEstadoSelecionado }
+    } as any : null)
+    setMostrarModalEstado(false)
+    setNovoEstadoSelecionado(null)
+    setAplicandoEstado(false)
+    mostrarToast('Estado do animal atualizado!', 'sucesso')
   }
 
   const arquivarOcorrencia = async (ocorrenciaId: string) => {
@@ -338,6 +344,13 @@ export default function Ocorrencias() {
     if (estado === 'com_avistamentos') return <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-1 rounded-full">Com avistamentos</span>
     if (estado === 'resolvida') return <span className="text-xs font-semibold bg-lime-100 text-lime-800 px-2 py-1 rounded-full">Resolvida ✓</span>
     if (estado === 'arquivada') return <span className="text-xs font-semibold bg-stone-100 text-stone-500 px-2 py-1 rounded-full">Arquivada</span>
+    return <span className="text-xs font-semibold bg-stone-100 text-stone-600 px-2 py-1 rounded-full">{estado}</span>
+  }
+
+  const estadoAnimalBadge = (estado: string) => {
+    if (estado === 'desaparecido') return <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-1 rounded-full">⚠ Desaparecido</span>
+    if (estado === 'avistado') return <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-1 rounded-full">👁 Avistado</span>
+    if (estado === 'encontrado') return <span className="text-xs font-semibold bg-lime-100 text-lime-800 px-2 py-1 rounded-full">✓ Encontrado</span>
     return <span className="text-xs font-semibold bg-stone-100 text-stone-600 px-2 py-1 rounded-full">{estado}</span>
   }
 
@@ -451,8 +464,14 @@ export default function Ocorrencias() {
                             : iconeEspecie((selecionada.animais as any)?.especie)}
                         </div>
                         <div className="flex-1">
-                          <div className="text-xl font-bold text-stone-900 mb-1" style={{ fontFamily: 'Georgia, serif' }}>
-                            {(selecionada.animais as any)?.nome}
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <div className="text-xl font-bold text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>
+                              {(selecionada.animais as any)?.nome}
+                            </div>
+                            <button onClick={iniciarEdicaoAnimal}
+                              className="flex items-center gap-1 bg-lime-50 text-lime-800 border border-lime-200 px-2.5 py-1 rounded-full text-xs font-semibold hover:bg-lime-100 transition-colors">
+                              ✏️ Editar informações
+                            </button>
                           </div>
                           <div className="flex flex-wrap gap-2 mb-3">
                             {estadoBadge(selecionada.estado)}
@@ -462,24 +481,10 @@ export default function Ocorrencias() {
                             )}
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            {selecionada.estado !== 'resolvida' && selecionada.estado !== 'arquivada' && (
-                              <button onClick={() => marcarResolvida(selecionada.id, selecionada.animal_id)}
-                                disabled={atualizando}
-                                className="bg-lime-700 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-lime-800 disabled:opacity-60 transition-colors">
-                                {atualizando ? 'A atualizar...' : '✓ Marcar como encontrado'}
-                              </button>
-                            )}
-                            {selecionada.estado === 'resolvida' && (
-                              <button onClick={() => reverterResolvida(selecionada.id, selecionada.animal_id)}
-                                disabled={atualizando}
-                                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-60 ${confirmarReverter ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
-                                  }`}>
-                                {atualizando ? 'A atualizar...' : confirmarReverter ? 'Confirmar reversão' : '↩ Marquei por engano'}
-                              </button>
-                            )}
-                            {confirmarReverter && (
-                              <button onClick={() => setConfirmarReverter(false)} className="text-sm text-stone-400 hover:text-stone-600 px-2">Cancelar</button>
-                            )}
+                            <button onClick={abrirModalEstado}
+                              className="bg-stone-100 text-stone-700 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-stone-200 transition-colors">
+                              🔄 Mudar estado
+                            </button>
                             {selecionada.estado !== 'resolvida' && selecionada.estado !== 'arquivada' && (
                               <button onClick={() => arquivarOcorrencia(selecionada.id)}
                                 disabled={atualizando}
@@ -496,22 +501,16 @@ export default function Ocorrencias() {
                       </div>
 
                       {/* Stats */}
-                      <div className="grid grid-cols-3 gap-4 mt-5 pt-5 border-t border-stone-100">
+                      <div className="grid grid-cols-2 gap-4 mt-5 pt-5 border-t border-stone-100">
                         <div className="text-center">
                           <div className="text-2xl font-black text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>{selecionada.total_avistamentos}</div>
                           <div className="text-xs text-stone-400 mt-1">Avistamentos</div>
                         </div>
                         <div className="text-center">
                           <div className="text-2xl font-black text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>
-                            {Math.floor((Date.now() - new Date(selecionada.created_at).getTime()) / 3600000)}h
+                            {Math.floor((Date.now() - new Date(selecionada.created_at).getTime()) / 86400000)}d
                           </div>
                           <div className="text-xs text-stone-400 mt-1">Tempo aberta</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-black text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>
-                            {selecionada.estado === 'resolvida' ? '✓' : '…'}
-                          </div>
-                          <div className="text-xs text-stone-400 mt-1">Estado</div>
                         </div>
                       </div>
                     </div>
@@ -520,11 +519,6 @@ export default function Ocorrencias() {
                     <div className="bg-white rounded-2xl border border-stone-200 p-5">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold text-stone-900">✏️ Editar ocorrência</h3>
-                        {!editandoAnimal && (
-                          <button onClick={iniciarEdicaoAnimal} className="text-xs text-lime-700 font-semibold hover:underline">
-                            Editar informações do animal
-                          </button>
-                        )}
                       </div>
 
                       {!editandoAnimal ? (
@@ -820,6 +814,47 @@ export default function Ocorrencias() {
           </>
         )}
       </div>
+
+      {/* Modal mudar estado do animal */}
+      {mostrarModalEstado && selecionada && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="font-bold text-stone-900 text-lg mb-1" style={{ fontFamily: 'Georgia, serif' }}>
+              🔄 Mudar estado de {(selecionada.animais as any)?.nome}
+            </h2>
+            <p className="text-stone-500 text-sm mb-5">Estado atual: {estadoAnimalBadge((selecionada.animais as any)?.estado)}</p>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-stone-500">Novo estado</label>
+                <div className="flex flex-col gap-2">
+                  {[
+                    ['desaparecido', '⚠ Desaparecido'],
+                    ['avistado', '👁 Avistado'],
+                    ['encontrado', '✓ Encontrado'],
+                  ].map(([val, label]) => (
+                    <button key={val} type="button" onClick={() => setNovoEstadoSelecionado(val)}
+                      className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-colors text-left flex items-center justify-between ${novoEstadoSelecionado === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
+                        }`}>
+                      <span>{label}</span>
+                      {(selecionada.animais as any)?.estado === val && <span className="text-xs font-normal text-stone-400">atual</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-2">
+                <button type="button" onClick={() => { setMostrarModalEstado(false); setNovoEstadoSelecionado(null) }}
+                  className="flex-1 border-2 border-stone-200 text-stone-600 py-3 rounded-xl font-semibold hover:bg-stone-50 text-sm">Cancelar</button>
+                <button type="button" onClick={aplicarNovoEstado}
+                  disabled={aplicandoEstado || !novoEstadoSelecionado || novoEstadoSelecionado === (selecionada.animais as any)?.estado}
+                  className="flex-1 bg-lime-700 text-white py-3 rounded-xl font-semibold hover:bg-lime-800 disabled:opacity-60 text-sm">
+                  {aplicandoEstado ? 'A guardar...' : '✓ Confirmar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

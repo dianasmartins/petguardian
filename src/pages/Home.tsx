@@ -42,7 +42,7 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       const { data } = await supabase.from('animais').select('id, estado').order('created_at', { ascending: false })
-      if (data) setStats({ total: data.length, encontrados: data.filter(a => a.estado === 'encontrado').length, desaparecidos: data.filter(a => a.estado === 'desaparecido').length })
+      if (data) setStats({ total: data.length, encontrados: data.filter(a => a.estado === 'encontrado').length, desaparecidos: data.filter(a => a.estado === 'desaparecido' || a.estado === 'avistado').length })
       const { data: revs } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(6)
       setReviews(revs || [])
     }

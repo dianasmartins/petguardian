@@ -297,9 +297,9 @@ export default function Navbar({ session }: Props) {
         </div>
 
         {/* Mobile hamburger */}
-        <button className="md:hidden p-2 rounded-xl text-stone-600 hover:bg-stone-100 relative" onClick={() => setMenuOpen(!menuOpen)}>
+        <button className="md:hidden w-11 h-11 flex items-center justify-center rounded-xl text-stone-600 hover:bg-stone-100 relative text-3xl leading-none" onClick={() => setMenuOpen(!menuOpen)}>
           {menuOpen ? '✕' : '☰'}
-          {(novosAvistamentos + mensagensNaoLidas) > 0 && !menuOpen && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />}
+          {(novosAvistamentos + mensagensNaoLidas) > 0 && !menuOpen && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full" />}
         </button>
       </div>
 

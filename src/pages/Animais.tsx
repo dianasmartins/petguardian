@@ -49,8 +49,9 @@ export default function Animais() {
   useEffect(() => {
     let res = [...animais]
 
-    // Estado
-    if (filtroEstado !== 'todos') res = res.filter(a => a.estado === filtroEstado)
+    // Estado — "Desaparecido" inclui também os avistados, pois o animal continua desaparecido
+    if (filtroEstado === 'desaparecido') res = res.filter(a => a.estado === 'desaparecido' || a.estado === 'avistado')
+    else if (filtroEstado !== 'todos') res = res.filter(a => a.estado === filtroEstado)
 
     // Espécie
     if (filtroEspecie !== 'todos') res = res.filter(a => a.especie === filtroEspecie)
@@ -138,7 +139,7 @@ export default function Animais() {
               className="px-4 py-2.5 border-2 rounded-xl text-sm focus:outline-none bg-white"
               style={{ borderColor: '#d9f99d' }}>
               <option value="todos">Todos os estados</option>
-              <option value="desaparecido">⚠ Desaparecido</option>
+              <option value="desaparecido">⚠ Desaparecido (inclui avistados)</option>
               <option value="avistado">👁 Avistado</option>
               <option value="encontrado">✓ Encontrado</option>
               <option value="encontrado_rua">🐾 Encontrado na rua</option>

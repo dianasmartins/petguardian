@@ -154,7 +154,7 @@ export default function AnimaisEncontrados() {
     const { data: animais } = await supabase
       .from('animais')
       .select('id, nome, especie, raca, cor, foto_url, caracteristicas_ia')
-      .eq('estado', 'desaparecido')
+      .in('estado', ['desaparecido', 'avistado'])
 
     const scored: AnimalMatch[] = (animais || [])
       .filter((a: any) => normalizarEspecie(a.especie) === espIANormalizada && espIANormalizada !== 'outro')

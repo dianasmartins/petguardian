@@ -36,7 +36,7 @@ export default function Estatisticas() {
     const profiles = profilesRes.data || []
 
     const encontrados = animais.filter(a => a.estado === 'encontrado')
-    const desaparecidos = animais.filter(a => a.estado === 'desaparecido')
+    const desaparecidos = animais.filter(a => a.estado === 'desaparecido' || a.estado === 'avistado')
     const taxa = animais.length > 0 ? Math.round((encontrados.length / animais.length) * 100) : 0
     const mediaAvs = animais.length > 0 ? Math.round((avistamentos.length / animais.length) * 10) / 10 : 0
 
