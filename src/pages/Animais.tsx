@@ -207,7 +207,7 @@ export default function Animais() {
 
         {/* Resultados */}
         <div className="flex items-center justify-between mb-5">
-          <span className="text-sm font-semibold" style={{ color: '#4d7c0f' }}>{filtrados.length} animal{filtrados.length !== 1 ? 'is' : ''} encontrado{filtrados.length !== 1 ? 's' : ''}</span>
+          <span className="text-sm font-semibold" style={{ color: '#4d7c0f' }}>{filtrados.length} {filtrados.length === 1 ? 'animal encontrado' : 'animais encontrados'}</span>
           <Link to="/animais-encontrados" className="text-sm font-semibold px-4 py-2 rounded-xl" style={{ background: '#ecfccb', color: '#365314', border: '1px solid #d9f99d' }}>
             🐾 Encontrei um animal →
           </Link>
