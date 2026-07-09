@@ -29,6 +29,9 @@ import TermosServico from './pages/TermosServico'
 import SobreNos from './pages/SobreNos'
 import RedefinirPassword from './pages/RedefinirPassword'
 import Mensagens from './pages/Mensagens'
+import OrganizacaoPerfil from './pages/OrganizacaoPerfil'
+import OrganizacaoPainel from './pages/OrganizacaoPainel'
+import RegistoLote from './pages/RegistoLote'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 
@@ -85,6 +88,9 @@ export default function App() {
           <Route path="/definicoes" element={session ? <Definicoes /> : <Navigate to="/login" />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/mensagens" element={session ? <Mensagens /> : <Navigate to="/login" />} />
+          <Route path="/organizacao/painel" element={session ? <OrganizacaoPainel /> : <Navigate to="/login" />} />
+          <Route path="/organizacao/registo-lote" element={session ? <RegistoLote /> : <Navigate to="/login" />} />
+          <Route path="/organizacao/:id" element={<OrganizacaoPerfil />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
         <Footer />
