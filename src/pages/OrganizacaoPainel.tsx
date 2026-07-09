@@ -40,7 +40,6 @@ const estadoBadge = (estado: string) => {
 }
 
 export default function OrganizacaoPainel() {
-  const [userId, setUserId] = useState('')
   const [org, setOrg] = useState<OrgProfile | null>(null)
   const [souDono, setSouDono] = useState(false)
   const [meuRole, setMeuRole] = useState<string | null>(null)
@@ -62,7 +61,6 @@ export default function OrganizacaoPainel() {
     const fetchTudo = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { navigate('/login'); return }
-      setUserId(user.id)
 
       // 1. O próprio utilizador é uma conta de organização?
       const { data: profileProprio } = await supabase
