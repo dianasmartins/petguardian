@@ -30,6 +30,15 @@ interface Animal {
   dono_id: string
 }
 
+interface OrganizacaoPendente {
+  id: string
+  nome: string
+  organizacao_nome: string | null
+  organizacao_nif: string | null
+  organizacao_aprovada: boolean
+  created_at: string
+}
+
 // Admin emails autorizados - adiciona o teu email aqui
 const ADMIN_EMAILS = ['dmartins94@gmail.com']
 
@@ -42,7 +51,8 @@ export default function Admin() {
   })
   const [utilizadores, setUtilizadores] = useState<Utilizador[]>([])
   const [animais, setAnimais] = useState<Animal[]>([])
-  const [tabActiva, setTabActiva] = useState<'dashboard' | 'utilizadores' | 'animais'>('dashboard')
+  const [organizacoes, setOrganizacoes] = useState<OrganizacaoPendente[]>([])
+  const [tabActiva, setTabActiva] = useState<'dashboard' | 'utilizadores' | 'animais' | 'organizacoes'>('dashboard')
   const navigate = useNavigate()
   const { mostrarToast } = useToast()
 
@@ -64,15 +74,17 @@ export default function Admin() {
   const fetchData = async () => {
     setLoading(true)
 
-    const [animaisRes, avistamentosRes, profilesRes] = await Promise.all([
+    const [animaisRes, avistamentosRes, profilesRes, organizacoesRes] = await Promise.all([
       supabase.from('animais').select('*').order('created_at', { ascending: false }),
       supabase.from('avistamentos').select('id'),
       supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('id, nome, organizacao_nome, organizacao_nif, organizacao_aprovada, created_at').eq('tipo_conta', 'organizacao').order('created_at', { ascending: false }),
     ])
 
     const animaisData = animaisRes.data || []
     const profilesData = profilesRes.data || []
     const avistamentosData = avistamentosRes.data || []
+    setOrganizacoes(organizacoesRes.data || [])
 
     const desaparecidos = animaisData.filter(a => a.estado === 'desaparecido').length
     const encontrados = animaisData.filter(a => a.estado === 'encontrado').length
@@ -103,6 +115,20 @@ export default function Admin() {
     await supabase.from('animais').delete().eq('id', animalId)
     mostrarToast('Registo eliminado.', 'info')
     fetchData()
+  }
+
+  const aprovarOrganizacao = async (id: string) => {
+    const { error } = await supabase.from('profiles').update({ organizacao_aprovada: true }).eq('id', id)
+    if (error) { mostrarToast('Erro ao aprovar organização.', 'erro'); return }
+    setOrganizacoes(prev => prev.map(o => o.id === id ? { ...o, organizacao_aprovada: true } : o))
+    mostrarToast('Organização verificada com sucesso!', 'sucesso')
+  }
+
+  const revogarOrganizacao = async (id: string) => {
+    const { error } = await supabase.from('profiles').update({ organizacao_aprovada: false }).eq('id', id)
+    if (error) { mostrarToast('Erro ao atualizar organização.', 'erro'); return }
+    setOrganizacoes(prev => prev.map(o => o.id === id ? { ...o, organizacao_aprovada: false } : o))
+    mostrarToast('Selo de verificação removido.', 'info')
   }
 
   if (!authorized) return null
@@ -137,6 +163,7 @@ export default function Admin() {
             { id: 'dashboard', label: '📊 Dashboard' },
             { id: 'utilizadores', label: '👥 Utilizadores' },
             { id: 'animais', label: '🐾 Animais' },
+            { id: 'organizacoes', label: `🏢 Organizações${organizacoes.filter(o => !o.organizacao_aprovada).length > 0 ? ` (${organizacoes.filter(o => !o.organizacao_aprovada).length})` : ''}` },
           ].map(tab => (
             <button key={tab.id} onClick={() => setTabActiva(tab.id as any)}
               className={`px-5 py-3 text-sm font-semibold border-b-2 transition-colors ${tabActiva === tab.id
@@ -316,6 +343,62 @@ export default function Admin() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* ORGANIZAÇÕES */}
+        {tabActiva === 'organizacoes' && (
+          <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-stone-100">
+              <h2 className="font-bold text-stone-900">🏢 Contas de organização ({organizacoes.length})</h2>
+            </div>
+            {organizacoes.length === 0 ? (
+              <div className="text-center py-10 text-stone-400 text-sm">Ainda não há nenhuma conta de organização registada.</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-stone-50">
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-stone-500">Organização</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-stone-500">Responsável</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-stone-500">NIF</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-stone-500">Estado</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-stone-500">Pedido em</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-stone-500">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {organizacoes.map(org => (
+                      <tr key={org.id} className="border-t border-stone-100 hover:bg-stone-50">
+                        <td className="px-6 py-3 font-medium">{org.organizacao_nome || '—'}</td>
+                        <td className="px-6 py-3 text-stone-500">{org.nome}</td>
+                        <td className="px-6 py-3 text-stone-500 font-mono text-xs">{org.organizacao_nif || '—'}</td>
+                        <td className="px-6 py-3">
+                          {org.organizacao_aprovada
+                            ? <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded-full">✅ Verificada</span>
+                            : <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-1 rounded-full">⏳ Pendente</span>
+                          }
+                        </td>
+                        <td className="px-6 py-3 text-stone-400">{new Date(org.created_at).toLocaleDateString('pt-PT')}</td>
+                        <td className="px-6 py-3">
+                          {org.organizacao_aprovada ? (
+                            <button onClick={() => revogarOrganizacao(org.id)}
+                              className="text-xs bg-stone-100 text-stone-600 px-3 py-1.5 rounded-lg hover:bg-stone-200 transition-colors font-semibold">
+                              Remover selo
+                            </button>
+                          ) : (
+                            <button onClick={() => aprovarOrganizacao(org.id)}
+                              className="text-xs bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition-colors font-semibold">
+                              ✓ Aprovar
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

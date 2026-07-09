@@ -60,6 +60,7 @@ export default function Navbar({ session }: Props) {
   const [fotoPerfil, setFotoPerfil] = useState<string | null>(null)
   const [novosAvistamentos, setNovosAvistamentos] = useState(0)
   const [mensagensNaoLidas, setMensagensNaoLidas] = useState(0)
+  const [nomeOrganizacao, setNomeOrganizacao] = useState<string | null>(null)
   const navigate = useNavigate()
   const location = useLocation()
   const profileRef = useRef<HTMLDivElement>(null)
@@ -67,9 +68,15 @@ export default function Navbar({ session }: Props) {
   useEffect(() => {
     if (!session?.user) return
     const fetchNome = async () => {
-      const { data } = await supabase.from('profiles').select('nome, foto_url').eq('id', session.user.id).single()
+      const { data } = await supabase.from('profiles').select('nome, foto_url, tipo_conta, organizacao_nome').eq('id', session.user.id).single()
       if (data?.nome) setNomeUtilizador(data.nome)
       if (data?.foto_url) setFotoPerfil(data.foto_url)
+      if (data?.tipo_conta === 'organizacao') {
+        setNomeOrganizacao(data.organizacao_nome || 'Organização')
+      } else {
+        const { data: membro } = await supabase.from('organizacao_membros').select('organizacao_id, profiles(organizacao_nome)').eq('user_id', session.user.id).maybeSingle()
+        if (membro) setNomeOrganizacao((membro as any).profiles?.organizacao_nome || 'Organização')
+      }
     }
     fetchNome()
     verificarNovosAvistamentos()
@@ -276,6 +283,12 @@ export default function Navbar({ session }: Props) {
                           {item.badge > 0 && <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{item.badge > 9 ? '9+' : item.badge}</span>}
                         </Link>
                       ))}
+                      {nomeOrganizacao && (
+                        <Link to="/organizacao/painel" onClick={() => setProfileOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-700 hover:bg-lime-50 hover:text-lime-800 transition-colors">
+                          <span>🏢</span> {nomeOrganizacao}
+                        </Link>
+                      )}
                       {isAdmin && (
                         <Link to="/admin" onClick={() => setProfileOpen(false)}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors font-semibold">
@@ -344,6 +357,9 @@ export default function Navbar({ session }: Props) {
                 {mensagensNaoLidas > 0 && <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{mensagensNaoLidas > 9 ? '9+' : mensagensNaoLidas}</span>}
               </Link>
               <Link to="/perfil" onClick={() => setMenuOpen(false)} className={`px-3 py-2.5 rounded-xl text-sm ${isActive('/perfil')}`}>👤 Perfil</Link>
+              {nomeOrganizacao && (
+                <Link to="/organizacao/painel" onClick={() => setMenuOpen(false)} className={`px-3 py-2.5 rounded-xl text-sm ${isActive('/organizacao/painel')}`}>🏢 {nomeOrganizacao}</Link>
+              )}
               <Link to="/registar-animal" onClick={() => setMenuOpen(false)} className="text-white px-3 py-3 rounded-xl text-sm font-semibold text-center mt-1" style={{ background: '#ea580c' }}>+ Registar Animal</Link>
               <button onClick={handleLogout} className="text-sm text-red-600 px-3 py-2.5 text-left hover:bg-red-50 rounded-xl">🚪 Terminar sessão</button>
             </>

@@ -64,6 +64,9 @@ interface Dono {
   foto_url?: string | null
   created_at?: string | null
   animaisReunidos?: number
+  tipo_conta?: string
+  organizacao_nome?: string | null
+  organizacao_aprovada?: boolean
 }
 
 type Tab = 'perfil' | 'avistamentos'
@@ -99,7 +102,7 @@ export default function AnimalPerfil() {
     const { data: animalData } = await supabase.from('animais').select('*').eq('id', id).single()
     if (!animalData) { setLoading(false); return }
     setAnimal(animalData)
-    const { data: donoData } = await supabase.from('profiles').select('id, nome, telemovel, foto_url, created_at').eq('id', animalData.dono_id).maybeSingle()
+    const { data: donoData } = await supabase.from('profiles').select('id, nome, telemovel, foto_url, created_at, tipo_conta, organizacao_nome, organizacao_aprovada').eq('id', animalData.dono_id).maybeSingle()
     if (donoData) {
       const { data: animaisDono } = await supabase.from('animais').select('estado').eq('dono_id', animalData.dono_id)
       setDono({ ...donoData, animaisReunidos: animaisDono?.filter(a => a.estado === 'encontrado').length || 0 })
@@ -138,6 +141,7 @@ export default function AnimalPerfil() {
     let atualizacaoOcorrencia: Record<string, any>
     if (novoEstadoSelecionado === 'encontrado') atualizacaoOcorrencia = { estado: 'resolvida', resolvida_at: agora }
     else if (novoEstadoSelecionado === 'avistado') atualizacaoOcorrencia = { estado: 'com_avistamentos', resolvida_at: null }
+    else if (novoEstadoSelecionado === 'para_adocao') atualizacaoOcorrencia = { estado: 'arquivada', resolvida_at: null }
     else atualizacaoOcorrencia = { estado: 'aberta', resolvida_at: null }
     await supabase.from('ocorrencias').update(atualizacaoOcorrencia).eq('animal_id', animal.id)
 
@@ -155,6 +159,7 @@ export default function AnimalPerfil() {
   const estadoBadge = () => {
     if (animal.estado === 'desaparecido') return <span className="bg-red-100 text-red-700 text-sm font-bold px-3 py-1.5 rounded-full">⚠ Desaparecido</span>
     if (animal.estado === 'avistado') return <span className="bg-amber-100 text-amber-700 text-sm font-bold px-3 py-1.5 rounded-full">👁 Avistado</span>
+    if (animal.estado === 'para_adocao') return <span className="bg-purple-100 text-purple-700 text-sm font-bold px-3 py-1.5 rounded-full">🏠 Para adoção</span>
     return <span className="bg-lime-100 text-lime-800 text-sm font-bold px-3 py-1.5 rounded-full">✓ Encontrado</span>
   }
 
@@ -295,12 +300,21 @@ export default function AnimalPerfil() {
                     <div className="w-14 h-14 rounded-full overflow-hidden bg-lime-700 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                       {dono.foto_url
                         ? <img src={dono.foto_url} alt={dono.nome} className="w-full h-full object-cover" />
-                        : dono.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
+                        : dono.tipo_conta === 'organizacao' ? '🏢' : dono.nome.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
                       }
                     </div>
                     <div className="flex-1">
-                      <div className="font-bold text-stone-900">{dono.nome.split(' ')[0]}</div>
+                      {dono.tipo_conta === 'organizacao' ? (
+                        <Link to={`/organizacao/${dono.id}`} className="font-bold text-stone-900 hover:text-lime-700 transition-colors">
+                          {dono.organizacao_nome || dono.nome}
+                        </Link>
+                      ) : (
+                        <div className="font-bold text-stone-900">{dono.nome.split(' ')[0]}</div>
+                      )}
                       <div className="flex flex-wrap gap-1.5 mt-1">
+                        {dono.tipo_conta === 'organizacao' && dono.organizacao_aprovada && (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">✅ Organização verificada</span>
+                        )}
                         {dono.created_at && (
                           <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">
                             🗓 Membro desde {new Date(dono.created_at).toLocaleDateString('pt-PT', { month: 'short', year: 'numeric' })}
@@ -507,6 +521,7 @@ export default function AnimalPerfil() {
                   {[
                     ['desaparecido', '⚠ Desaparecido'],
                     ['avistado', '👁 Avistado'],
+                    ['para_adocao', '🏠 Para adoção'],
                     ['encontrado', '✓ Encontrado'],
                   ].map(([val, label]) => (
                     <button key={val} type="button" onClick={() => setNovoEstadoSelecionado(val)}
