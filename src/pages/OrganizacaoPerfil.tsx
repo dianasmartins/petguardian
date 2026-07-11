@@ -55,13 +55,11 @@ export default function OrganizacaoPerfil() {
 
   const total = animais.length
   const reunidos = animais.filter(a => a.estado === 'encontrado').length
-  const paraAdocao = animais.filter(a => a.estado === 'para_adocao')
   const desaparecidos = animais.filter(a => a.estado === 'desaparecido' || a.estado === 'avistado')
 
   const estadoBadge = (estado: string) => {
     if (estado === 'desaparecido') return <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Desaparecido</span>
     if (estado === 'avistado') return <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Avistado</span>
-    if (estado === 'para_adocao') return <span className="text-xs font-semibold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Para adoção</span>
     return <span className="text-xs font-semibold bg-lime-100 text-lime-800 px-2 py-0.5 rounded-full">Encontrado</span>
   }
 
@@ -102,7 +100,7 @@ export default function OrganizacaoPerfil() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-stone-100">
+          <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-stone-100">
             <div className="text-center">
               <div className="text-2xl font-black text-stone-900" style={{ fontFamily: 'Georgia, serif' }}>{total}</div>
               <div className="text-xs text-stone-400 mt-1">Animais geridos</div>
@@ -111,31 +109,8 @@ export default function OrganizacaoPerfil() {
               <div className="text-2xl font-black text-lime-700" style={{ fontFamily: 'Georgia, serif' }}>{reunidos}</div>
               <div className="text-xs text-stone-400 mt-1">Reunidos 🎉</div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-black text-purple-700" style={{ fontFamily: 'Georgia, serif' }}>{paraAdocao.length}</div>
-              <div className="text-xs text-stone-400 mt-1">Para adoção</div>
-            </div>
           </div>
         </div>
-
-        {paraAdocao.length > 0 && (
-          <div className="mb-8">
-            <h2 className="font-bold text-xl text-stone-900 mb-4" style={{ fontFamily: 'Georgia, serif' }}>🏠 Disponíveis para adoção</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {paraAdocao.map(a => (
-                <Link key={a.id} to={`/animais/${a.id}`} className="bg-white rounded-2xl border border-stone-200 overflow-hidden hover:shadow-md transition-all">
-                  <div className="h-32 bg-lime-50 flex items-center justify-center overflow-hidden">
-                    {a.foto_url ? <img src={a.foto_url} alt={a.nome} className="w-full h-full object-cover" /> : <span className="text-4xl">{iconeEspecie(a.especie)}</span>}
-                  </div>
-                  <div className="p-3">
-                    <div className="font-bold text-sm text-stone-900 truncate">{a.nome}</div>
-                    <div className="mt-1">{estadoBadge(a.estado)}</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
 
         {desaparecidos.length > 0 && (
           <div className="mb-8">

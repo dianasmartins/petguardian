@@ -99,7 +99,6 @@ export default function Animais() {
   const estadoBadge = (estado: string) => {
     if (estado === 'desaparecido') return <span className="text-xs font-semibold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">Desaparecido</span>
     if (estado === 'avistado') return <span className="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Avistado</span>
-    if (estado === 'para_adocao') return <span className="text-xs font-semibold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Para adoção</span>
     if (estado === 'encontrado') return <span className="text-xs font-semibold bg-lime-100 text-lime-800 px-2 py-0.5 rounded-full">Encontrado</span>
     return <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Encontrado na rua</span>
   }
@@ -142,7 +141,6 @@ export default function Animais() {
               <option value="todos">Todos os estados</option>
               <option value="desaparecido">⚠ Desaparecido (inclui avistados)</option>
               <option value="avistado">👁 Avistado</option>
-              <option value="para_adocao">🏠 Para adoção</option>
               <option value="encontrado">✓ Encontrado</option>
             </select>
 

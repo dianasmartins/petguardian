@@ -141,7 +141,6 @@ export default function AnimalPerfil() {
     let atualizacaoOcorrencia: Record<string, any>
     if (novoEstadoSelecionado === 'encontrado') atualizacaoOcorrencia = { estado: 'resolvida', resolvida_at: agora }
     else if (novoEstadoSelecionado === 'avistado') atualizacaoOcorrencia = { estado: 'com_avistamentos', resolvida_at: null }
-    else if (novoEstadoSelecionado === 'para_adocao') atualizacaoOcorrencia = { estado: 'arquivada', resolvida_at: null }
     else atualizacaoOcorrencia = { estado: 'aberta', resolvida_at: null }
     await supabase.from('ocorrencias').update(atualizacaoOcorrencia).eq('animal_id', animal.id)
 
@@ -159,7 +158,6 @@ export default function AnimalPerfil() {
   const estadoBadge = () => {
     if (animal.estado === 'desaparecido') return <span className="bg-red-100 text-red-700 text-sm font-bold px-3 py-1.5 rounded-full">⚠ Desaparecido</span>
     if (animal.estado === 'avistado') return <span className="bg-amber-100 text-amber-700 text-sm font-bold px-3 py-1.5 rounded-full">👁 Avistado</span>
-    if (animal.estado === 'para_adocao') return <span className="bg-purple-100 text-purple-700 text-sm font-bold px-3 py-1.5 rounded-full">🏠 Para adoção</span>
     return <span className="bg-lime-100 text-lime-800 text-sm font-bold px-3 py-1.5 rounded-full">✓ Encontrado</span>
   }
 
@@ -521,7 +519,6 @@ export default function AnimalPerfil() {
                   {[
                     ['desaparecido', '⚠ Desaparecido'],
                     ['avistado', '👁 Avistado'],
-                    ['para_adocao', '🏠 Para adoção'],
                     ['encontrado', '✓ Encontrado'],
                   ].map(([val, label]) => (
                     <button key={val} type="button" onClick={() => setNovoEstadoSelecionado(val)}

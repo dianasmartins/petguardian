@@ -464,8 +464,8 @@ export default function Ocorrencias() {
           <button
             onClick={() => { setTabPrincipal('meus-animais'); setSelecionada(null) }}
             className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tabPrincipal === 'meus-animais'
-              ? 'border-lime-700 text-lime-800'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+                ? 'border-lime-700 text-lime-800'
+                : 'border-transparent text-stone-500 hover:text-stone-800'
               }`}
           >
             🐾 Os meus animais
@@ -477,8 +477,8 @@ export default function Ocorrencias() {
           <button
             onClick={() => { setTabPrincipal('meus-avistamentos'); setSelecionada(null) }}
             className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors -mb-0.5 ${tabPrincipal === 'meus-avistamentos'
-              ? 'border-lime-700 text-lime-800'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+                ? 'border-lime-700 text-lime-800'
+                : 'border-transparent text-stone-500 hover:text-stone-800'
               }`}
           >
             👁 Avistamentos que reportei

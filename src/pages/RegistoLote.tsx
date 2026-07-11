@@ -38,7 +38,6 @@ export default function RegistoLote() {
   const [naoTemOrg, setNaoTemOrg] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  const [estadoInicial, setEstadoInicial] = useState<'desaparecido' | 'para_adocao'>('para_adocao')
   const [lat, setLat] = useState<number | null>(null)
   const [lng, setLng] = useState<number | null>(null)
   const [morada, setMorada] = useState('')
@@ -132,14 +131,14 @@ export default function RegistoLote() {
       const { data: animalCriado, error } = await supabase.from('animais').insert({
         dono_id: orgId, nome: linha.nome.trim(), especie: linha.especie,
         raca: linha.raca.trim() || null, cor: linha.cor.trim(), descricao: linha.descricao || null,
-        latitude: lat, longitude: lng, foto_url, estado: estadoInicial,
+        latitude: lat, longitude: lng, foto_url, estado: 'desaparecido',
       }).select().single()
 
       if (error || !animalCriado) { falhas++; continue }
 
       // Cria a ocorrência associada (para aparecer em "O meu histórico" e nos filtros)
       await supabase.from('ocorrencias').insert({
-        animal_id: animalCriado.id, estado: estadoInicial === 'para_adocao' ? 'arquivada' : 'aberta', total_avistamentos: 0,
+        animal_id: animalCriado.id, estado: 'aberta', total_avistamentos: 0,
       })
 
       sucesso++
@@ -176,21 +175,6 @@ export default function RegistoLote() {
         <p className="text-stone-500 text-sm mb-8">Regista vários animais de uma vez — ideal para resgates em conjunto.</p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-
-          {/* Estado inicial */}
-          <div className="bg-white rounded-2xl border border-stone-200 p-5">
-            <label className="text-sm font-semibold text-stone-500 mb-2 block">Estes animais estão:</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setEstadoInicial('para_adocao')}
-                className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${estadoInicial === 'para_adocao' ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'}`}>
-                🏠 Para adoção
-              </button>
-              <button type="button" onClick={() => setEstadoInicial('desaparecido')}
-                className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${estadoInicial === 'desaparecido' ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'}`}>
-                ⚠ Desaparecidos
-              </button>
-            </div>
-          </div>
 
           {/* Localização partilhada */}
           <div className="bg-white rounded-2xl border border-stone-200 p-5">
