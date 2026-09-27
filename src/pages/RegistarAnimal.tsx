@@ -16,7 +16,7 @@ import { OPCOES_ESPECIE } from '../lib/especies'
 
 
 
-delete (L.Icon.Default.prototype as any).\_getIconUrl
+delete (L.Icon.Default.prototype as any)._getIconUrl
 
 L.Icon.Default.mergeOptions({
 
@@ -483,19 +483,19 @@ export default function RegistarAnimal() {
 
 
 
-        {/\* Steps \*/}
+        {/* Steps */}
 
         <div className="flex gap-0 mb-8">
 
           {['Dados', 'Localização', 'Fotos'].map((label, i) => (
 
-            <div key={i} className={\`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${step === i + 1 ? 'border-lime-700 text-lime-800'
+            <div key={i} className={`flex-1 pb-2 text-center text-sm font-semibold border-b-2 transition-colors ${step === i + 1 ? 'border-lime-700 text-lime-800'
 
               : step > i + 1 ? 'border-emerald-500 text-emerald-600'
 
                 : 'border-stone-200 text-stone-400'
 
-              }\`}>
+              }`}>
 
               {step > i + 1 ? '✓ ' : ''}{label}
 
@@ -541,9 +541,9 @@ export default function RegistarAnimal() {
 
                         <button key={val} type="button" onClick={() => setEspecie(val)}
 
-                          className={\`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${especie === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
+                          className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors ${especie === val ? 'border-lime-700 bg-lime-50 text-lime-800' : 'border-stone-200 text-stone-600'
 
-                            }\`}>{label}</button>
+                            }`}>{label}</button>
 
                       ))}
 
@@ -763,7 +763,7 @@ export default function RegistarAnimal() {
 
 
 
-          {/\* Mini mapa \*/}
+          {/* Mini mapa */}
 
           <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden">
 
