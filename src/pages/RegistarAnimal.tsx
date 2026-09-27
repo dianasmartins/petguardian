@@ -143,7 +143,7 @@ export default function RegistarAnimal() {
   const [cor, setCor] = useState('')
   
   const [corOlhos, setCorOlhos] = useState('')
-  
+
   const [descricao, setDescricao] = useState('')
 
   const [apelo, setApelo] = useState('')
@@ -709,8 +709,9 @@ export default function RegistarAnimal() {
 
 
       dono_id: user.id, nome, especie, raca: raca || null, cor,
-        descricao: [descricao.trim(), corOlhos.trim() ? `Cor dos olhos: ${corOlhos.trim()}` : ''].filter(Boolean).join('\n'),
-        apelo: apelo || null,
+      descricao: descricao || null,
+      cor_olhos: corOlhos || null,
+      apelo: apelo || null,
 
 
 
