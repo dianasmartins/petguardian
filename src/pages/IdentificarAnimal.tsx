@@ -287,11 +287,59 @@ export default function IdentificarAnimal() {
       }
 
       if (animais) {
-        const scored = animais
-          .map(animal => ({ animal, score: calcularScore(resultadoIA, animal) }))
+
+        const normalizarRacaFiltro = (valor?: string) =>
+          (valor || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim()
+
+        const racaFoto = normalizarRacaFiltro(resultadoIA.raca_estimada)
+
+        console.log('RAÇA IDENTIFICADA NA FOTO:', racaFoto)
+
+        const animaisFiltrados = animais.filter(animal => {
+
+          const iaAnimal = (animal as any).caracteristicas_ia
+
+          const racaAnimal = normalizarRacaFiltro(
+            iaAnimal?.raca_estimada || animal.raca
+          )
+
+          console.log(
+            'ANIMAL:',
+            animal.nome,
+            '| RAÇA BD:',
+            animal.raca,
+            '| RAÇA IA:',
+            iaAnimal?.raca_estimada,
+            '| RAÇA USADA:',
+            racaAnimal
+          )
+
+          // Se a IA identificou uma raça,
+          // só aceita animais dessa mesma raça
+          if (
+            racaFoto &&
+            racaFoto !== 'desconhecida' &&
+            racaFoto !== 'desconhecido'
+          ) {
+            return racaAnimal === racaFoto
+          }
+
+          return true
+        })
+
+        const scored = animaisFiltrados
+          .map(animal => ({
+            animal,
+            score: calcularScore(resultadoIA, animal)
+          }))
           .filter(s => s.score >= 20)
           .sort((a, b) => b.score - a.score)
           .slice(0, 5)
+
         setSugestoes(scored)
       }
 
