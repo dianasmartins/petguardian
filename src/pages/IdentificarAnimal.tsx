@@ -60,6 +60,39 @@ export default function IdentificarAnimal() {
 
   const calcularScore = (res: ResultadoIA, animal: Animal): number => {
     const iaAnimal = (animal as any).caracteristicas_ia
+    // ── FILTRO POR RAÇA ──────────────────────────────────────────
+    // Se a IA reconheceu a raça na fotografia e o animal registado
+    // também tem uma raça conhecida, raças diferentes são excluídas.
+
+    const normalizarRaca = (valor?: string) =>
+      (valor || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+
+    const racaFoto = normalizarRaca(res.raca_estimada)
+
+    const racaAnimal = normalizarRaca(
+      iaAnimal?.raca_estimada || animal.raca
+    )
+
+    const racaConhecida = (raca: string) =>
+      raca !== '' &&
+      raca !== 'desconhecida' &&
+      raca !== 'desconhecido' &&
+      raca !== 'indefinida' &&
+      raca !== 'indefinido'
+
+    // Se ambas as raças são conhecidas e diferentes,
+    // o animal não é considerado uma correspondência.
+    if (
+      racaConhecida(racaFoto) &&
+      racaConhecida(racaAnimal) &&
+      racaFoto !== racaAnimal
+    ) {
+      return 0
+    }
 
     // Normalizar espécie para comparação robusta
     const normalizarEspecie = (s: string) => {
